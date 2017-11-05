@@ -1,0 +1,79 @@
+
+
+
+# #
+#
+# ; { } ( ) , . + * - / % ! & | == != < > >= <= = if while affine pass
+
+
+Lines : [HEAP]HEAP {
+    Line Lines {
+        -.0.~2{
+            [.1.;address .0.0.=AVAILABLE({0/2},<2/1>)](.0.({0/2}))
+        }
+        .1.(.0.({0/2}))
+    }
+    Line {.0.({0/2})}
+}
+Block : [HEAP]HEAP {
+    \{\Lines\}\ {.0.({0/2})}
+    Line        {.0.({0/2})}
+}
+Line : [HEAP]HEAP {
+    \if(\ Statement \)\    Block {DEC(HEAP,[boolconvert 0|.0.]({0/2}),.1.({0/2}),{0/2})}
+    \while(\ Statement \)\ Block {INDUCTION(HEAP,HEAP,DEC(HEAP,[boolconvert 0|.0.]({0/3}),{1/3}(.1.({0/3})),{0/3}),{0/2},[[]])}
+    \affine\ STRING \;\          {RESERVE({0/2},<2/1>)}
+    STRING \=\ Statement \;\     {SET({0/2},[address:.0.],<2/1>,<1/0>,[numberconvert 0|.1.]({0/2}))}
+    \pass\                       {{0/2}}
+}
+Statement {
+    - Statement \|\ Statement;
+    - Statement \&\ Statement;
+    - Statement \>\ Statement;
+    Statement \<\ Statement;
+    Statement \==\ Statement;
+    Statement \!=\ Statement;
+    Statement \>=\ Statement;
+    Statement \<=\ Statement;
+    - Statement \+\ Statement;
+    Statement \-\ Statement;
+    - Statement \*\ Statement;
+    Statement \/\ Statement;
+    Statement \%\ Statement;
+    - Statement \!\ Statement;
+    Statement \-\ Statement;
+    - \(\Statement\)\;
+    - NUMBER;
+    - STRING;
+}
+boolconvert : [HEAP]U {
+    Statement {
+        -.0.~0{NOT(AND(NOT([boolconvert 0|.0.0.]({0/2})),NOT([boolconvert 0|.0.1.]({0/2}))))}
+        -.0.~1{AND([boolconvert 0|.0.0.]({0/2}),[boolconvert 0|.0.1.]({0/2}))}
+        -.0.~2{GT([numberconvert 0|.0.0.]({0/2}),[numberconvert 0|.0.1.]({0/2}))}
+        -.0.~3{GT([numberconvert 0|.0.1.]({0/2}),[numberconvert 0|.0.0.]({0/2}))}
+        -.0.~4{EQ(AFF,[numberconvert 0|.0.0.]({0/2}),[numberconvert 0|.0.1.]({0/2}))}
+        -.0.~5{NOT(EQ(AFF,[numberconvert 0|.0.0.]({0/2}),[numberconvert 0|.0.1.]({0/2})))}
+        -.0.~6{NOT(GT([numberconvert 0|.0.1.]({0/2}),[numberconvert 0|.0.0.]({0/2})))}
+        -.0.~7{NOT(GT([numberconvert 0|.0.0.]({0/2}),[numberconvert 0|.0.1.]({0/2})))}
+        -.0.~13{NOT([boolconvert 0|.0.0.]({0/2}))}
+        -.0.~15{[boolconvert 0|.0.0.]({0/2})}
+        null
+    }
+}
+numberconvert : [HEAP]AFF {
+    Statement {
+        -.0.~8{ADD([numberconvert 0|.0.0.]({0/2}),[numberconvert 0|.0.1.]({0/2}))}
+        -.0.~9{SUBTRACT([numberconvert 0|.0.0.]({0/2}),[numberconvert 0|.0.1.]({0/2}))}
+        -.0.~10{MULTIPLY([numberconvert 0|.0.0.]({0/2}),[numberconvert 0|.0.1.]({0/2}))}
+        -.0.~11{DIVIDE([numberconvert 0|.0.1.]({0/2}),[[]],[numberconvert 0|.0.0.]({0/2}))}
+        -.0.~12{MODULO([numberconvert 0|.0.1.]({0/2}),[[]],[numberconvert 0|.0.0.]({0/2}))}
+        -.0.~14{MULTIPLY([numberconvert 0|.0.0.]({0/2}),<2/-1>)}
+        -.0.~15{[numberconvert 0|.0.0.]({0/2})}
+        -.0.~16{.0.0.}
+        -.0.~17{GET({0/2},[address:.0.0.],<2/1>,<1/0>)}
+        null
+    }
+}
+
+
