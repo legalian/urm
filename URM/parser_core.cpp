@@ -474,7 +474,7 @@ Construction Construction::replace(Construction a,int depth) {
         res.given.push_back(::replace(given[j],a,depth));
     }
     if (reconstruct==6) {
-        res.strucLocal=strucLocal+depth-2;
+        res.strucLocal=strucLocal+depth;
         res.reconstruct=0;
     } else {
         res.strucLocal=strucLocal;
@@ -587,13 +587,13 @@ Statement* Conversion::convert(ParseSpecifier* parser,std::vector<DictEntry> spa
     
     function->erase_deltasub();
     std::string traceback="";
-    std::cout<<"-=-=-=-=-=-=-="<<stat<<"\n";
-    std::cout<<function->tostringdoubleheavy()<<"\n";
-    for (int y=0;y<fargs.size();y++) {
-        std::cout<<"\t"<<fargs[y]->tostringdoubleheavy()<<"\n";
-    }
+//    std::cout<<"-=-=-=-=-=-=-="<<stat<<"\n";
+//    std::cout<<function->tostringdoubleheavy()<<"\n";
+//    for (int y=0;y<fargs.size();y++) {
+//        std::cout<<"\t"<<fargs[y]->tostringdoubleheavy()<<"\n";
+//    }
     Statement* subbed = function->safe_substitute_level(&fargs,stat,stat+1,0,0,true,traceback);
-    std::cout<<subbed->tostringdoubleheavy()<<"\n";
+//    std::cout<<subbed->tostringdoubleheavy()<<"\n";
     if (subbed==0) throw;
     subbed->erase_deltasub();
     

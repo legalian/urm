@@ -35,7 +35,7 @@
 
 Statement* Statement::depth_push(int cutoff,int amt,int follow) {//anything >=stat will be incremented.
 //    std::cout<<"DEPTH PUSH:"<<cutoff<<","<<amt<<"\n";
-    if (amt<0) throw;
+//    if (amt<0) throw;
     if (local==0 and args.size()==0) {
         return this;
     }
