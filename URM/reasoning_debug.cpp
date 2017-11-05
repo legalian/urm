@@ -17,14 +17,6 @@ void Statement::erase_deltasub() {
         args[w]->erase_deltasub();
     }
 }
-void Statement::enforcedepth(int depth) {
-    if (local==0 and args.size()==0) return;
-    if (debugdepth!=depth) throw;
-    type->enforcedepth(depth+1);
-    for (int u=0;u<args.size();u++) {
-        args[u]->enforcedepth(depth+1);
-    }
-}
 Statement* Statement::safe_substitute_level(std::vector<Statement*>* repl,int level,int reflex,int recur,int follow,bool parity,std::string& traceback) {
     if (args.size()==0 and local==0) {
         return this;
@@ -41,12 +33,13 @@ Statement* Statement::safe_substitute_level(std::vector<Statement*>* repl,int le
             if (subbed==0) return 0;
             fargs.push_back(subbed);
         }
+//        std::cout<<"SUBBING: "<<tostringdoubleheavy()<<" for "<<(*repl)[id]->tostringdoubleheavy()<<"\n";
         Statement* a = (*repl)[id]->safe_substitute_level(&fargs,reflex,level+recur+1,0,follow,!parity,traceback);
         if (a==0) {
             traceback=tostringdoubleheavy()+" --> "+(*repl)[id]->tostringdoubleheavy()+"\n"+traceback;
             return 0;
         }
-//        a=a->depth_push(reflex,recur,0);
+        a=a->depth_push(reflex,recur-1,0);
         for (int s=0;s<args.size();s++) {
             fargs[s]->cleanup();
         }
@@ -110,13 +103,10 @@ void Statement::typecheck(Statement* type) {
 }
 void Statement::globtypecheck() {
     std::map<int,std::vector<Statement*>*> varbank;
-//    typecheck(type,varbank,0,false);
     varbank[0]=&args;
     std::cout<<"Accepted axioms:\n";
     for (int u=0;u<args.size();u++) {
-        args[u]->enforcedepth(0);
         std::cout<<"\t"<<args[u]->tostringrecursivedoubleheavy()<<"\n";
-//        std::cout<<"-=-=-=-=- TESTING "<<u<<"-=-=-=-=-=-\n";
         args[u]->headlesstypecheck(varbank, 1);
     }
 }
@@ -144,14 +134,16 @@ void Statement::typecheck(Statement* typ,std::map<int,std::vector<Statement*>*> 
     }
     if (params.find(local)==params.end()) throw;
     if (params[local]->size()<=id) throw;
-    Statement* root = (*params[local])[id]->depth_push((*params[local])[id]->local+1,stat);
-    Statement* thistyp = root->typechecksub(&args, stat ,stat+1,0);
+    int lp1 = (*params[local])[id]->local+1;
+    Statement* root = (*params[local])[id]->depth_push(lp1,stat-lp1,0);
+    Statement* thistyp = root->typechecksub(&args, stat ,stat+1,1);
     root->cleanup();
     if (!assert_eq(type,subtype->type)) {
-        std::cout<<tostringheavy()<<" failed; mismatch: "<<type->tostringheavy()<<" and "<<subtype->type->tostringheavy()<<"\n";throw;
+        std::cout<<"\nthistyp is: "<<thistyp->tostringheavy()<<"\n";
+        std::cout<<"\n"<<tostringheavy()<<" failed; mismatch:\n\t"<<type->tostringheavy()<<"\nand:\n\t"<<subtype->type->tostringheavy()<<"\n";throw;
     }
     if (!assert_eq(type,thistyp->type)) {
-        std::cout<<tostringheavy()<<" failed; mismatch: "<<type->tostringheavy()<<" and "<<thistyp->type->tostringheavy()<<"\n";throw;
+        std::cout<<"\n"<<tostringheavy()<<" failed; mismatch:\n\t"<<type->tostringheavy()<<"\nand:\n\t"<<thistyp->type->tostringheavy()<<"\n";throw;
     }
     if (thistyp->args.size()!=args.size()) throw;
     for (int s=0;s<thistyp->args.size();s++) {

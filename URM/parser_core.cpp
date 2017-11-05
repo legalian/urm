@@ -503,33 +503,39 @@ Statement* Construction::convert(ParseSpecifier* parser,std::vector<DictEntry> s
             params[stat]=&typ->args;
             ret = new Statement(varID,strucLocal);
             //->depth_push((*params[local])[id]->local,stat-1-(*params[local])[id]->local,0)
-            ret->type = typ->type;//->depth_push((*params[strucLocal])[varID]->local,stat-1-(*params[strucLocal])[varID]->local,0);
+            ret->type = typ->type->deepcopy();//->depth_push((*params[strucLocal])[varID]->local,stat-1-(*params[strucLocal])[varID]->local,0);
             
-            //->safe_depth_tap(typ->local+1,stat,0); I SHOULDNT HAVE TO TELL YOU HOW ODD THIS IS
             
             ret->specifier = specifier;
             
-            root = (*params[strucLocal])[varID];
+//            root = (*params[strucLocal])[varID];
+            
+            
+//            int lp1 = (*params[strucLocal])[varID]->local+1;
+            root = (*params[strucLocal])[varID];//->depth_push(lp1,stat-(lp1),0);
+        
+
+            
             
             if (params.find(strucLocal)==params.end()) throw;
             if (params[strucLocal]->size()<=varID) throw;
             if (children.size()!=root->args.size()) throw;
-            {
-            std::vector<Statement*> debug;
+//            {
+//            std::vector<Statement*> debug;
             for (int e=0;e<children.size();e++) {
                 Statement* expected = root->args[e]->typechecksub(&ret->args,(*params[strucLocal])[varID]->local+1,stat+1,2);
                 ret->args.push_back(children[e].convert(parser, space,params,locid,stat+1,expected));
-//                expected->cleanup();
-                debug.push_back(expected);
+                expected->cleanup();
+//                debug.push_back(expected);
             }
-            std::cout<<"-=-=-=-=-=-=-=-=-=-=-=-==="<<stat<<","<<(*params[strucLocal])[varID]->local<<"\n";
-            std::cout<<root->tostringdoubleheavy()<<"\n";
-            for (int h=0;h<debug.size();h++) {
-                std::cout<<"\t"<<debug[h]->tostringdoubleheavy()<<"\n";
-            }
-            std::cout<<ret->tostringdoubleheavy()<<"\n";
+//            std::cout<<"-=-=-=-=-=-=-=-=-=-=-=-==="<<stat<<","<<(*params[strucLocal])[varID]->local<<"\n";
+//            std::cout<<root->tostringdoubleheavy()<<"\n";
+//            for (int h=0;h<debug.size();h++) {
+//                std::cout<<"\t"<<debug[h]->tostringdoubleheavy()<<"\n";
+//            }
+//            std::cout<<ret->tostringdoubleheavy()<<"\n";
             return ret;
-            }
+            
         case 1:
             if (strucLocal==-1) {
                 Statement* ha=new Statement(std::stoi(ifget),0);
@@ -563,41 +569,25 @@ Statement* Conversion::convert(ParseSpecifier* parser,std::vector<DictEntry> spa
             return choices[y].body.convert(parser,space,token,params,locid,stat,parent);
         }
     }
-    
-    
     Statement* etype = parser->table[parent.struc].type;
-    
-//    std::map<int,std::vector<Statement*>*> subparams;
-//    subparams[0]=params[0];
     Statement* function = elapse.replace(token,stat).convert(parser,space,params,locid,stat,etype);
     
     
     if (token.children.size()-token.tokargs!=etype->args.size()) throw;
-//    Binding subber;
     std::vector<Statement*> fargs;
-//    std::cout<<"-=-=-=-=-=-=-=-=-=-\n"<<function->tostringdoubleheavy()<<"\n";
-    
     
     params[stat]=&etype->args;
     
     for (int y=token.tokargs;y<token.children.size();y++) {
-//        std::cout<<token.children[y].tostringheavy()<<"\n";
-//        std::cout<<etype->args[y-token.tokargs]->tostringdoubleheavy()<<"\n";
         fargs.push_back(token.children[y].convert(parser,space,params,locid,stat+1,etype->args[y-token.tokargs]));
-//        Statement* left = token.children[y].convert(parser,space,params,locid,2,etype->args[y-token.tokargs]);
-//        Statement* right = etype->args[y-token.tokargs]->mapl(0,1);
-//        std::cout<<"\t-->"<<fargs[fargs.size()-1]->tostringdoubleheavy()<<"\n";
-//        std::cout<<right->tostringdoubleheavy()<<"\n";
-        
-//        subber.decompose(left,right,2,1);
     }
-//    std::cout<<"-=-=-=-=-=-=-=-=-=-"<<stat<<"\n"<<function->tostringheavy()<<"\n";
+    
     function->erase_deltasub();
     std::string traceback="";
-    Statement* subbed = function->safe_substitute_level(&fargs,stat,stat+1,0,0,true,traceback);//function->substitute(&subber,2,1,0,stat);
+    Statement* subbed = function->safe_substitute_level(&fargs,stat,stat+1,1,0,true,traceback);
     if (subbed==0) throw;
     subbed->erase_deltasub();
-//    std::cout<<subbed->tostringheavy()<<"\n";
+    
     
     return subbed;
 }

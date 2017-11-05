@@ -66,52 +66,9 @@ int main(int argc, const char * argv[]) {
         "x=x;"
         "x=x;"
     );
-//    std::string phase2 =
-////    "affine x;"
-////    "while(x!=0)"
-////    "x=x;";
-//
-//
-//
-//
-////    "affine x;"
-////    "affine y;"
-////    "x=15;"
-////    "y=0;"
-////    "y=y;";
-////    "y=15/x;";
-//
-//
-////    "affine x;"
-////    "affine y;"
-//////    "x=15;"
-//////    "y=0;"
-////    "while (y<15) {"
-////    "   x=x+1;"
-//////    "   y=y+1;"
-////    "}"
-////    "y=15/x;";
-//
-//
-//
-//    "affine x;"
-////    "x=15;"
-////    "y=0;"
-////    "while (x<15) {"
-////    "   x=2;"
-////    "   y=y+1;"
-////    "}"
-////    "if (x==0)"
-//    "x=3;";
-//
-//
-//
-////    "affine x;"
-////    "x=15/x;"
-////    "x=15/x;";
+
     for (int r=0;r<parsingbenchmarks.size();r++)
     {
-//        int r=5;
         Statement* result = getLangFile("ttfl.ilang").fullconvert(parsingbenchmarks[r]);
         
         std::cout<<"-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"<<result->tostringrecursivedoubleheavy()<<"\n";

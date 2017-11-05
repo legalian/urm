@@ -23,67 +23,81 @@ MetaBank::MetaBank() {
     "[U"//0
     "|AFF:U"
 
-    "|[A:U|A|A]EQ:U"
+
+    "|HEAP:U"
+    
+    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]U]zipper:U"
+    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]t:U]zippertest:zipper(t({0/3:AFF}({0/4:HEAP}({0/5:U}({0/6:AFF}({0/7:HEAP}({0/8:U})))))))"
+    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]t:U|zipper(t({0/4:AFF}({0/5:HEAP}({0/6:U}({0/7:AFF}({0/8:HEAP}({0/9:U})))))))]zipperconfirm:U"
+    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]t:U]zipperfinal:zipperconfirm(t({0/3:AFF}({0/4:HEAP}({0/5:U}({0/6:AFF}({0/7:HEAP}({0/8:U})))))),zippertest(t({0/4:AFF}({0/5:HEAP}({0/6:U}({0/7:AFF}({0/8:HEAP}({0/9:U}))))))))"
+    
+    
+    
+    "|[A:U|A|A]EQ:U"//5
     "|[AFF|AFF]GT:U"
     "|[U]NOT:U"
     
-    "|[U|U]AND:U"//5
+    
+    
+    "|[U|U]AND:U"
     
     "|[AFF|AFF]ADD:AFF"
-    "|[AFF|AFF]SUBTRACT:AFF"
+    "|[AFF|AFF]SUBTRACT:AFF"//10
     "|[AFF|AFF]MULTIPLY:AFF"
     "|[a:AFF|NOT(EQ(AFF,a,<2/0:AFF>))|AFF]DIVIDE:AFF"
-    "|[a:AFF|NOT(EQ(AFF,a,<2/0:AFF>))|AFF]MODULO:AFF"//10
+    "|[a:AFF|NOT(EQ(AFF,a,<2/0:AFF>))|AFF]MODULO:AFF"
+    
+    
+    
 
-//    "|[A:U|a:A]IDENTITY:EQ(A,a,a)"
-//    "|[A:U|B:U|A|EQ(U,A,B)]EQUIVALENCE:B"
-//    "|[A:U|a:A|b:A]REFLEXIVITY:EQ(U,EQ(A,b,a),EQ(A,a,b))"
-//    "|[A:U|B:U|[A]f:B|a:A|b:A|EQ(A,a,b)]PRESERVATION:EQ(B,f(a),f(b))"
+    "|[A:U|a:A]IDENTITY:EQ(A,a,a)"
+    "|[A:U|B:U|A|EQ(U,A,B)]EQUIVALENCE:B"//17
+    "|[A:U|a:A|b:A]REFLEXIVITY:EQ(U,EQ(A,b,a),EQ(A,a,b))"
+    "|[A:U|B:U|[A]f:B|a:A|b:A|EQ(A,a,b)]PRESERVATION:EQ(B,f(a),f(b))"
+    
+    
+    "|[[AFF]AFF]testingfunc:AFF"
+    "|[a:AFF|b:AFF|EQ(AFF,testingfunc(ADD(a,{0/5:AFF})),testingfunc(ADD(b,{0/5:AFF})))]testingshortcircuit:U"
+    "|[b:AFF]testingblock:NOT(NOT(NOT(testingshortcircuit(b,b,IDENTITY(AFF,testingfunc(ADD(b,{0/8:AFF})))))))"//20
+    
+    "|[T:U|K:U|[K]T|[NOT(K)]T]DEC:T"
+    "|[T:U|K:U|[K]a:T|[NOT(K)]b:T|k:K     ]DEC_POSITIVE:EQ(T,DEC(T,K,a({0/4:K}),b({0/4:NOT(K)})),a(k))"
+    "|[T:U|K:U|[K]a:T|[NOT(K)]b:T|k:NOT(K)]DEC_NEGATIVE:EQ(T,DEC(T,K,a({0/4:K}),b({0/4:NOT(K)})),b(k))"
+    
+    
+    "|[A:U|[A]B:U|[a1:A|[a2:A]B(a2)]f:B(a1)|a3:A]TERMINATION:U"
+    "|[A:U|[A]B:U|[a1:A]f:B(a1)|a3:A]UNRECURSIVE:TERMINATION(A,B({0/3:A}),f({0/3:A}),a3)"//25
+    
+    "|[A:U|[A]h:A|[A]B:U|[a1:A|B(h(a1))]f:B(a1)|a3:A|TERMINATION(A,B({0/4:A}),f({0/4:A},{1/4:B(h({0/4:A}))}(h({0/4:A}))),h(a3))]RECURSION:TERMINATION(A,B({0/3:A}),f({0/3:A},{1/3:B(h({0/3:A}))}(h({0/3:A}))),a3)"
+    
+    "|[A:U|[A]B:U|[a1:A|[a2:A]B(a2)]f:B(a1)|a3:A|TERMINATION(A,B({0/4:A}),f({0/4:A},{1/4:B({0/5:A})}({0/5:A})),a3)]INDUCTION:B(a3)"
+    
+    
+    
+    
+    //
+////    "|[[AFF]B:U|a3:AFF|e:AFF|delta:AFF|GT(delta,<2/0:AFF>)|GT(e,a3)]CLASSICAL_INDUCTION_CATALYST_FORWARD:TERMINATION(AFF,B({0/3:AFF}),ADD({0/3:AFF},),a3)"
+////    "|[[AFF]B:U|a3:AFF|e:AFF|delta:AFF|GT(<2/0:AFF>,delta)|GT(a3,e)]CLASSICAL_INDUCTION_CATALYST_BACKWARD:"
 //    
-//    "|[T:U|K:U|[K]T|[NOT(K)]T]DEC:T"//15
-//    "|[T:U|K:U|[K]a:T|[NOT(K)]b:T|k:K     ]DEC_POSITIVE:EQ(T,DEC(T,K,a({0/4:K}),b({0/4:NOT(K)})),a(k))"
-//    "|[T:U|K:U|[K]a:T|[NOT(K)]b:T|k:NOT(K)]DEC_NEGATIVE:EQ(T,DEC(T,K,a({0/4:K}),b({0/4:NOT(K)})),b(k))"
-//    
-//    
-//    "|[A:U|[A]B:U|[a1:A|[a2:A]B(a2)]f:B(a1)|a3:A]TERMINATION:U"
-//    "|[A:U|[A]B:U|[a1:A]f:B(a1)|a3:A]UNRECURSIVE:TERMINATION(A,B({0/3:A}),f({0/3:A}),a3)"
-//    
-//    "|[A:U|[A]h:A|[A]B:U|[a1:A|B(h(a1))]f:B(a1)|a3:A|TERMINATION(A,B({0/4:A}),f({0/4:A},{1/4:B(h({0/4:A}))}(h({0/4:A}))),h(a3))]RECURSION:TERMINATION(A,B({0/3:A}),f({0/3:A},{1/3:B(h({0/3:A}))}(h({0/3:A}))),a3)"//20
-//    
-//    "|[A:U|[A]B:U|[a1:A|[a2:A]B(a2)]f:B(a1)|a3:A|TERMINATION(A,B({0/4:A}),f({0/4:A},{1/4:B({0/5:A})}({0/5:A})),a3)]INDUCTION:B(a3)"
-//    
-//    
-//    
-//    
-//    //
-//////    "|[[AFF]B:U|a3:AFF|e:AFF|delta:AFF|GT(delta,<2/0:AFF>)|GT(e,a3)]CLASSICAL_INDUCTION_CATALYST_FORWARD:TERMINATION(AFF,B({0/3:AFF}),ADD({0/3:AFF},),a3)"
-//////    "|[[AFF]B:U|a3:AFF|e:AFF|delta:AFF|GT(<2/0:AFF>,delta)|GT(a3,e)]CLASSICAL_INDUCTION_CATALYST_BACKWARD:"
-////    
-////
-//    "|HEAP:U"
-//    "|[HEAP|AFF]AVAILABLE:AFF"
-//    "|[HEAP|AFF]ALLOCATED:U"
-//    "|[HEAP|AFF]ACCESSIBLE:AFF"//25
-//    
-//    "|[HEAP|AFF]RESERVE:HEAP"
-//    "|[h:HEAP|a:AFF|ALLOCATED(h,a)]DELETE:HEAP"
-//    "|[h:HEAP|a:AFF|b:AFF|NOT(GT(b,ACCESSIBLE(h,a)))|AFF]SET:HEAP"
-//    "|[h:HEAP|a:AFF|b:AFF|NOT(GT(b,ACCESSIBLE(h,a)))]GET:AFF"
-//    
-//    
-//    
-//    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]U]zipper:U"//30
-//    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]t:U]zippertest:zipper(t({0/3:AFF}({0/4:HEAP}({0/5:U}({0/6:AFF}({0/7:HEAP}({0/8:U})))))))"
-//    
-//    "|[[AFF]AFF]testingfunc:AFF"
-//    "|[a:AFF|b:AFF|EQ(AFF,testingfunc(ADD(a,{0/5:AFF})),testingfunc(ADD(b,{0/5:AFF})))]testingshortcircuit:U"
-//    "|[b:AFF]testingblock:NOT(NOT(NOT(testingshortcircuit(b,b,IDENTITY(AFF,testingfunc(ADD(b,{0/8:AFF})))))))"
-//    
-//    "|[[[HEAP]HEAP]s:U]imminenttest:s("//35
-//    "INDUCTION(HEAP,HEAP,DEC(HEAP,GT(<2/2:AFF>,<2/5:AFF>),{1/4:HEAP}({0/4:HEAP}),{0/4:HEAP}),{0/3:HEAP},<1/0:"
-//    "TERMINATION(HEAP,HEAP,DEC(HEAP,GT(<2/2:AFF>,<2/5:AFF>),{1/5:HEAP}({0/5:HEAP}),{0/5:HEAP}),{0/3:HEAP})"
-//    ">)"
-//    ")"
+//
+    "|[HEAP|AFF]AVAILABLE:AFF"//30
+    "|[HEAP|AFF]ALLOCATED:U"
+    "|[HEAP|AFF]ACCESSIBLE:AFF"
+    
+    "|[HEAP|AFF]RESERVE:HEAP"
+    "|[h:HEAP|a:AFF|ALLOCATED(h,a)]DELETE:HEAP"
+    "|[h:HEAP|a:AFF|b:AFF|NOT(GT(b,ACCESSIBLE(h,a)))|AFF]SET:HEAP"//35
+    "|[h:HEAP|a:AFF|b:AFF|NOT(GT(b,ACCESSIBLE(h,a)))]GET:AFF"
+    
+    
+    
+    
+    
+    "|[[[HEAP]HEAP]s:U]imminenttest:s("
+    "INDUCTION(HEAP,HEAP,DEC(HEAP,GT(<2/2:AFF>,<2/5:AFF>),{1/4:HEAP}({0/4:HEAP}),{0/4:HEAP}),{0/3:HEAP},<1/0:"
+    "TERMINATION(HEAP,HEAP,DEC(HEAP,GT(<2/2:AFF>,<2/5:AFF>),{1/5:HEAP}({0/5:HEAP}),{0/5:HEAP}),{0/3:HEAP})"
+    ">)"
+    ")"
     
     
 

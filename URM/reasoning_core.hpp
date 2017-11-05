@@ -55,7 +55,7 @@ struct Statement {
     
     Statement* scramble(std::map<int,int>,int&);
     
-    Statement* depth_push(int,int);
+    Statement* depth_push(int,int,int);
     
     bool observable(MetaBank* mb);
     double observe_affine(MetaBank* mb);
@@ -70,8 +70,8 @@ struct Statement {
     
 #ifdef safe_play
     int deltasub=0;
-    int debugdepth;
-    void enforcedepth(int);
+//    int debugdepth;
+//    void enforcedepth(int);
     Statement* safe_substitute_level(std::vector<Statement*>*,int,int,int,int,bool,std::string&);//deltasub may be obsolete. hopefully it is. test this later.
     Statement* typechecksub(std::vector<Statement*>*,int,int,int);
     void typecheck(Statement*);

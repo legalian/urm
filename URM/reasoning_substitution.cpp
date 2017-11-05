@@ -33,23 +33,22 @@
 
 
 
-Statement* Statement::depth_push(int dold,int dnew) {//anything >stat will be incremented.
+Statement* Statement::depth_push(int cutoff,int amt,int follow) {//anything >=stat will be incremented.
 //    std::cout<<"DEPTH PUSH:"<<cutoff<<","<<amt<<"\n";
-    if (dnew<dold) throw;
+    if (amt<0) throw;
     if (local==0 and args.size()==0) {
         return this;
     }
-//    follow+=deltasub;
+    follow+=deltasub;
 //    follow = 0;
-    Statement* res = new Statement(id,specifier==0 and local>=dold?local+dnew-dold:local);
+    Statement* res = new Statement(id,specifier==0 and follow==0 and local>=cutoff?local+amt:local);
     for (int q=0;q<args.size();q++) {
-        res->args.push_back(args[q]->depth_push(dold,dnew));
+        res->args.push_back(args[q]->depth_push(cutoff,amt,follow));
     }
-    if (type) res->type = type->depth_push(dold,dnew);
+    if (type) res->type = type->depth_push(cutoff,amt,follow);
     else res->type=0;
     res->deltasub=deltasub;
     res->specifier=specifier;
-    res->debugdepth=debugdepth+dnew-dold;
     return res;
 }
 void Statement::clip_upperbound(int stat,bool par,std::map<std::pair<int,int>,int>& remap,int& mappoint) {//anything <=stat will be replaced.

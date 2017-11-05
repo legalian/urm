@@ -152,11 +152,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/reasoning_substitution.cpp"
-            timestampString = "531533054.645401"
+            timestampString = "531535383.309176"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "87"
-            endingLineNumber = "87"
+            startingLineNumber = "86"
+            endingLineNumber = "86"
             landmarkName = "Statement::paste_upperbound(int stat,bool par,std::map&lt;std::pair&lt;int,int&gt;,int&gt;&amp; remap,std::vector&lt;Statement*&gt;* prepend,int general,bool inc)"
             landmarkType = "5">
          </BreakpointContent>
@@ -296,11 +296,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/reasoning_core_solver.cpp"
-            timestampString = "531525792.31128"
+            timestampString = "531538453.676684"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "322"
-            endingLineNumber = "322"
+            startingLineNumber = "336"
+            endingLineNumber = "336"
             landmarkName = "Entry::asymmetricObsoletes(Entry* other, std::vector&lt;Statement*&gt;* terms)"
             landmarkType = "5">
          </BreakpointContent>
@@ -312,7 +312,55 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/reasoning_core_solver.cpp"
-            timestampString = "531525792.31128"
+            timestampString = "531538453.676684"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "312"
+            endingLineNumber = "312"
+            landmarkName = "Entry::asymmetricObsoletes(Entry* other, std::vector&lt;Statement*&gt;* terms)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "URM/reasoning_core_solver.cpp"
+            timestampString = "531538453.676684"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "307"
+            endingLineNumber = "307"
+            landmarkName = "Entry::asymmetricObsoletes(Entry* other, std::vector&lt;Statement*&gt;* terms)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "URM/reasoning_core_solver.cpp"
+            timestampString = "531538453.676684"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "314"
+            endingLineNumber = "314"
+            landmarkName = "Entry::asymmetricObsoletes(Entry* other, std::vector&lt;Statement*&gt;* terms)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "URM/reasoning_core_solver.cpp"
+            timestampString = "531538453.676684"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "298"
@@ -328,59 +376,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/reasoning_core_solver.cpp"
-            timestampString = "531525792.31128"
+            timestampString = "531538453.676684"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "293"
-            endingLineNumber = "293"
-            landmarkName = "Entry::asymmetricObsoletes(Entry* other, std::vector&lt;Statement*&gt;* terms)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "URM/reasoning_core_solver.cpp"
-            timestampString = "531525792.31128"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "300"
-            endingLineNumber = "300"
-            landmarkName = "Entry::asymmetricObsoletes(Entry* other, std::vector&lt;Statement*&gt;* terms)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "URM/reasoning_core_solver.cpp"
-            timestampString = "531525792.31128"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "284"
-            endingLineNumber = "284"
-            landmarkName = "Entry::asymmetricObsoletes(Entry* other, std::vector&lt;Statement*&gt;* terms)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "URM/reasoning_core_solver.cpp"
-            timestampString = "531525792.31128"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "173"
-            endingLineNumber = "173"
+            startingLineNumber = "187"
+            endingLineNumber = "187"
             landmarkName = "Soln::expand(MetaBank* mb,SolveInstance* inst)"
             landmarkType = "5">
          </BreakpointContent>
@@ -392,11 +392,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/reasoning_core_solver.cpp"
-            timestampString = "531525792.31128"
+            timestampString = "531538453.676684"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "179"
-            endingLineNumber = "179"
+            startingLineNumber = "193"
+            endingLineNumber = "193"
             landmarkName = "Soln::expand(MetaBank* mb,SolveInstance* inst)"
             landmarkType = "5">
          </BreakpointContent>
@@ -408,11 +408,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/reasoning_core_solver.cpp"
-            timestampString = "531525792.31128"
+            timestampString = "531538453.676684"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "192"
-            endingLineNumber = "192"
+            startingLineNumber = "206"
+            endingLineNumber = "206"
             landmarkName = "Soln::expand(MetaBank* mb,SolveInstance* inst)"
             landmarkType = "5">
          </BreakpointContent>
@@ -424,11 +424,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/reasoning_core_solver.cpp"
-            timestampString = "531525792.31128"
+            timestampString = "531538453.676684"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "196"
-            endingLineNumber = "196"
+            startingLineNumber = "210"
+            endingLineNumber = "210"
             landmarkName = "Soln::expand(MetaBank* mb,SolveInstance* inst)"
             landmarkType = "5">
          </BreakpointContent>
@@ -440,11 +440,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/reasoning_core_solver.cpp"
-            timestampString = "531525792.31128"
+            timestampString = "531538453.676684"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "242"
-            endingLineNumber = "242"
+            startingLineNumber = "256"
+            endingLineNumber = "256"
             landmarkName = "Entry::endpoints(MetaBank* mb,Statement* head)"
             landmarkType = "5">
          </BreakpointContent>
@@ -456,11 +456,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/reasoning_core_solver.cpp"
-            timestampString = "531525792.31128"
+            timestampString = "531538453.676684"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "374"
-            endingLineNumber = "374"
+            startingLineNumber = "388"
+            endingLineNumber = "388"
             landmarkName = "Binding::solvepoints(Statement* start)"
             landmarkType = "5">
          </BreakpointContent>
@@ -472,11 +472,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/reasoning_core_solver.cpp"
-            timestampString = "531525792.31128"
+            timestampString = "531538453.676684"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "130"
-            endingLineNumber = "130"
+            startingLineNumber = "144"
+            endingLineNumber = "144"
             landmarkName = "Statement::getsolvepoints(std::map&lt;int,Statement*&gt;&amp; endpoints,bool stage,bool initial)"
             landmarkType = "5">
          </BreakpointContent>
@@ -488,11 +488,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/reasoning_core_solver.cpp"
-            timestampString = "531525792.31128"
+            timestampString = "531538453.676684"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "132"
-            endingLineNumber = "132"
+            startingLineNumber = "146"
+            endingLineNumber = "146"
             landmarkName = "Statement::getsolvepoints(std::map&lt;int,Statement*&gt;&amp; endpoints,bool stage,bool initial)"
             landmarkType = "5">
          </BreakpointContent>
@@ -520,11 +520,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/parser_core.cpp"
-            timestampString = "531411899.878201"
+            timestampString = "531579066.173164"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "612"
-            endingLineNumber = "612"
+            startingLineNumber = "602"
+            endingLineNumber = "602"
             landmarkName = "ParseSpecifier::fullconvert(const std::string&amp; input)"
             landmarkType = "5">
          </BreakpointContent>
@@ -536,11 +536,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/parser_core.cpp"
-            timestampString = "531408883.529657"
+            timestampString = "531579066.173164"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "580"
-            endingLineNumber = "580"
+            startingLineNumber = "578"
+            endingLineNumber = "578"
             landmarkName = "Conversion::convert(ParseSpecifier* parser,std::vector&lt;DictEntry&gt; space,Construction token,std::map&lt;int,std::vector&lt;Statement*&gt;*&gt;&amp; params,int&amp; locid,int stat,ParseVariant&amp; parent)"
             landmarkType = "5">
          </BreakpointContent>
@@ -552,23 +552,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/parser_core.cpp"
-            timestampString = "531411899.878201"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "601"
-            endingLineNumber = "601"
-            landmarkName = "Conversion::convert(ParseSpecifier* parser,std::vector&lt;DictEntry&gt; space,Construction token,std::map&lt;int,std::vector&lt;Statement*&gt;*&gt;&amp; params,int&amp; locid,int stat,ParseVariant&amp; parent)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "URM/parser_core.cpp"
-            timestampString = "531408883.529657"
+            timestampString = "531579066.173164"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "591"
@@ -584,11 +568,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/parser_core.cpp"
-            timestampString = "531408883.529657"
+            timestampString = "531579066.173164"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "594"
-            endingLineNumber = "594"
+            startingLineNumber = "584"
+            endingLineNumber = "584"
             landmarkName = "Conversion::convert(ParseSpecifier* parser,std::vector&lt;DictEntry&gt; space,Construction token,std::map&lt;int,std::vector&lt;Statement*&gt;*&gt;&amp; params,int&amp; locid,int stat,ParseVariant&amp; parent)"
             landmarkType = "5">
          </BreakpointContent>
@@ -600,13 +584,29 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "URM/reasoning_debug.cpp"
-            timestampString = "531532714.904184"
+            timestampString = "531535383.309176"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "34"
-            endingLineNumber = "34"
+            startingLineNumber = "26"
+            endingLineNumber = "26"
             landmarkName = "Statement::safe_substitute_level(std::vector&lt;Statement*&gt;* repl,int level,int reflex,int recur,int follow,bool parity,std::string&amp; traceback)"
             landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "URM/parser_definition.cpp"
+            timestampString = "531542606.563515"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "176"
+            endingLineNumber = "176"
+            landmarkName = "indexedPureStatementConvert(MetaBank* mb,ParseResult* change,std::map&lt;std::string,Statement*&gt;&amp; varbank,int stat)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

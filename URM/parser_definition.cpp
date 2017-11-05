@@ -167,33 +167,40 @@ Statement* indexedPureStatementConvert(MetaBank* mb,ParseResult* change,std::map
     Statement* head=0;
     if (change->var<2) {
         head = new Statement(std::stoi(change->children[0]->endpoint),std::stoi(change->children[1]->endpoint));
-        head->debugdepth=stat;
         head->type = indexedPureStatementConvert(mb,change->children[2],varbank,stat+1);
         if (change->var==0) {
             indexedPureCoalesceStatements(mb,change->children[3],varbank,&head->args,stat+1);
         }
         return head;
     } else if (change->var<4) {
+    
+        int lp1 = varbank[change->children[0]->endpoint]->local+1;
+        Statement* roottype = varbank[change->children[0]->endpoint]->depth_push(lp1,stat-(lp1),0);
         if (change->var==2) {
-            head = new Statement(varbank[change->children[0]->endpoint]->id,varbank[change->children[0]->endpoint]->local);
-            head->debugdepth=stat;
-            indexedPureCoalesceStatements(mb,change->children[1],varbank,&head->args,stat+1);
+//            head = new Statement(roottype->id,roottype->local);
+            std::vector<Statement*> fargs;
+            indexedPureCoalesceStatements(mb,change->children[1],varbank,&fargs,stat+1);
             std::string traceback="";
-//            std::cout<<
-            head->type = varbank[change->children[0]->endpoint]->type->safe_substitute_level(&head->args,head->local+1,stat+2,0,0,true,traceback);
-            if (head->type==0) {
-                std::cout<<"\nTraceback:\n"<<head->tostringdoubleheavy()<<"->"<<varbank[change->children[0]->endpoint]->type->tostringdoubleheavy()<<"\n"<<traceback<<"\n";
+            
+            head = roottype->safe_substitute_level(&fargs,stat,stat+1,0,0,true,traceback);
+            if (head==0) {
+                std::cout<<"\nTraceback:\n"<<roottype->tostringheavy()<<"\n"<<traceback<<"\n";
                 throw;
             }
+            head->erase_deltasub();
+//            std::cout<<"-=-=-=-=-="<<stat<<"\n";
+//            for (int e=0;e<fargs.size();e++) {
+//                std::cout<<"\t"<<fargs[e]->tostringdoubleheavy()<<"\n";
+//            }
+//            std::cout<<roottype->tostringdoubleheavy()<<" --> "<<head->tostringdoubleheavy()<<"\n";
             return head;
         } else {
-            return varbank[change->children[0]->endpoint]->depth_push(varbank[change->children[0]->endpoint]->local,stat);
+            return roottype;
         }
     } else if (change->var==4) {
         head = new Statement(std::stoi(change->children[1]->endpoint),0);
         head->specifier = std::stoi(change->children[0]->endpoint);
         head->type = indexedPureStatementConvert(mb,change->children[2],varbank,stat+1);
-        head->debugdepth=stat;
         return head;
     }
     throw;
@@ -215,37 +222,34 @@ Statement* indexedPureStrategyConvert(MetaBank* mb,ParseResult* change,std::map<
     switch (change->var) {
         case 0:
             res = new Statement(paint,depth);
-            res->debugdepth=depth;
-            res->type = indexedPureStatementConvert(mb,change->children[0],varbank,depth+1);
+            res->type = indexedPureStatementConvert(mb,change->children[0],varbank,depth+2);
             return res;
         case 1:
             if (depth==0) {
                 mb->stratnames.push_back(change->children[0]->endpoint);
             }
             res = new Statement(paint,depth);
-            res->debugdepth=depth;
-            res->type = indexedPureStatementConvert(mb,change->children[1],varbank,depth+1);
+            res->type = indexedPureStatementConvert(mb,change->children[1],varbank,depth+2);
             varbank[change->children[0]->endpoint] = res;
+//            std::cout<<change->children[0]->endpoint<<" = "<<res->tostringdoubleheavy()<<"\n";
             return res;
         case 2:
             res = new Statement(paint,depth);
-            res->debugdepth=depth;
             indexedPureCoalesceStrategies(mb,change->children[0],varbank,&res->args,0,depth+1);
-            res->type = indexedPureStatementConvert(mb,change->children[1],varbank,depth+1);
+            res->type = indexedPureStatementConvert(mb,change->children[1],varbank,depth+2);
             return res;
         case 3:
             if (depth==0) {
                 mb->stratnames.push_back(change->children[1]->endpoint);
             }
             res = new Statement(paint,depth);
-            res->debugdepth=depth;
             indexedPureCoalesceStrategies(mb,change->children[0],varbank,&res->args,0,depth+1);
-            res->type = indexedPureStatementConvert(mb,change->children[2],varbank,depth+1);
+            res->type = indexedPureStatementConvert(mb,change->children[2],varbank,depth+2);
             varbank[change->children[1]->endpoint] = res;
+//            std::cout<<change->children[1]->endpoint<<" = "<<res->tostringdoubleheavy()<<"\n";
             return res;
         case 4:
             res = new Statement(-1,depth);
-            res->debugdepth=depth;
             res->type = 0;
             indexedPureCoalesceStrategies(mb,change->children[0],varbank,&res->args,0,depth+1);
             return res;
