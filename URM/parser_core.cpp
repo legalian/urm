@@ -512,7 +512,8 @@ Statement* Construction::convert(ParseSpecifier* parser,std::vector<DictEntry> s
             
             
 //            int lp1 = (*params[strucLocal])[varID]->local+1;
-            root = (*params[strucLocal])[varID];//->depth_push(lp1,stat-(lp1),0);
+            root = (*params[strucLocal])[varID]->depth_push((*params[strucLocal])[varID]->local+1,stat-((*params[strucLocal])[varID]->local+1),0);
+//            std::cout<<"accessed: "<<root->tostringdoubleheavy()<<"\n";
         
 
             
@@ -520,10 +521,11 @@ Statement* Construction::convert(ParseSpecifier* parser,std::vector<DictEntry> s
             if (params.find(strucLocal)==params.end()) throw;
             if (params[strucLocal]->size()<=varID) throw;
             if (children.size()!=root->args.size()) throw;
-//            {
+            {
 //            std::vector<Statement*> debug;
             for (int e=0;e<children.size();e++) {
-                Statement* expected = root->args[e]->typechecksub(&ret->args,(*params[strucLocal])[varID]->local+1,stat+1,2);
+                Statement* expected = root->args[e]->typechecksub(&ret->args,stat,stat+1,2);
+                expected->erase_deltasub();
                 ret->args.push_back(children[e].convert(parser, space,params,locid,stat+1,expected));
                 expected->cleanup();
 //                debug.push_back(expected);
@@ -534,6 +536,7 @@ Statement* Construction::convert(ParseSpecifier* parser,std::vector<DictEntry> s
 //                std::cout<<"\t"<<debug[h]->tostringdoubleheavy()<<"\n";
 //            }
 //            std::cout<<ret->tostringdoubleheavy()<<"\n";
+            }
             return ret;
             
         case 1:
@@ -584,7 +587,13 @@ Statement* Conversion::convert(ParseSpecifier* parser,std::vector<DictEntry> spa
     
     function->erase_deltasub();
     std::string traceback="";
-    Statement* subbed = function->safe_substitute_level(&fargs,stat,stat+1,1,0,true,traceback);
+    std::cout<<"-=-=-=-=-=-=-="<<stat<<"\n";
+    std::cout<<function->tostringdoubleheavy()<<"\n";
+    for (int y=0;y<fargs.size();y++) {
+        std::cout<<"\t"<<fargs[y]->tostringdoubleheavy()<<"\n";
+    }
+    Statement* subbed = function->safe_substitute_level(&fargs,stat,stat+1,0,0,true,traceback);
+    std::cout<<subbed->tostringdoubleheavy()<<"\n";
     if (subbed==0) throw;
     subbed->erase_deltasub();
     
@@ -613,6 +622,7 @@ Statement* ParseSpecifier::fullconvert(const std::string& input) {
 //    std::cout<<a.tostringheavy()<<"\n";
     return a.convert(this,carry,varbank,locid,2,table[0].type);
 }
+
 
 
 

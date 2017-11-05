@@ -139,7 +139,6 @@ void Statement::typecheck(Statement* typ,std::map<int,std::vector<Statement*>*> 
     Statement* thistyp = root->typechecksub(&args, stat ,stat+1,1);
     root->cleanup();
     if (!assert_eq(type,subtype->type)) {
-        std::cout<<"\nthistyp is: "<<thistyp->tostringheavy()<<"\n";
         std::cout<<"\n"<<tostringheavy()<<" failed; mismatch:\n\t"<<type->tostringheavy()<<"\nand:\n\t"<<subtype->type->tostringheavy()<<"\n";throw;
     }
     if (!assert_eq(type,thistyp->type)) {

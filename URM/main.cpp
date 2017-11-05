@@ -55,6 +55,12 @@ int main(int argc, const char * argv[]) {
         "x=5;"
     );
     parsingbenchmarks.push_back(
+        "while (3>5) "
+        "pass "
+        "affine x;"
+        "affine y;"
+    );
+    parsingbenchmarks.push_back(
         "affine x;"
         "while (x>5)"
         "x=5;"
