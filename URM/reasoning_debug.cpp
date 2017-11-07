@@ -10,51 +10,52 @@
 #include "reasoning_core.hpp"
 
 #ifdef safe_play
-void Statement::erase_deltasub() {
-    deltasub=0;
-    if (type!=universe) type->erase_deltasub();
-    for (int w=0;w<args.size();w++) {
-        args[w]->erase_deltasub();
-    }
-}
-Statement* Statement::safe_substitute_level(std::vector<Statement*>* repl,int level,int reflex,int recur,int follow,bool parity,std::string& traceback) {
+//void Statement::e rase_deltasub() {
+//    deltasub=0;
+//    if (type!=universe) type->erase_deltasub();
+//    for (int w=0;w<args.size();w++) {
+//        args[w]->erase_deltasub();
+//    }
+//}
+Statement* Statement::safe_substitute_level(std::vector<Statement*>* repl,int level,int reflex,int recur,std::string& traceback) {
     if (args.size()==0 and local==0) {
         return this;
     }
-    follow+=deltasub;
-    if (follow==0 and local==level) {
+//    follow+=deltasub;
+    if (local==level) {
         if (repl->size()<=id) {
             traceback=tostringdoubleheavy()+"\n";
             return 0;
         }
         std::vector<Statement*> fargs;
         for (int s=0;s<args.size();s++) {
-            Statement* subbed = args[s]->safe_substitute_level(repl,level,reflex, recur+1,follow,parity,traceback);
+            Statement* subbed = args[s]->safe_substitute_level(repl,level,reflex, recur+1,traceback);
             if (subbed==0) return 0;
             fargs.push_back(subbed);
         }
-//        std::cout<<"SUBBING: "<<tostringdoubleheavy()<<" for "<<(*repl)[id]->tostringdoubleheavy()<<"\n";
-        Statement* a = (*repl)[id]->safe_substitute_level(&fargs,reflex,level+recur+1,0,follow,!parity,traceback);
+        Statement* a = (*repl)[id]->depth_push(reflex,recur-1)->safe_substitute_level(&fargs,reflex+recur-1,level+recur+1,0,traceback);
+        
+        
+        
         if (a==0) {
             traceback=tostringdoubleheavy()+" --> "+(*repl)[id]->tostringdoubleheavy()+"\n"+traceback;
             return 0;
         }
-        a=a->depth_push(reflex,recur-1,0);
+        
+        
         for (int s=0;s<args.size();s++) {
             fargs[s]->cleanup();
         }
-        if (parity) a->deltasub++;
-        else a->deltasub--;
         return a;
     } else {
         Statement* ret = new Statement(id,local);
-        ret->type = type->safe_substitute_level(repl,level,reflex,recur+1,follow,parity,traceback);
+        ret->type = type->safe_substitute_level(repl,level,reflex,recur+1,traceback);
         if (ret->type==0) {
             delete ret;
             return 0;
         }
         for (int w=0;w<args.size();w++) {
-            Statement* subbed = args[w]->safe_substitute_level(repl,level,reflex,recur+1,follow,parity,traceback);
+            Statement* subbed = args[w]->safe_substitute_level(repl,level,reflex,recur+1,traceback);
             if (subbed==0) {
                 ret->cleanup();
                 return 0;
@@ -62,7 +63,7 @@ Statement* Statement::safe_substitute_level(std::vector<Statement*>* repl,int le
             ret->args.push_back(subbed);
         }
         ret->specifier = specifier;
-        ret->deltasub=deltasub;
+//        ret->deltasub=deltasub;
         return ret;
     }
 }
@@ -74,7 +75,7 @@ Statement* Statement::typechecksub(std::vector<Statement*>* repl,int level,int r
     }
     Statement* res = new Statement(id,local);
     std::string traceback="";
-    res->type = type->safe_substitute_level(repl,level,reflex,recur,0,true,traceback);
+    res->type = type->safe_substitute_level(repl,level,reflex,recur,traceback);
     if (res->type==0) {
         traceback=type->tostringdoubleheavy()+"\n"+traceback;
         std::cout<<"\nTraceback:\n"<<traceback<<"\n";
@@ -122,7 +123,16 @@ void Statement::typecheck(Statement* typ,std::map<int,std::vector<Statement*>*> 
     } else {
         if (params.find(local)==params.end()) throw;
         if (params[local]->size()<=id) throw;
-        subtype = typ->typechecksub(&args, (*params[local])[id]->local+1,stat+1,1);
+//        std::cout<<"COMPARE: "<<typ->local+1<<" AND "<<(*params[local])[id]->local+1<<"\n";
+        subtype = typ->typechecksub(&args, typ->local+1,stat+1,1);
+//        if (typ->local+1!=(*params[local])[id]->local+1) {
+//            std::cout<<"-=-=-=-=-="<<stat<<"\n";
+//            std::cout<<typ->tostringdoubleheavy()<<"\n";
+//            for (int u=0;u<args.size();u++) {
+//                std::cout<<"\t"<<args[u]->tostringdoubleheavy()<<"\n";
+//            }
+//            std::cout<<subtype->tostringdoubleheavy()<<"\n";
+//        }
     }
 
     if (specifier!=0) return;
@@ -135,10 +145,11 @@ void Statement::typecheck(Statement* typ,std::map<int,std::vector<Statement*>*> 
     if (params.find(local)==params.end()) throw;
     if (params[local]->size()<=id) throw;
     int lp1 = (*params[local])[id]->local+1;
-    Statement* root = (*params[local])[id]->depth_push(lp1,stat-lp1,0);
+    Statement* root = (*params[local])[id]->depth_push(lp1,stat-lp1);
     Statement* thistyp = root->typechecksub(&args, stat ,stat+1,1);
     root->cleanup();
     if (!assert_eq(type,subtype->type)) {
+        std::cout<<"\nthistyp is: "<<thistyp->type->tostringdoubleheavy()<<"\n";
         std::cout<<"\n"<<tostringheavy()<<" failed; mismatch:\n\t"<<type->tostringheavy()<<"\nand:\n\t"<<subtype->type->tostringheavy()<<"\n";throw;
     }
     if (!assert_eq(type,thistyp->type)) {

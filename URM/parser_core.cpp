@@ -422,7 +422,7 @@ ParseResult* ParseVariant::match(ParseSpecifier* glob,long& offset,long end,Erro
 
 
 
-DictEntry replace(DictEntry b,Construction c,int depth) {
+DictEntry replace(DictEntry b,Construction* c,int depth) {
     DictEntry a;
     a.channel=b.channel;
     a.a=b.a.replace(c,depth);
@@ -454,9 +454,9 @@ Construction::Construction(ParseSpecifier* spec,ParseResult* token) {
         children.push_back(Construction(spec,token->children[r]));
     }
 }
-Construction Construction::replace(Construction a,int depth) {
+Construction Construction::replace(Construction* a,int depth) {
     if (reconstruct==2) {
-        Construction ref = a.reference(alt);
+        Construction ref = a->reference(alt);
         for (int y=tokargs;y<children.size();y++) {
             ref.children.push_back(children[y].replace(a,depth));//<----=-=--==--=-=-=-=-===--==--=
         }
@@ -474,7 +474,7 @@ Construction Construction::replace(Construction a,int depth) {
         res.given.push_back(::replace(given[j],a,depth));
     }
     if (reconstruct==6) {
-        res.strucLocal=strucLocal+depth;
+        res.strucLocal=strucLocal+depth+1;
         res.reconstruct=0;
     } else {
         res.strucLocal=strucLocal;
@@ -495,50 +495,28 @@ Construction Construction::reference(ConstructArgReference e) {
     Construction a= children[p].reference(e);
     return a;
 }
-Statement* Construction::convert(ParseSpecifier* parser,std::vector<DictEntry> space,std::map<int,std::vector<Statement*>*> params,int& locid,int stat,Statement* typ) {
+Statement* Construction::convert(ParseSpecifier* parser,std::vector<DictEntry> space,std::map<int,std::vector<Statement*>*>& params,int& locid,int stat,Statement* typ,std::vector<Statement*>& varref,int olddepth) {
     Statement* ret;
     Statement* root;
     switch (reconstruct) {
         case 0:
-            params[stat]=&typ->args;
+//            params[stat]=&typ->args;
             ret = new Statement(varID,strucLocal);
-            //->depth_push((*params[local])[id]->local,stat-1-(*params[local])[id]->local,0)
-            ret->type = typ->type->deepcopy();//->depth_push((*params[strucLocal])[varID]->local,stat-1-(*params[strucLocal])[varID]->local,0);
-            
-            
+            ret->type = typ->type->deepcopy();
             ret->specifier = specifier;
-            
-//            root = (*params[strucLocal])[varID];
-            
-            
-//            int lp1 = (*params[strucLocal])[varID]->local+1;
-            root = (*params[strucLocal])[varID]->depth_push((*params[strucLocal])[varID]->local+1,stat-((*params[strucLocal])[varID]->local+1),0);
-//            std::cout<<"accessed: "<<root->tostringdoubleheavy()<<"\n";
-        
-
-            
-            
             if (params.find(strucLocal)==params.end()) throw;
             if (params[strucLocal]->size()<=varID) throw;
+            
+            root = (*params[strucLocal])[varID]->depth_push((*params[strucLocal])[varID]->local+1,stat-(*params[strucLocal])[varID]->local-1);
             if (children.size()!=root->args.size()) throw;
-            {
-//            std::vector<Statement*> debug;
             for (int e=0;e<children.size();e++) {
+                std::map<int,std::vector<Statement*>*> superams=params;
                 Statement* expected = root->args[e]->typechecksub(&ret->args,stat,stat+1,2);
-                expected->erase_deltasub();
-                ret->args.push_back(children[e].convert(parser, space,params,locid,stat+1,expected));
+                superams[stat+1] = &expected->args;
+                ret->args.push_back(children[e].convert(parser, space,superams,locid,stat+1,expected,varref,olddepth));
                 expected->cleanup();
-//                debug.push_back(expected);
-            }
-//            std::cout<<"-=-=-=-=-=-=-=-=-=-=-=-==="<<stat<<","<<(*params[strucLocal])[varID]->local<<"\n";
-//            std::cout<<root->tostringdoubleheavy()<<"\n";
-//            for (int h=0;h<debug.size();h++) {
-//                std::cout<<"\t"<<debug[h]->tostringdoubleheavy()<<"\n";
-//            }
-//            std::cout<<ret->tostringdoubleheavy()<<"\n";
             }
             return ret;
-            
         case 1:
             if (strucLocal==-1) {
                 Statement* ha=new Statement(std::stoi(ifget),0);
@@ -549,56 +527,38 @@ Statement* Construction::convert(ParseSpecifier* parser,std::vector<DictEntry> s
             for (int u=0;u<given.size();u++) {
                 space.push_back(given[u]);
             }
-            return parser->table[strucLocal].variants[varID].converter.convert(parser,space,*this,params,locid,stat,parser->table[strucLocal].variants[varID]);
+            return parser->table[strucLocal].variants[varID].converter.convert(parser,space,this,params,locid,stat,parser->table[strucLocal].variants[varID],varref,olddepth);
         case 4:
             for (int u=0;u<space.size();u++) {
                 if (space[u].channel==ifget and space[u].a.ifget==children[0].ifget) {
-                    return space[u].b.convert(parser,space,params,locid,stat,typ);
+                    return space[u].b.convert(parser,space,params,locid,stat,typ,varref,olddepth);
                 }
             }
             throw;
         case 5:
-            Statement* res = new Statement(typ->type->deepcopy(),locid++,1);
-            return res;
+            return new Statement(typ->type->deepcopy(),locid++,1);
+        case 7:
+            if (children.size()) throw;
+            
+            return varref[varID]->depth_push(olddepth+1,stat-olddepth);
     }
     throw;
 }
-Statement* Conversion::convert(ParseSpecifier* parser,std::vector<DictEntry> space,Construction token,std::map<int,std::vector<Statement*>*>& params,int& locid,int stat,ParseVariant& parent) {
-
+Statement* Conversion::convert(ParseSpecifier* parser,std::vector<DictEntry> space,Construction* token,std::map<int,std::vector<Statement*>*>& params,int& locid,int stat,ParseVariant& parent,std::vector<Statement*>& varref,int olddepth) {
 
     for (int y=0;y<choices.size();y++) {
-        Construction party = token.reference(choices[y].head);
+        Construction party = token->reference(choices[y].head);
         if (party.varID==choices[y].id) {
-            return choices[y].body.convert(parser,space,token,params,locid,stat,parent);
+            return choices[y].body.convert(parser,space,token,params,locid,stat,parent,varref,olddepth);
         }
     }
     Statement* etype = parser->table[parent.struc].type;
-    Statement* function = elapse.replace(token,stat).convert(parser,space,params,locid,stat,etype);
-    
-    
-    if (token.children.size()-token.tokargs!=etype->args.size()) throw;
     std::vector<Statement*> fargs;
-    
-    params[stat]=&etype->args;
-    
-    for (int y=token.tokargs;y<token.children.size();y++) {
-        fargs.push_back(token.children[y].convert(parser,space,params,locid,stat+1,etype->args[y-token.tokargs]));
+    for (int y=token->tokargs;y<token->children.size();y++) {
+        fargs.push_back(token->children[y].convert(parser,space,params,locid,stat,etype->args[y-token->tokargs],varref,olddepth));
     }
     
-    function->erase_deltasub();
-    std::string traceback="";
-//    std::cout<<"-=-=-=-=-=-=-="<<stat<<"\n";
-//    std::cout<<function->tostringdoubleheavy()<<"\n";
-//    for (int y=0;y<fargs.size();y++) {
-//        std::cout<<"\t"<<fargs[y]->tostringdoubleheavy()<<"\n";
-//    }
-    Statement* subbed = function->safe_substitute_level(&fargs,stat,stat+1,0,0,true,traceback);
-//    std::cout<<subbed->tostringdoubleheavy()<<"\n";
-    if (subbed==0) throw;
-    subbed->erase_deltasub();
-    
-    
-    return subbed;
+    return elapse.replace(token,stat).convert(parser,space,params,locid,stat,etype,fargs,stat);
 }
 Statement* ParseSpecifier::fullconvert(const std::string& input) {
     ParseResult* tokens = parse(0,input);
@@ -607,20 +567,22 @@ Statement* ParseSpecifier::fullconvert(const std::string& input) {
     int locid=0;
     
     std::map<int,std::vector<Statement*>*> varbank;
-    varbank[0]=&MetaBank::meta_prime.strategies;
     
-//    std::cout<<Construction(tokens).tostringheavy()<<"\n";
+    varbank[0]=&MetaBank::meta_prime.strategies;
+    varbank[2]=&table[0].type->args;
+    
+    
+    
     Construction a = Construction(this,tokens);
-    int pre=(int)a.children.size();
     for (int d=0;d<table[0].type->args.size();d++) {
         a.children.push_back(Construction());
-        a.children[pre+d].strucLocal=2;
-        a.children[pre+d].varID=d;
-        a.children[pre+d].reconstruct=0;
-        a.children[pre+d].specifier=0;
+        a.children[a.tokargs+d].strucLocal=2;
+        a.children[a.tokargs+d].varID=d;
+        a.children[a.tokargs+d].reconstruct=0;
+        a.children[a.tokargs+d].specifier=0;
     }
 //    std::cout<<a.tostringheavy()<<"\n";
-    return a.convert(this,carry,varbank,locid,2,table[0].type);
+    return a.convert(this,carry,varbank,locid,2,table[0].type,table[0].type->args,3);
 }
 
 

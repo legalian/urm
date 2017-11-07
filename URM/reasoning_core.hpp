@@ -42,7 +42,7 @@ struct Statement {
     std::vector<Statement*> args;
     Statement(int,int);
 
-    void erase_deltasub();
+//    void erase_deltasub();
     int maxloc(int);
     Statement* mapl(int,int);
     void clip_upperbound(int,bool,std::map<std::pair<int,int>,int>&,int&);
@@ -55,7 +55,7 @@ struct Statement {
     
     Statement* scramble(std::map<int,int>,int&);
     
-    Statement* depth_push(int,int,int);
+    Statement* depth_push(int,int);
     
     bool observable(MetaBank* mb);
     double observe_affine(MetaBank* mb);
@@ -69,10 +69,10 @@ struct Statement {
 //    Statement* typeconstruction_sub(std::vector<Statement*>*,int,int,int);
     
 #ifdef safe_play
-    int deltasub=0;
+//    int deltasub=0;
 //    int debugdepth;
 //    void enforcedepth(int);
-    Statement* safe_substitute_level(std::vector<Statement*>*,int,int,int,int,bool,std::string&);//deltasub may be obsolete. hopefully it is. test this later.
+    Statement* safe_substitute_level(std::vector<Statement*>*,int,int,int,std::string&);//deltasub may be obsolete. hopefully it is. test this later.
     Statement* typechecksub(std::vector<Statement*>*,int,int,int);
     void typecheck(Statement*);
     void globtypecheck();

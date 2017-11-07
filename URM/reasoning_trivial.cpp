@@ -66,9 +66,9 @@ Statement* Statement::deepcopy() {
     }
     if (type) res->type = type->deepcopy();
     else res->type=0;
-#ifdef safe_play
-    res->deltasub=deltasub;
-#endif
+//#ifdef safe_play
+//    res->deltasub=deltasub;
+//#endif
     res->specifier=specifier;
     return res;
 }
@@ -118,9 +118,9 @@ Statement* Statement::symmetricbindavoid(int stmodif,int amt) {
     }
     if (type) res->type = type->symmetricbindavoid(stmodif,amt);
     else res->type=0;
-#ifdef safe_play
-    res->deltasub=deltasub;
-#endif
+//#ifdef safe_play
+//    res->deltasub=deltasub;
+//#endif
     res->specifier=specifier;
     return res;
 }
@@ -196,9 +196,9 @@ Statement* Statement::mapl(int stmodif,int nstmodif) {
     }
     if (type) res->type = type->mapl(stmodif,nstmodif);
     else res->type = 0;
-#ifdef safe_play
-    res->deltasub=deltasub;
-#endif
+//#ifdef safe_play
+//    res->deltasub=deltasub;
+//#endif
     res->specifier=(local==1 and specifier==stmodif)?nstmodif:specifier;
     return res;
 }

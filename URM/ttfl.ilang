@@ -6,25 +6,25 @@
 # ; { } ( ) , . + * - / % ! & | == != < > >= <= = if while affine pass
 
 
-Lines : [HEAP]HEAP {
+Lines : [h:HEAP]HEAP {
     Line Lines {
         -.0.~2{
-            [.1.;address .0.0.=AVAILABLE({0/0},<2/1>)](.0.({0/0}))
+            [.1.;address .0.0.=AVAILABLE(h,<2/1>)](.0.(h))
         }
-        .1.(.0.({0/0}))
+        .1.(.0.(h))
     }
-    Line {.0.({0/0})}
+    Line {.0.(h)}
 }
-Block : [HEAP]HEAP {
-    \{\Lines\}\ {.0.({0/0})}
-    Line        {.0.({0/0})}
+Block : [h:HEAP]HEAP {
+    \{\Lines\}\ {.0.(h)}
+    Line        {.0.(h)}
 }
-Line : [HEAP]HEAP {
-    \if(\ Statement \)\    Block {DEC(HEAP,[boolconvert 0|.0.]({0/0}),.1.({0/0}),{0/0})}
-    \while(\ Statement \)\ Block {INDUCTION(HEAP,HEAP,DEC(HEAP,[boolconvert 0|.0.]({0/1}),{1/1}(.1.({0/1})),{0/1}),{0/0},[[]])}
-    \affine\ STRING \;\          {RESERVE({0/0},<2/1>)}
-    STRING \=\ Statement \;\     {SET({0/0},[address:.0.],<2/1>,<1/0>,[numberconvert 0|.1.]({0/0}))}
-    \pass\                       {{0/0}}
+Line : [h:HEAP]HEAP {
+    \if(\ Statement \)\    Block {DEC(HEAP,[boolconvert 0|.0.](h),.1.(h),h)}
+    \while(\ Statement \)\ Block {INDUCTION(HEAP,HEAP,DEC(HEAP,[boolconvert 0|.0.]({0/0}),{1/0}(.1.({0/0})),{0/0}),h,[[]])}
+    \affine\ STRING \;\          {RESERVE(h,<2/1>)}
+    STRING \=\ Statement \;\     {SET(h,[address:.0.],<2/1>,<1/0>,[numberconvert 0|.1.](h))}
+    \pass\                       {h}
 }
 Statement {
     - Statement \|\ Statement;
@@ -46,32 +46,32 @@ Statement {
     - NUMBER;
     - STRING;
 }
-boolconvert : [HEAP]U {
+boolconvert : [h:HEAP]U {
     Statement {
-        -.0.~0{NOT(AND(NOT([boolconvert 0|.0.0.]({0/0})),NOT([boolconvert 0|.0.1.]({0/0}))))}
-        -.0.~1{AND([boolconvert 0|.0.0.]({0/0}),[boolconvert 0|.0.1.]({0/0}))}
-        -.0.~2{GT([numberconvert 0|.0.0.]({0/0}),[numberconvert 0|.0.1.]({0/0}))}
-        -.0.~3{GT([numberconvert 0|.0.1.]({0/0}),[numberconvert 0|.0.0.]({0/0}))}
-        -.0.~4{EQ(AFF,[numberconvert 0|.0.0.]({0/0}),[numberconvert 0|.0.1.]({0/0}))}
-        -.0.~5{NOT(EQ(AFF,[numberconvert 0|.0.0.]({0/0}),[numberconvert 0|.0.1.]({0/0})))}
-        -.0.~6{NOT(GT([numberconvert 0|.0.1.]({0/0}),[numberconvert 0|.0.0.]({0/0})))}
-        -.0.~7{NOT(GT([numberconvert 0|.0.0.]({0/0}),[numberconvert 0|.0.1.]({0/0})))}
-        -.0.~13{NOT([boolconvert 0|.0.0.]({0/0}))}
-        -.0.~15{[boolconvert 0|.0.0.]({0/0})}
+        -.0.~0{NOT(AND(NOT([boolconvert 0|.0.0.](h)),NOT([boolconvert 0|.0.1.](h))))}
+        -.0.~1{AND([boolconvert 0|.0.0.](h),[boolconvert 0|.0.1.](h))}
+        -.0.~2{GT([numberconvert 0|.0.0.](h),[numberconvert 0|.0.1.](h))}
+        -.0.~3{GT([numberconvert 0|.0.1.](h),[numberconvert 0|.0.0.](h))}
+        -.0.~4{EQ(AFF,[numberconvert 0|.0.0.](h),[numberconvert 0|.0.1.](h))}
+        -.0.~5{NOT(EQ(AFF,[numberconvert 0|.0.0.](h),[numberconvert 0|.0.1.](h)))}
+        -.0.~6{NOT(GT([numberconvert 0|.0.1.](h),[numberconvert 0|.0.0.](h)))}
+        -.0.~7{NOT(GT([numberconvert 0|.0.0.](h),[numberconvert 0|.0.1.](h)))}
+        -.0.~13{NOT([boolconvert 0|.0.0.](h))}
+        -.0.~15{[boolconvert 0|.0.0.](h)}
         null
     }
 }
-numberconvert : [HEAP]AFF {
+numberconvert : [h:HEAP]AFF {
     Statement {
-        -.0.~8{ADD([numberconvert 0|.0.0.]({0/0}),[numberconvert 0|.0.1.]({0/0}))}
-        -.0.~9{SUBTRACT([numberconvert 0|.0.0.]({0/0}),[numberconvert 0|.0.1.]({0/0}))}
-        -.0.~10{MULTIPLY([numberconvert 0|.0.0.]({0/0}),[numberconvert 0|.0.1.]({0/0}))}
-        -.0.~11{DIVIDE([numberconvert 0|.0.1.]({0/0}),[[]],[numberconvert 0|.0.0.]({0/0}))}
-        -.0.~12{MODULO([numberconvert 0|.0.1.]({0/0}),[[]],[numberconvert 0|.0.0.]({0/0}))}
-        -.0.~14{MULTIPLY([numberconvert 0|.0.0.]({0/0}),<2/-1>)}
-        -.0.~15{[numberconvert 0|.0.0.]({0/0})}
+        -.0.~8{ADD([numberconvert 0|.0.0.](h),[numberconvert 0|.0.1.](h))}
+        -.0.~9{SUBTRACT([numberconvert 0|.0.0.](h),[numberconvert 0|.0.1.](h))}
+        -.0.~10{MULTIPLY([numberconvert 0|.0.0.](h),[numberconvert 0|.0.1.](h))}
+        -.0.~11{DIVIDE([numberconvert 0|.0.1.](h),[[]],[numberconvert 0|.0.0.](h))}
+        -.0.~12{MODULO([numberconvert 0|.0.1.](h),[[]],[numberconvert 0|.0.0.](h))}
+        -.0.~14{MULTIPLY([numberconvert 0|.0.0.](h),<2/-1>)}
+        -.0.~15{[numberconvert 0|.0.0.](h)}
         -.0.~16{.0.0.}
-        -.0.~17{GET({0/0},[address:.0.0.],<2/1>,<1/0>)}
+        -.0.~17{GET(h,[address:.0.0.],<2/1>,<1/0>)}
         null
     }
 }

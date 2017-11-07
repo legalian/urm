@@ -33,21 +33,21 @@
 
 
 
-Statement* Statement::depth_push(int cutoff,int amt,int follow) {//anything >=stat will be incremented.
+Statement* Statement::depth_push(int cutoff,int amt) {//anything >=stat will be incremented.
 //    std::cout<<"DEPTH PUSH:"<<cutoff<<","<<amt<<"\n";
 //    if (amt<0) throw;
     if (local==0 and args.size()==0) {
         return this;
     }
-    follow+=deltasub;
+//    follow+=deltasub;
 //    follow = 0;
-    Statement* res = new Statement(id,specifier==0 and follow==0 and local>=cutoff?local+amt:local);
+    Statement* res = new Statement(id,specifier==0 and local>=cutoff?local+amt:local);
     for (int q=0;q<args.size();q++) {
-        res->args.push_back(args[q]->depth_push(cutoff,amt,follow));
+        res->args.push_back(args[q]->depth_push(cutoff,amt));
     }
-    if (type) res->type = type->depth_push(cutoff,amt,follow);
+    if (type) res->type = type->depth_push(cutoff,amt);
     else res->type=0;
-    res->deltasub=deltasub;
+//    res->deltasub=deltasub;
     res->specifier=specifier;
     return res;
 }

@@ -17,7 +17,6 @@ MetaBank::MetaBank() {
         Statement::universe->type = Statement::universe;
     }
     
-    stratnames.push_back("U");
     Statement* context = parse_TTML(
     
     "[U"//0
@@ -124,7 +123,8 @@ MetaBank::MetaBank() {
 //    "|[T:U|[[SCOPE]T]SCOPE]ADDPROPERTY:SCOPE"
 //    "|[T:U|[SCOPE]T|SCOPE|T]MODIFY:SCOPE"
     
-    "]",-1);
+    "]",-1,&stratnames);
+    stratnames[0]="U";
     context->globtypecheck();
     strategies=context->args;
     delete context;

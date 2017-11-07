@@ -43,10 +43,9 @@ ParseSpecifier& getGlobParser() {
         globParser.registerLiteral("\\","\\");
         globParser.registerComment("#","\n");
         globParser.table[p_parse] = ParseStructure(p_parse)
-            VARIANT(0) OBJ(-2) S(":enum{") OBJ(p_variant) S("}") OBJ(p_parse) END
-            VARIANT(1) OBJ(-2) S(":") OBJ(p_purestrategy) S("{") OBJ(p_variant) S("}") OBJ(p_parse) END
-            VARIANT(2) OBJ(-2) S("{") OBJ(p_nocvariant) S("}") OBJ(p_parse) END
-            VARIANT(3) END
+            VARIANT(0) OBJ(-2) S(":") OBJ(p_purestrategy) S("{") OBJ(p_variant) S("}") OBJ(p_parse) END
+            VARIANT(1) OBJ(-2) S("{") OBJ(p_nocvariant) S("}") OBJ(p_parse) END
+            VARIANT(2) END
         ;
         globParser.table[p_variant] = ParseStructure(p_variant)
             VARIANT(0) S("-") OBJ(p_pattern) S("{") OBJ(p_conversion) S("}") OBJ(p_variant) END
@@ -63,8 +62,7 @@ ParseSpecifier& getGlobParser() {
         globParser.table[p_conversion] = ParseStructure(p_conversion)
             VARIANT(0) S("-") OBJ(p_tokstring) S("~") OBJ(-1) S("{") OBJ(p_conversion) S("}") OBJ(p_conversion) END
             VARIANT(1) S("null") END
-            VARIANT(2) OBJ(-1) END
-            VARIANT(3) OBJ(p_statement) END
+            VARIANT(2) OBJ(p_statement) END
         ;
         globParser.table[p_statement] = ParseStructure(p_statement)
             VARIANT(0) S("{") OBJ(-1) S("/") OBJ(-1) S("}") S("(") OBJ(p_arguments) S(")") END
@@ -175,19 +173,19 @@ Statement* indexedPureStatementConvert(MetaBank* mb,ParseResult* change,std::map
     } else if (change->var<4) {
     
         int lp1 = varbank[change->children[0]->endpoint]->local+1;
-        Statement* roottype = varbank[change->children[0]->endpoint]->depth_push(lp1,stat-(lp1),0);
+        Statement* roottype = varbank[change->children[0]->endpoint]->depth_push(lp1,stat-(lp1));
         if (change->var==2) {
 //            head = new Statement(roottype->id,roottype->local);
             std::vector<Statement*> fargs;
             indexedPureCoalesceStatements(mb,change->children[1],varbank,&fargs,stat+1);
             std::string traceback="";
             
-            head = roottype->safe_substitute_level(&fargs,stat,stat+1,0,0,true,traceback);
+            head = roottype->safe_substitute_level(&fargs,stat,stat+1,0,traceback);
             if (head==0) {
                 std::cout<<"\nTraceback:\n"<<roottype->tostringheavy()<<"\n"<<traceback<<"\n";
                 throw;
             }
-            head->erase_deltasub();
+//            head->erase_deltasub();
 //            std::cout<<"-=-=-=-=-="<<stat<<"\n";
 //            for (int e=0;e<fargs.size();e++) {
 //                std::cout<<"\t"<<fargs[e]->tostringdoubleheavy()<<"\n";
@@ -225,9 +223,6 @@ Statement* indexedPureStrategyConvert(MetaBank* mb,ParseResult* change,std::map<
             res->type = indexedPureStatementConvert(mb,change->children[0],varbank,depth+2);
             return res;
         case 1:
-            if (depth==0) {
-                mb->stratnames.push_back(change->children[0]->endpoint);
-            }
             res = new Statement(paint,depth);
             res->type = indexedPureStatementConvert(mb,change->children[1],varbank,depth+2);
             varbank[change->children[0]->endpoint] = res;
@@ -239,9 +234,6 @@ Statement* indexedPureStrategyConvert(MetaBank* mb,ParseResult* change,std::map<
             res->type = indexedPureStatementConvert(mb,change->children[1],varbank,depth+2);
             return res;
         case 3:
-            if (depth==0) {
-                mb->stratnames.push_back(change->children[1]->endpoint);
-            }
             res = new Statement(paint,depth);
             indexedPureCoalesceStrategies(mb,change->children[0],varbank,&res->args,0,depth+1);
             res->type = indexedPureStatementConvert(mb,change->children[2],varbank,depth+2);
@@ -256,8 +248,15 @@ Statement* indexedPureStrategyConvert(MetaBank* mb,ParseResult* change,std::map<
     }
     throw;
 }
+void indexedLabelExtraction(std::vector<std::string>* ref,ParseResult* change) {
+    if (change->struc!=p_puremodifiers) throw;
+    if (change->children[0]->var==1) ref->push_back(change->children[0]->children[0]->endpoint);
+    else if (change->children[0]->var==3)ref->push_back(change->children[0]->children[1]->endpoint);
+    else ref->push_back("");
+    if (change->var==0) indexedLabelExtraction(ref,change->children[1]);
+}
 
-Construction indexedStatementConvert(MetaBank*,ParseResult*,std::map<std::string,int>& handle);
+Construction indexedStatementConvert(MetaBank*,ParseResult*,std::map<std::string,int>& handle,std::vector<std::string>& supp);
 void indexedCoalesceArgReference(ParseResult* tokenized,std::vector<int>* list) {
     if (tokenized->var==0) {
         list->push_back(std::stoi(tokenized->children[0]->endpoint));
@@ -270,25 +269,25 @@ ConstructArgReference makeargreference(ParseResult* tokenized) {
     indexedCoalesceArgReference(tokenized,&res.path);
     return res;
 }
-Construction indexedTokenConvert(MetaBank*,ParseResult*,std::map<std::string,int>& handle);
-void indexedCoalesceTokens(MetaBank* mb,ParseResult* change,std::vector<Construction>* list,std::map<std::string,int>& handle) {
-    list->push_back(indexedTokenConvert(mb,change->children[0],handle));
+Construction indexedTokenConvert(MetaBank*,ParseResult*,std::map<std::string,int>& handle,std::vector<std::string>& supp);
+void indexedCoalesceTokens(MetaBank* mb,ParseResult* change,std::vector<Construction>* list,std::map<std::string,int>& handle,std::vector<std::string>& supp) {
+    list->push_back(indexedTokenConvert(mb,change->children[0],handle,supp));
     if (change->var==0) {
-        indexedCoalesceTokens(mb,change->children[1],list,handle);
+        indexedCoalesceTokens(mb,change->children[1],list,handle,supp);
     }
 }
-void indexedCoalesceDictionary(MetaBank* mb,ParseResult* change,std::vector<DictEntry>* entries,std::map<std::string,int>& handle) {
+void indexedCoalesceDictionary(MetaBank* mb,ParseResult* change,std::vector<DictEntry>* entries,std::map<std::string,int>& handle,std::vector<std::string>& supp) {
     if (change->var==0) {
         DictEntry n;
         n.channel = change->children[0]->endpoint;
-        n.a = indexedTokenConvert(mb,change->children[1],handle);
-        n.b = indexedStatementConvert(mb,change->children[2],handle);
+        n.a = indexedTokenConvert(mb,change->children[1],handle,supp);
+        n.b = indexedStatementConvert(mb,change->children[2],handle,supp);
         entries->push_back(n);
         
-        indexedCoalesceDictionary(mb,change->children[3],entries,handle);
+        indexedCoalesceDictionary(mb,change->children[3],entries,handle,supp);
     }
 }
-Construction indexedTokenConvert(MetaBank* mb,ParseResult* change,std::map<std::string,int>& handle) {
+Construction indexedTokenConvert(MetaBank* mb,ParseResult* change,std::map<std::string,int>& handle,std::vector<std::string>& supp) {
     if (change->struc!=p_token) throw;
     Construction token;
     if (change->var==0) {
@@ -296,25 +295,25 @@ Construction indexedTokenConvert(MetaBank* mb,ParseResult* change,std::map<std::
         token.strucLocal = handle[change->children[0]->endpoint];
         token.varID = std::stoi(change->children[1]->endpoint);
         token.reconstruct=1;
-        indexedCoalesceDictionary(mb,change->children[2],&token.given, handle);
-        indexedCoalesceTokens(mb,change->children[3],&token.children,handle);
+        indexedCoalesceDictionary(mb,change->children[2],&token.given, handle,supp);
+        indexedCoalesceTokens(mb,change->children[3],&token.children,handle,supp);
     }
     if (change->var==1) {
         if (handle.find(change->children[0]->endpoint)==handle.end()) throw;
         token.strucLocal = handle[change->children[0]->endpoint];
         token.varID = std::stoi(change->children[1]->endpoint);
         token.reconstruct=1;
-        indexedCoalesceDictionary(mb,change->children[2],&token.given, handle);
+        indexedCoalesceDictionary(mb,change->children[2],&token.given, handle,supp);
     }
     if (change->var==2) {
         token.alt = makeargreference(change->children[0]);
         token.reconstruct=2;
-        indexedCoalesceDictionary(mb,change->children[1],&token.given, handle);
+        indexedCoalesceDictionary(mb,change->children[1],&token.given, handle,supp);
     }
     if (change->var==3) {
         token.reconstruct=4;
         token.ifget = change->children[0]->endpoint;
-        token.children.push_back(indexedTokenConvert(mb,change->children[1], handle));
+        token.children.push_back(indexedTokenConvert(mb,change->children[1], handle,supp));
     }
     if (change->var==4) {
         token.alt = makeargreference(change->children[0]);
@@ -328,14 +327,14 @@ Construction indexedTokenConvert(MetaBank* mb,ParseResult* change,std::map<std::
 
 
 
-void indexedCoalesceStatements(MetaBank* mb,ParseResult* change,std::vector<Construction>* list,std::map<std::string,int>& handle) {
-    list->push_back(indexedStatementConvert(mb,change->children[0],handle));
+void indexedCoalesceStatements(MetaBank* mb,ParseResult* change,std::vector<Construction>* list,std::map<std::string,int>& handle,std::vector<std::string>& supp) {
+    list->push_back(indexedStatementConvert(mb,change->children[0],handle,supp));
     if (change->var==0) {
-        indexedCoalesceStatements(mb,change->children[1],list,handle);
+        indexedCoalesceStatements(mb,change->children[1],list,handle,supp);
     }
 }
 
-Construction indexedStatementConvert(MetaBank* mb,ParseResult* change,std::map<std::string,int>& handle) {
+Construction indexedStatementConvert(MetaBank* mb,ParseResult* change,std::map<std::string,int>& handle,std::vector<std::string>& supp) {
     if (change->struc!=p_statement) throw;
     Construction head;
     head.specifier=0;
@@ -344,33 +343,41 @@ Construction indexedStatementConvert(MetaBank* mb,ParseResult* change,std::map<s
         head.varID = std::stoi(change->children[0]->endpoint);
         head.strucLocal = std::stoi(change->children[1]->endpoint);
         head.reconstruct=6;
-        if (change->var%2==0) indexedCoalesceStatements(mb,change->children[2],&head.children,handle);
+        if (change->var%2==0) indexedCoalesceStatements(mb,change->children[2],&head.children,handle,supp);
     } else if (change->var<4) {
         head.varID = std::stoi(change->children[1]->endpoint);
         head.strucLocal = 0;
         head.specifier = std::stoi(change->children[0]->endpoint);
-        if (change->var%2==0) indexedCoalesceStatements(mb,change->children[2],&head.children,handle);
+        if (change->var%2==0) indexedCoalesceStatements(mb,change->children[2],&head.children,handle,supp);
     } else if (change->var<6) {
         head.reconstruct=5;
-        if (change->var%2==0) indexedCoalesceStatements(mb,change->children[0],&head.children,handle);
+        if (change->var%2==0) indexedCoalesceStatements(mb,change->children[0],&head.children,handle,supp);
     } else if (change->var<8) {
-        head.varID = mb->getAxiom(change->children[0]->endpoint);
-        head.strucLocal = 0;
-        if (change->var%2==0) indexedCoalesceStatements(mb,change->children[1],&head.children,handle);
+        for (int y=0;y<supp.size();y++) {
+            if (change->children[0]->endpoint==supp[y]) {
+                head.varID=y;
+                head.reconstruct=7;
+            }
+        }
+        if (head.reconstruct==0) {
+            head.varID = mb->getAxiom(change->children[0]->endpoint);
+            head.strucLocal = 0;
+        }
+        if (change->var%2==0) indexedCoalesceStatements(mb,change->children[1],&head.children,handle,supp);
     } else if (change->var<10) {
-        head = indexedTokenConvert(mb,change->children[0],handle);
-        if (change->var%2==0) indexedCoalesceStatements(mb,change->children[1],&head.children,handle);
+        head = indexedTokenConvert(mb,change->children[0],handle,supp);
+        if (change->var%2==0) indexedCoalesceStatements(mb,change->children[1],&head.children,handle,supp);
     }
     return head;
 }
 
-Conversion makeconvert(MetaBank* mb,ParseResult* tokenized,std::map<std::string,int>& handle) {
+Conversion makeconvert(MetaBank* mb,ParseResult* tokenized,std::map<std::string,int>& handle,std::vector<std::string>& supp) {
     Conversion bot;
     if (tokenized->struc!=p_conversion) throw;
     if (tokenized->var==0) {
-        bot = makeconvert(mb,tokenized->children[3],handle);
+        bot = makeconvert(mb,tokenized->children[3],handle,supp);
         ConversionChoice android;
-        android.body = makeconvert(mb,tokenized->children[2],handle);
+        android.body = makeconvert(mb,tokenized->children[2],handle,supp);
         android.head = makeargreference(tokenized->children[0]);
         android.id = std::stoi(tokenized->children[1]->endpoint);
         bot.choices.insert(bot.choices.begin(),android);
@@ -380,11 +387,7 @@ Conversion makeconvert(MetaBank* mb,ParseResult* tokenized,std::map<std::string,
         bot.elapse.strucLocal=-1;
     }
     if (tokenized->var==2) {
-        bot.elapse.reconstruct=3;
-        bot.elapse.strucLocal=std::stoi(tokenized->children[0]->endpoint);
-    }
-    if (tokenized->var==3) {
-        bot.elapse = indexedStatementConvert(mb,tokenized->children[0],handle);
+        bot.elapse = indexedStatementConvert(mb,tokenized->children[0],handle,supp);
     }
     return bot;
 }
@@ -402,14 +405,14 @@ void definePattern(MetaBank* mb,std::map<std::string,int>& handle,ParseSpecifier
         definePattern(mb,handle,parser,tokenized->children[1],addin);
     }
 }
-void listvariants(MetaBank* mb,std::map<std::string,int>& handle,ParseSpecifier& parser,ParseResult* tokenized,ParseStructure& addin,int order) {
+void listvariants(MetaBank* mb,std::map<std::string,int>& handle,ParseSpecifier& parser,ParseResult* tokenized,ParseStructure& addin,int order,std::vector<std::string>& supp) {
     if (tokenized->struc!=p_variant) throw;
     if (tokenized->var!=3) {
         ParseVariant newvar = ParseVariant(order);
-        newvar.converter = makeconvert(mb,tokenized->children[1],handle);
+        newvar.converter = makeconvert(mb,tokenized->children[1],handle,supp);
         definePattern(mb,handle,parser, tokenized->children[0], newvar);
         addin.variant(newvar);
-        listvariants(mb,handle,parser,tokenized->children[2],addin,tokenized->var!=2?order+1:order);
+        listvariants(mb,handle,parser,tokenized->children[2],addin,tokenized->var!=2?order+1:order,supp);
     }
 }
 void listnocvariants(MetaBank* mb,std::map<std::string,int>& handle,ParseSpecifier& parser,ParseResult* tokenized,ParseStructure& addin,int order) {
@@ -424,33 +427,37 @@ void listnocvariants(MetaBank* mb,std::map<std::string,int>& handle,ParseSpecifi
 }
 void liststrucs(MetaBank* mb,std::map<std::string,int>& handle,ParseSpecifier& parser,ParseResult* tokenized,int resid) {
     if (tokenized->struc!=p_parse) throw;
-    if (tokenized->var==3) return;
+    if (tokenized->var==2) return;
+    
+    
+//            VARIANT(0) OBJ(-2) S(":") OBJ(p_purestrategy) S("{") OBJ(p_variant) S("}") OBJ(p_parse) END
+//            VARIANT(1) OBJ(-2) S("{") OBJ(p_nocvariant) S("}") OBJ(p_parse) END
+//            VARIANT(2) END
+    
     parser.table[resid] = ParseStructure(resid);
-    
     parser.table[resid].englishname=tokenized->children[0]->endpoint;
-    
-    parser.table[resid].verbose=tokenized->var!=2;
-    if (tokenized->var==1) {
+    parser.table[resid].verbose=tokenized->var==0;
+    if (tokenized->var==0) {
         std::map<std::string,Statement*> typevarbank;
         for (int a=0;a<mb->strategies.size();a++) {
             typevarbank[mb->stratnames[a]]=mb->strategies[a];
         }
+        std::vector<std::string> labels;
         parser.table[resid].type = indexedPureStrategyConvert(mb,tokenized->children[1],typevarbank,0,0);
-        listvariants(mb,handle,parser,tokenized->children[2],parser.table[resid],0);
+        if (tokenized->children[1]->var==4) throw;
+        if (tokenized->children[1]->var>1) indexedLabelExtraction(&labels,tokenized->children[1]->children[0]);
+        listvariants(mb,handle,parser,tokenized->children[2],parser.table[resid],0,labels);
         liststrucs(mb,handle,parser,tokenized->children[3],resid+1);
-    } else liststrucs(mb,handle,parser,tokenized->children[2],resid+1);
-    
-    if (tokenized->var==0) listvariants(mb,handle,parser,tokenized->children[1],parser.table[resid],0);
-    if (tokenized->var==2) listnocvariants(mb,handle,parser,tokenized->children[1],parser.table[resid],0);
+    } else {
+        if (tokenized->var==1) listnocvariants(mb,handle,parser,tokenized->children[1],parser.table[resid],0);
+        liststrucs(mb,handle,parser,tokenized->children[2],resid+1);
+    }
 }
 void generateHandle(std::map<std::string,int>& handle,ParseResult* tokenized,int resid) {
     if (tokenized->struc!=p_parse) throw;
-    if (tokenized->var!=3) {
-        handle[tokenized->children[0]->endpoint] = resid;
-    }
-    if (tokenized->var==0) generateHandle(handle,tokenized->children[2],resid+1);
-    if (tokenized->var==1) generateHandle(handle,tokenized->children[3],resid+1);
-    if (tokenized->var==2) generateHandle(handle,tokenized->children[2],resid+1);
+    if (tokenized->var!=2) handle[tokenized->children[0]->endpoint] = resid;
+    if (tokenized->var==0) generateHandle(handle,tokenized->children[3],resid+1);
+    if (tokenized->var==1) generateHandle(handle,tokenized->children[2],resid+1);
 }
 
 
@@ -546,9 +553,12 @@ ParseSpecifier parse_parser(std::map<std::string,std::string> comments,std::map<
     tokenized->cleanup();
     return result;
 }
-Statement* parse_TTML(const std::string & parse,int tdepth) {
+Statement* parse_TTML(const std::string & parse,int tdepth,std::map<std::string,Statement*> varbank,std::vector<std::string>* pop) {
     ParseResult* tokenized = getGlobParser().parse(p_purestrategy, parse);
-    std::map<std::string,Statement*> varbank;
+    if (pop) {
+        if (tokenized->var<2) throw;
+        indexedLabelExtraction(pop,tokenized->children[0]);
+    }
     MetaBank* mb = &MetaBank::meta_prime;
     varbank["U"]=Statement::universe;
     for (int a=0;a<mb->strategies.size();a++) {
@@ -559,16 +569,15 @@ Statement* parse_TTML(const std::string & parse,int tdepth) {
     return result;
 }
 Statement* parse_TTML(const std::string & parse,int tdepth,std::map<std::string,Statement*> varbank) {
-    ParseResult* tokenized = getGlobParser().parse(p_purestrategy, parse);
-
-    MetaBank* mb = &MetaBank::meta_prime;
-    varbank["U"]=Statement::universe;
-    for (int a=0;a<mb->strategies.size();a++) {
-        varbank[mb->stratnames[a]]=mb->strategies[a];
-    }
-    Statement* result = indexedPureStrategyConvert(mb,tokenized,varbank,0,tdepth);
-    tokenized->cleanup();
-    return result;
+    return parse_TTML(parse,tdepth,varbank,0);
+}
+Statement* parse_TTML(const std::string & parse,int tdepth) {
+    std::map<std::string,Statement*> varbank;
+    return parse_TTML(parse,tdepth,varbank);
+}
+Statement* parse_TTML(const std::string & parse,int tdepth,std::vector<std::string>* pop) {
+    std::map<std::string,Statement*> varbank;
+    return parse_TTML(parse,tdepth,varbank,pop);
 }
 
 #undef p_parse

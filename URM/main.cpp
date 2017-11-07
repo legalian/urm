@@ -45,6 +45,23 @@ int main(int argc, const char * argv[]) {
         "pass"
     );
     parsingbenchmarks.push_back(
+        "while (2>5)"
+        "pass "
+        "affine x;"
+//        "x=x;"
+    );
+    parsingbenchmarks.push_back(
+        "while (2>5)"
+        "pass "
+        "while (2>5)"
+        "pass "
+    );
+    parsingbenchmarks.push_back(
+        "while (2>5)"
+        "while (2>5)"
+        "pass "
+    );
+    parsingbenchmarks.push_back(
         "affine x;"
         "while (x>5)"
         "pass"
@@ -82,9 +99,6 @@ int main(int argc, const char * argv[]) {
             new Statement(new Statement(Statement::universe,MetaBank::meta_prime.getAxiom("HEAP"),0),-1,-1)
         );
         result->typecheck(expectedtype);
-        if (expectedtype->maxloc(1)) {
-            throw;
-        }
         result->cleanup();
     }
     
