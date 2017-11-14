@@ -107,6 +107,13 @@ int MetaBank::getAxiom(std::string ax) {
     std::cout<<"Cannot find axiom: "<<ax<<"\n";
     throw;
 }
+bool Statement::containsloop(int a) {
+    if (local==1 and specifier==0 and id==a) return true;
+    for (int q=0;q<args.size();q++) {
+        if (args[q]->containsloop(a)) return true;
+    }
+    return false;
+}
 
 Statement* Statement::symmetricbindavoid(int stmodif,int amt) {
     if (local==0 and args.size()==0) {
@@ -125,7 +132,7 @@ Statement* Statement::symmetricbindavoid(int stmodif,int amt) {
     return res;
 }
 
-Statement* Statement::scramble(std::map<int,int> mapr,int& push) {
+Statement* Statement::scramble(std::map<int,int>& mapr,int& push) {
     if (local==0 and args.size()==0) {
         return this;
     }
@@ -135,6 +142,7 @@ Statement* Statement::scramble(std::map<int,int> mapr,int& push) {
             res->id=mapr[id];
         } else {
             res->id=push++;
+            mapr[id]=res->id;
         }
     }
     for (int q=0;q<args.size();q++) {
@@ -146,25 +154,36 @@ Statement* Statement::scramble(std::map<int,int> mapr,int& push) {
     res->specifier=specifier;
     return res;
 }
+void Statement::unscramble(std::map<int,int>& mapr,int& push) {
+    if (local==1 and specifier==0) {
+        if (mapr.find(id)==mapr.end()) {
+            mapr[id]=push++;
+        }
+        id=mapr[id];
+    }
+    for (int q=0;q<args.size();q++) {
+        args[q]->unscramble(mapr,push);
+    }
+}
 
 
 std::pair<Statement*,Statement*> gentleSubstitute(Binding* bind,Statement* a,Statement* b,int stmodif) {
     if (bind->decoms.size()==0) {
         return std::pair<Statement*,Statement*>(a->deepcopy(),b->deepcopy());
     }
-    if (a->args.size()==0) {
-        if (b->maxloc(stmodif)==0) {
-            return std::pair<Statement*,Statement*>(a->deepcopy(),b->deepcopy());
-        } else {
-            return std::pair<Statement*,Statement*>(a->deepcopy(),b->substitute(bind,2,stmodif));
-        }
-    } else {
+//    if (a->args.size()==0) {
+//        if (b->maxloc(stmodif)==0) {
+//            return std::pair<Statement*,Statement*>(a->deepcopy(),b->deepcopy());
+//        } else {
+//            return std::pair<Statement*,Statement*>(a->deepcopy(),b->substitute(bind,2,stmodif));
+//        }
+//    } else {
         if (b->maxloc(stmodif)==0) {
             return std::pair<Statement*,Statement*>(a->substitute(bind,2,stmodif),b->deepcopy());
         } else {
             return std::pair<Statement*,Statement*>(a->substitute(bind,2,stmodif),b->substitute(bind,2,stmodif));
         }
-    }
+//    }
 }
 Soln::Soln() : expanded(true), head(new Statement(0,-1,1)) {}
 Soln::Soln(Statement* point) : head(point) {}
@@ -215,8 +234,8 @@ void Statement::local_list(std::vector<Statement*>* list) {
 bool amorphousmatch(Statement* a,Statement* b,std::map<int,int>& forward,std::map<int,int>& backward) {
     if (a==0 and b==0) return true;
     if (a==0 or b==0) return false;
-    if (a->local!=b->local or a->args.size()!=b->args.size()) return false;
-    if (a->local==1) {
+    if (a->local!=b->local or a->args.size()!=b->args.size() or a->specifier!=b->specifier) return false;
+    if (a->local==1 and a->specifier==0) {
         if (forward.find(a->id) !=forward.end()  and forward[a->id]!=b->id) return false;
         if (backward.find(b->id)!=backward.end() and backward[b->id]!=a->id) return false;
         forward[a->id]=b->id;

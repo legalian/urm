@@ -32,6 +32,7 @@ bool Binding::insert(Statement* left,Statement* right,int stmodif) {
         Statement* old1 = decoms[r].first;
         Statement* old2 = decoms[r].second;
         decoms[r]=gentleSubstitute(&resolver,decoms[r].first,decoms[r].second,stmodif);//may still contain substitutable locals if binding has loops.
+        if (decoms[r].second->containsloop(decoms[r].first->id)) return false;
         old1->cleanup();
         old2->cleanup();
     }
@@ -44,11 +45,12 @@ bool Binding::ensureValidity(Statement* head,Statement* body,int stat,int stmodi
     std::map<std::pair<int,int>,int> remap;
     int mappoint = 0;
     head->clip_upperbound(stat,false,remap,mappoint);
-    Statement* modhead = head->paste_upperbound(stat,false,remap,0,stmodif+1,false);
-    Statement* modbody = body->paste_upperbound(stat,false,remap,0,stmodif+1,false);
+    Statement* modhead = head->paste_upperbound_sec(stat,remap,stmodif+1);
+    Statement* modbody = body->paste_upperbound_sec(stat,remap,stmodif+1);
     if (modhead!=0 and modbody!=0) {
         return insert(modhead,modbody,stmodif);
     }
+    
     if (modhead!=0) modhead->cleanup();
     if (modbody!=0) modbody->cleanup();
     return false;
@@ -62,7 +64,7 @@ bool Binding::decompose(Statement* left,Statement* right,int stat,int stmodif) {
             return false;
         }
         bool leftpriority  = left->args.size()>right->args.size() or (left->args.size()==right->args.size() and left->id>right->id);
-        bool rightpriority = left->args.size()<right->args.size() or (left->args.size()==right->args.size() and left->id<right->id);//this is a hack
+        bool rightpriority = left->args.size()<right->args.size() or (left->args.size()==right->args.size() and left->id<right->id);
         if (right->local!=1 or right->specifier!=stmodif or (left->local==1 and left->specifier==stmodif and leftpriority)) {
             return ensureValidity(left,right,stat,stmodif);
         }
@@ -71,6 +73,7 @@ bool Binding::decompose(Statement* left,Statement* right,int stat,int stmodif) {
         }
     }
     if (left->local==right->local and left->id==right->id and left->specifier==right->specifier) {
+        if (left->args.size()!=right->args.size()) throw;
         for (int u=0;u<left->args.size();u++) {
             if (!decompose(left->args[u], right->args[u],stat!=-1?stat+1:-1,stmodif)) {
                 return false;
@@ -98,10 +101,11 @@ bool Binding::compare(Statement* head1,Statement* head2,Statement* body1,Stateme
 }
 
 Statement* Binding::typecomplete(Statement* body,int stmodif,int& curid,MetaBank* typechain) {
+//    throw;
     if (body->args.size()>0 and body->local==0) {
         std::map<std::pair<int,int>,int> remap;
         typechain->strategies[body->id]->clip_upperbound(0,true,remap,curid);
-        Statement* adjust = typechain->strategies[body->id]->paste_upperbound(0,true,remap,0,stmodif,true);
+        Statement* adjust = typechain->strategies[body->id]->paste_upperbound_prim(0,remap,0,stmodif,false);//this was true. this is a test
         Statement* copied = new Statement(Statement::universe,body->id,0);
         for (int y=0;y<body->args.size();y++) {
             Statement* nxt = typecomplete(body->args[y],stmodif,curid,typechain);

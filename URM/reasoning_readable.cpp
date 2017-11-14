@@ -40,7 +40,20 @@ std::string Soln::tostringheavy() {
 //    }
 //    return res;
 //}
-
+std::string Statement::tostringstrategy() {
+    std::string res="";
+    if (args.size()) {
+        res+="[";
+        for (int u=0;u<args.size();u++) {
+            res+=args[u]->tostringstrategy();
+            if (u!=args.size()-1) res+="|";
+        }
+        res+="]";
+    }
+    if (type) res+=type->tostringheavy();
+    else res+="root";
+    return res;
+}
 
 std::string Statement::tostringdoubleheavy() {
     if (type) return tostringheavy()+":"+type->tostringheavy();

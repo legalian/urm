@@ -408,21 +408,24 @@ void definePattern(MetaBank* mb,std::map<std::string,int>& handle,ParseSpecifier
 void listvariants(MetaBank* mb,std::map<std::string,int>& handle,ParseSpecifier& parser,ParseResult* tokenized,ParseStructure& addin,int order,std::vector<std::string>& supp) {
     if (tokenized->struc!=p_variant) throw;
     if (tokenized->var!=3) {
-        ParseVariant newvar = ParseVariant(order);
+        order = tokenized->var==2?order<0?order-1:order:order+1;
+        if (tokenized->var==1) addin.flippedorders[order]=true;
+        ParseVariant newvar = ParseVariant(order<0?-2-order:order);
         newvar.converter = makeconvert(mb,tokenized->children[1],handle,supp);
         definePattern(mb,handle,parser, tokenized->children[0], newvar);
         addin.variant(newvar);
-        listvariants(mb,handle,parser,tokenized->children[2],addin,tokenized->var!=2?order+1:order,supp);
+        listvariants(mb,handle,parser,tokenized->children[2],addin,order,supp);
     }
 }
 void listnocvariants(MetaBank* mb,std::map<std::string,int>& handle,ParseSpecifier& parser,ParseResult* tokenized,ParseStructure& addin,int order) {
     if (tokenized->struc!=p_nocvariant) throw;
     if (tokenized->var!=3) {
+        order = tokenized->var==2?order<0?order-1:order:order+1;
         if (tokenized->var==1) addin.flippedorders[order]=true;
-        ParseVariant newvar = ParseVariant(order);
+        ParseVariant newvar = ParseVariant(order<0?-1-order:order);
         definePattern(mb,handle,parser, tokenized->children[0], newvar);
         addin.variant(newvar);
-        listnocvariants(mb,handle,parser,tokenized->children[1],addin,tokenized->var!=2?order+1:order);
+        listnocvariants(mb,handle,parser,tokenized->children[1],addin,order);
     }
 }
 void liststrucs(MetaBank* mb,std::map<std::string,int>& handle,ParseSpecifier& parser,ParseResult* tokenized,int resid) {
@@ -446,10 +449,10 @@ void liststrucs(MetaBank* mb,std::map<std::string,int>& handle,ParseSpecifier& p
         parser.table[resid].type = indexedPureStrategyConvert(mb,tokenized->children[1],typevarbank,0,0);
         if (tokenized->children[1]->var==4) throw;
         if (tokenized->children[1]->var>1) indexedLabelExtraction(&labels,tokenized->children[1]->children[0]);
-        listvariants(mb,handle,parser,tokenized->children[2],parser.table[resid],0,labels);
+        listvariants(mb,handle,parser,tokenized->children[2],parser.table[resid],-1,labels);
         liststrucs(mb,handle,parser,tokenized->children[3],resid+1);
     } else {
-        if (tokenized->var==1) listnocvariants(mb,handle,parser,tokenized->children[1],parser.table[resid],0);
+        listnocvariants(mb,handle,parser,tokenized->children[1],parser.table[resid],-1);
         liststrucs(mb,handle,parser,tokenized->children[2],resid+1);
     }
 }
@@ -551,6 +554,7 @@ ParseSpecifier parse_parser(std::map<std::string,std::string> comments,std::map<
     generateHandle(handle,tokenized,0);
     liststrucs(&MetaBank::meta_prime,handle,result,tokenized,0);
     tokenized->cleanup();
+    
     return result;
 }
 Statement* parse_TTML(const std::string & parse,int tdepth,std::map<std::string,Statement*> varbank,std::vector<std::string>* pop) {

@@ -61,13 +61,44 @@ void Statement::clip_upperbound(int stat,bool par,std::map<std::pair<int,int>,in
         args[u]->clip_upperbound(stat,par,remap,mappoint);
     }
 }
-Statement* Statement::paste_upperbound(int stat,bool par,std::map<std::pair<int,int>,int>& remap,std::vector<Statement*>* prepend,int general,bool inc) {//anything <=stat will be replaced.
+//Statement* Statement::paste_upperbound(int stat,bool par,std::map<std::pair<int,int>,int>& remap,std::vector<Statement*>* prepend,int general,bool inc) {//anything <=stat will be replaced.
+//    if (local==0 and args.size()==0) {
+//        return this;
+//    }
+//    Statement* res = new Statement(Statement::universe,id,local);
+//    res->specifier=specifier;
+//    if (local!=0 and local<=stat and ((!par and local!=1) or (par and local%2==1))) {
+//        if (remap.find(std::pair<int,int>(id,local))==remap.end()) {
+//            return 0;
+//        }
+//        res->local = 1;
+//        res->specifier = general;
+//        res->id = remap[std::pair<int,int>(id,local)];
+//        if (prepend) {
+//            for (int j=0;j<prepend->size();j++) {
+//                res->args.push_back((*prepend)[j]->deepcopy());
+//            }
+//        }
+//    }
+//    for (int q=0;q<args.size();q++) {
+//        Statement* possib = args[q]->paste_upperbound(inc?stat+1:stat,par,remap,prepend,general,inc);
+//        if (possib==0) {
+//        
+//            res->cleanup();
+//            return 0;
+//        }
+//        res->args.push_back(possib);
+//    }
+//    res->type = type->paste_upperbound(inc?stat+1:stat,par,remap,prepend,general,false);
+//    return res;
+//}
+Statement* Statement::paste_upperbound_prim(int stat,std::map<std::pair<int,int>,int>& remap,std::vector<Statement*>* prepend,int general,bool inc) {//anything <=stat will be replaced.
     if (local==0 and args.size()==0) {
         return this;
     }
     Statement* res = new Statement(Statement::universe,id,local);
     res->specifier=specifier;
-    if (local!=0 and local<=stat and ((!par and local!=1) or (par and local%2==1))) {
+    if (local!=0 and local<=stat and local%2==1) {
         if (remap.find(std::pair<int,int>(id,local))==remap.end()) {
             return 0;
         }
@@ -81,7 +112,7 @@ Statement* Statement::paste_upperbound(int stat,bool par,std::map<std::pair<int,
         }
     }
     for (int q=0;q<args.size();q++) {
-        Statement* possib = args[q]->paste_upperbound(inc?stat+1:stat,par,remap,prepend,general,inc);
+        Statement* possib = args[q]->paste_upperbound_prim(inc?stat+1:stat,remap,prepend,general,inc);
         if (possib==0) {
         
             res->cleanup();
@@ -89,7 +120,33 @@ Statement* Statement::paste_upperbound(int stat,bool par,std::map<std::pair<int,
         }
         res->args.push_back(possib);
     }
-    res->type = type->paste_upperbound(inc?stat+1:stat,par,remap,prepend,general,false);
+    res->type = type->paste_upperbound_prim(inc?stat+1:stat,remap,prepend,general,false);
+    return res;
+}
+Statement* Statement::paste_upperbound_sec(int stat,std::map<std::pair<int,int>,int>& remap,int general) {//anything <=stat will be replaced.
+    if (local==0 and args.size()==0) {
+        return this;
+    }
+    Statement* res = new Statement(Statement::universe,id,local);
+    res->specifier=specifier;
+    if (local!=0 and local<=stat and local!=1 and specifier!=0) {
+        if (remap.find(std::pair<int,int>(id,local))==remap.end()) {
+//            std::cout<<"failure: "<<id<<" , "<<local<<"\n";
+            return 0;
+        }
+        res->local = 1;
+        res->specifier = general;
+        res->id = remap[std::pair<int,int>(id,local)];
+    }
+    for (int q=0;q<args.size();q++) {
+        Statement* possib = args[q]->paste_upperbound_sec(stat,remap,general);
+        if (possib==0) {
+            res->cleanup();
+            return 0;
+        }
+        res->args.push_back(possib);
+    }
+    res->type = type->paste_upperbound_sec(stat,remap,general);
     return res;
 }
 Statement* Statement::substitute(Binding* bind,int stat,int sub_level) {

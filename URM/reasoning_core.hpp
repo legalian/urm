@@ -29,6 +29,7 @@ struct SolnLink;
 struct Entry;
 struct SolveInstance;
 
+
 //Statement* parseTTFL(MetaBank*,const std::string&);
 //Statement* convertTTML(MetaBank*,ParseResult*,int);
 //Statement* convertTTFL(MetaBank*,ParseResult*);
@@ -46,14 +47,19 @@ struct Statement {
     int maxloc(int);
     Statement* mapl(int,int);
     void clip_upperbound(int,bool,std::map<std::pair<int,int>,int>&,int&);
-    Statement* paste_upperbound(int,bool,std::map<std::pair<int,int>,int>&,std::vector<Statement*>*,int,bool);
-    void getsolvepoints(std::map<int,Statement*>&,bool,bool);
+    Statement* paste_upperbound_prim(int,std::map<std::pair<int,int>,int>&,std::vector<Statement*>*,int,bool);
+    Statement* paste_upperbound_sec(int,std::map<std::pair<int,int>,int>&,int);
+    void obsolete(std::map<int,bool>&);
+    void getsolvepoints(std::map<int,Statement*>&,std::map<int,bool>&,bool,bool);
     Statement* substitute(Binding*,int,int);
     Statement* deepcopy();
     void cleanup();
     Statement* symmetricbindavoid(int,int);
     
-    Statement* scramble(std::map<int,int>,int&);
+    bool containsloop(int);
+    
+    Statement* scramble(std::map<int,int>&,int&);
+    void unscramble(std::map<int,int>&,int&);
     
     Statement* depth_push(int,int);
     
@@ -79,10 +85,11 @@ struct Statement {
     void typecheck(Statement*,std::map<int,std::vector<Statement*>*>,int,bool);
     void headlesstypecheck(std::map<int,std::vector<Statement*>*>,int);
 #endif
-    
+    std::string tostringstrategy();
     std::string tostringheavy();
     std::string tostringdoubleheavy();
     std::string tostringrecursivedoubleheavy();
+    
 //    std::string tostringheavy(std::vector<std::vector<std::string>>*);
     
     Statement(Statement*,int,int);
@@ -111,13 +118,25 @@ struct Binding {
     ~Binding();
 //    int locids=0;
 };
-
+//struct RecursivePattern {
+//    Binding transformation;
+//    MatchStructure* next;
+//    RecursivePattern(Binding&,MatchStructure*);
+//};
+//struct MatchStructure {
+//    Statement* type;
+//    std::vector<Statement*> patterns;
+//    std::vector<RecursivePattern> recursive;
+//    void complete(std::vector<MatchStructure>&);
+//    void match(std::vector<Binding>&,Statement*,Binding*);
+//};
 
 struct MetaBank {
     static MetaBank meta_prime;
     MetaBank();
     std::vector<Statement*> strategies;
     std::vector<std::string> stratnames;
+//    std::vector<MatchStructure> typefamilies;
 //    Statement* solve(std::string);
     Statement* solve(Statement*);
     int getAxiom(std::string);
@@ -125,9 +144,15 @@ struct MetaBank {
 
 
 struct SolveInstance {
+    static std::vector<std::string> json;
+    static std::vector<std::string> labels;
     std::vector<Soln*> solns;
+    static std::string label;
     Soln* makeorcreate(Statement*);
     void increment(MetaBank*);
+    void visualize();
+    static void flushvisualizer();
+    void heavyvisualize();
 //    void remove(Soln*);
 };
 struct SolnLink {
@@ -162,6 +187,7 @@ struct Soln {
     Soln(Statement*);
     void remove(MetaBank*,SolveInstance*,int);
     void expand(MetaBank*,SolveInstance*);
+    bool recieveEnergy(MetaBank*,SolveInstance*,int);
     Statement* getsolution();
 };
 

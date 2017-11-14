@@ -582,7 +582,11 @@ Statement* ParseSpecifier::fullconvert(const std::string& input) {
         a.children[a.tokargs+d].specifier=0;
     }
 //    std::cout<<a.tostringheavy()<<"\n";
-    return a.convert(this,carry,varbank,locid,2,table[0].type,table[0].type->args,3);
+    int reassign=0;
+    std::map<int,int> remap;
+    Statement* res = a.convert(this,carry,varbank,locid,2,table[0].type,table[0].type->args,2);
+    res->unscramble(remap,reassign);
+    return res;
 }
 
 
