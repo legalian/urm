@@ -9,21 +9,37 @@
 #include <stdio.h>
 #include "reasoning_core.hpp"
 
-bool Binding::insert(Statement* left,Statement* right,int stmodif) {
+bool Binding::insert(Statement* left,Statement* right) {
+    if (left->local!=1 or left->specifier!=stmodif) throw;
+    if (right->maxloc(stmodif+2)) throw;
+    if (left->maxloc(stmodif+2)) throw;
+    if (left->maxloc(stmodif+1)<right->maxloc(stmodif+1)) {
+        std::cout<<left->tostringheavy()<<" | "<<right->tostringheavy()<<"\n";
+        throw;
+    }
+    for (int n=0;n<decoms.size();n++) {
+        if (decoms[n].first->maxloc(stmodif+2) or decoms[n].second->maxloc(stmodif+2)) {
+            std::cout<<"INTERNAL STATE CORRUPTED:\n"<<tostringheavy()<<"\n";
+            throw;
+        }
+    }
+//    if (stmodif==0) std::cout<<"PRIOR STATE:\n"<<tostringheavy()<<"\n";
+    //end debug
+    
     bool place=true;
     for (int y=(int)decoms.size()-1;y>=0;y--) {
         if (decoms[y].first->id==left->id) {
-            if (!compare(decoms[y].first,left,decoms[y].second,right,stmodif)) return false;
-            Binding comparison1;
-            Binding comparison2;
-            if        (comparison1.decompose(decoms[y].first->mapl(stmodif+1,stmodif+2),left,2,stmodif+2)) {
+            if (!compare(decoms[y].first,left,decoms[y].second,right)) return false;
+            Binding comparison1(stmodif+2);
+            Binding comparison2(stmodif+2);
+            if        (comparison1.decompose(decoms[y].first->mapl(stmodif+1,stmodif+2),left,2,0)) {
                 place=false;
-            } else if (comparison2.decompose(left->mapl(stmodif+1,stmodif+2),decoms[y].first,2,stmodif+2)) {
+            } else if (comparison2.decompose(left->mapl(stmodif+1,stmodif+2),decoms[y].first,2,0)) {
                 decoms.erase(decoms.begin()+y);
             }
         }
     }
-    Binding resolver;
+    Binding resolver(stmodif);
     if (place) {
         resolver.decoms.push_back(gentleSubstitute(this,left,right,stmodif));
         //substitute incorrectly handles depth.
@@ -39,43 +55,75 @@ bool Binding::insert(Statement* left,Statement* right,int stmodif) {
     if (place) {
         decoms.push_back(std::pair<Statement*,Statement*>(resolver.decoms[0].first->deepcopy(),resolver.decoms[0].second->deepcopy()));
     }
+    for (int n=0;n<decoms.size();n++) {
+        if (decoms[n].first->maxloc(stmodif+2) or decoms[n].second->maxloc(stmodif+2)) {
+            std::cout<<"INTERNAL STATE CORRUPTED:\n"<<tostringheavy()<<"\n";
+            throw;
+        }
+    }
     return true;
 }
-bool Binding::ensureValidity(Statement* head,Statement* body,int stat,int stmodif) {//anything <=stat will be replaced.
+bool Binding::ensureValidity(Statement* head,Statement* body,int stat) {//anything <=stat will be replaced.
+    if (head->maxloc(stmodif+1) or body->maxloc(stmodif+1)) return false;
     std::map<std::pair<int,int>,int> remap;
     int mappoint = 0;
     head->clip_upperbound(stat,false,remap,mappoint);
+//    std::cout<<"inserting "<<head->tostringheavy()<<" | "<<body->tostringheavy()<<"\n";
     Statement* modhead = head->paste_upperbound_sec(stat,remap,stmodif+1);
     Statement* modbody = body->paste_upperbound_sec(stat,remap,stmodif+1);
-    if (modhead!=0 and modbody!=0) {
-        return insert(modhead,modbody,stmodif);
-    }
+//    std::cout<<"theninserting "<<modhead->tostringheavy()<<" | "<<modbody->tostringheavy()<<"\n";
+//    std::cout<<head->tostringheavy()<<"\n";
+//    std::cout<<body->tostringheavy()<<"\n";
+//    std::cout<<modhead->tostringheavy()<<"\n";
+//    std::cout<<modbody->tostringheavy()<<"\n";
     
+    if (modhead!=0 and modbody!=0) {
+        return insert(modhead,modbody);
+    }
     if (modhead!=0) modhead->cleanup();
     if (modbody!=0) modbody->cleanup();
     return false;
 }
-bool Binding::decompose(Statement* left,Statement* right,int stat,int stmodif) {
+bool Binding::decompose(Statement* left,Statement* right,int stat,std::vector<std::pair<Statement*,Statement*>>* knowchecks) {
+    for (int n=0;n<decoms.size();n++) {
+        if (decoms[n].first->maxloc(stmodif+2) or decoms[n].second->maxloc(stmodif+2)) {
+            std::cout<<"INTERNAL STATE CORRUPTED:\n"<<tostringheavy()<<"\n";
+            throw;
+        }
+    }
+    
+    
     if (left==right) return true;
     if (left==0 or right==0) return false;
+    if (knowchecks) {
+        for (int u=0;u<knowchecks->size();u++) {
+        
+            std::cout<<"COMPARING:\n";
+            std::cout<<left->tostringheavy()<<" -0- "<<right->tostringheavy()<<"\n";
+            std::cout<<(*knowchecks)[u].first->tostringheavy()<<" -0- "<<(*knowchecks)[u].second->tostringheavy()<<"\n";
+            if (left->is(stat,(*knowchecks)[u].first) and right->is(stat,(*knowchecks)[u].second)) {
+                return true;
+            }
+        }
+    }
 //    std::cout<<"matching "<<left->tostringheavy()<<":"<<left->type->tostringheavy()<<" and "<<right->tostringheavy()<<":"<<right->type->tostringheavy()<<"\n";
     if ((left->local==1 and left->specifier==stmodif) or (right->local==1 and right->specifier==stmodif)) {
-        if (!decompose(left->type,right->type,stat+1,stmodif)) {
+        if (!decompose(left->type,right->type,stat+1,knowchecks)) {
             return false;
         }
         bool leftpriority  = left->args.size()>right->args.size() or (left->args.size()==right->args.size() and left->id>right->id);
         bool rightpriority = left->args.size()<right->args.size() or (left->args.size()==right->args.size() and left->id<right->id);
         if (right->local!=1 or right->specifier!=stmodif or (left->local==1 and left->specifier==stmodif and leftpriority)) {
-            return ensureValidity(left,right,stat,stmodif);
+            return ensureValidity(left,right,stat);
         }
         if (left->local!=1 or left->specifier!=stmodif or (right->local==1 and right->specifier==stmodif and rightpriority)) {
-            return ensureValidity(right,left,stat,stmodif);
+            return ensureValidity(right,left,stat);
         }
     }
     if (left->local==right->local and left->id==right->id and left->specifier==right->specifier) {
         if (left->args.size()!=right->args.size()) throw;
         for (int u=0;u<left->args.size();u++) {
-            if (!decompose(left->args[u], right->args[u],stat!=-1?stat+1:-1,stmodif)) {
+            if (!decompose(left->args[u], right->args[u],stat!=-1?stat+1:-1,knowchecks)) {
                 return false;
             }
         }
@@ -83,106 +131,19 @@ bool Binding::decompose(Statement* left,Statement* right,int stat,int stmodif) {
     }
     return false;
 }
-bool Binding::compare(Statement* head1,Statement* head2,Statement* body1,Statement* body2,int stmodif) {
-    Binding comparison;
+bool Binding::compare(Statement* head1,Statement* head2,Statement* body1,Statement* body2) {
     head2=head2->symmetricbindavoid(stmodif+1,head1->maxloc(stmodif+1));
     body2=body2->symmetricbindavoid(stmodif+1,head1->maxloc(stmodif+1));
-    if (!comparison.decompose(head1,head2,2,stmodif+1)) {//needs to be an extra validation.
-        return true;
+    std::vector<std::pair<Statement*,Statement*>> pairs;
+    for (int i=0;i<head1->args.size();i++) {
+        pairs.push_back(std::pair<Statement*,Statement*>(head1->args[i],head2->args[i]));
     }
-    Statement* subbody1 = body1->substitute(&comparison, 2,stmodif+1);
-    Statement* subbody2 = body2->substitute(&comparison, 2,stmodif+1);
-    bool res = decompose(subbody1,subbody2,2,stmodif);
-    subbody1->cleanup();
-    subbody2->cleanup();
+//    std::cout<<"COMPARING:\n";
+//    std::cout<<head1->tostringheavy()<<" | "<<body1->tostringheavy()<<"\n";
+//    std::cout<<head2->tostringheavy()<<" | "<<body2->tostringheavy()<<"\n";
+//    std::cout<<"\n";
+    bool res = decompose(body1,body2,2,&pairs);
     head2->cleanup();
     body2->cleanup();
     return res;
-}
-
-Statement* Binding::typecomplete(Statement* body,int stmodif,int& curid,MetaBank* typechain) {
-//    throw;
-    if (body->args.size()>0 and body->local==0) {
-        std::map<std::pair<int,int>,int> remap;
-        typechain->strategies[body->id]->clip_upperbound(0,true,remap,curid);
-        Statement* adjust = typechain->strategies[body->id]->paste_upperbound_prim(0,remap,0,stmodif,false);//this was true. this is a test
-        Statement* copied = new Statement(Statement::universe,body->id,0);
-        for (int y=0;y<body->args.size();y++) {
-            Statement* nxt = typecomplete(body->args[y],stmodif,curid,typechain);
-            if (nxt==0 or !decompose(nxt,adjust->args[y],-1,stmodif)) {
-                copied->cleanup();
-                return 0;
-            }
-            copied->args.push_back(nxt);
-        }
-        copied->type = adjust->type->substitute(this,-1,stmodif);
-        return copied;
-    }
-    return body->deepcopy();
-}
-
-bool Binding::functionalAnalysis(std::vector<Binding>& end,
-                                    Statement* match,Statement* entire,
-                                    int stat,int param,int stmodif,
-                                    Statement* function,Statement* site,Statement* replacer,MetaBank* carry) {
-    bool res=false;
-    Binding newdup = *this;
-    if (newdup.decompose(site,match,stat,stmodif)) {
-        int nids=0;
-        Binding typecheck;
-        Statement* typed = typecheck.typecomplete(function,stmodif+2,nids,carry);
-        if (typed!=0 and newdup.ensureValidity(entire,typed,2,stmodif)) {
-            end.push_back(newdup);
-            res=true;
-        }
-        if (typed!=0) typed->cleanup();
-    }
-    for (int y=0;y<site->args.size();y++) {
-        *replacer = *site;
-        Statement scratch = Statement(site->args[y]->type->deepcopy(),param,1);
-        scratch.specifier=stmodif+1;
-        replacer->args[y] = &scratch;
-        bool nxt = functionalAnalysis(end,match,entire,stat+1,param,stmodif,function,site->args[y],&scratch,carry);
-        res = res or nxt;
-    }
-    return res;
-}
-void Binding::divide(std::vector<Binding>& given,int stmodif,MetaBank* carry) {
-    for (int u=0;u<decoms.size();u++) {
-        if (decoms[u].second->maxloc(stmodif)==0) {
-            std::map<int,int> used;
-            for (int w=0;w<decoms[u].first->args.size();w++) {
-                if (decoms[u].first->args[w]->local==1 and decoms[u].first->args[w]->specifier==stmodif+1 and decoms[u].first->args[w]->args.size()==0 and used.find(decoms[u].first->args[w]->id)==used.end()) {
-                    used[decoms[u].first->args[w]->id] = w;
-                    continue;
-                }
-                Statement* decomhead = decoms[u].first;
-                Statement* decombody = decoms[u].second;
-                decoms.erase(decoms.begin()+u);
-                
-                Statement* cancer = decomhead->deepcopy();
-                int nstatid = cancer->maxloc(stmodif+1);
-                Statement* cancertype = cancer->args[w]->deepcopy();
-                cancer->args[w]->cleanup();
-                cancer->args[w] = new Statement(cancertype,nstatid,1);
-                cancer->args[w]->specifier=stmodif+1;
-                std::vector<Binding> interm;
-//                interm.push_back(*this);
-//                bool con;
-//                do {
-                    Statement scratch = Statement(decombody->type->deepcopy(),nstatid,1);
-                    scratch.specifier=stmodif+1;
-                    functionalAnalysis(interm,decomhead->args[w],cancer,0,nstatid,stmodif,&scratch,decombody,&scratch,carry);
-                    for (int q=0;q<interm.size();q++) {
-                        interm[q].divide(given,stmodif,carry);
-                    }
-//                } while (con);
-                cancer->cleanup();
-                decomhead->cleanup();
-                decombody->cleanup();
-                return;
-            }
-        }
-    }
-    given.push_back(*this);
 }

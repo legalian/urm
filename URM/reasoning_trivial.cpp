@@ -14,7 +14,7 @@ Statement* Statement::universe=0;
 
 Entry::Entry(Binding q,int id) : bind(q) ,ids(id) {}
 
-Binding::Binding() {}
+Binding::Binding(int s) : stmodif(s) {}
 Binding::Binding(const Binding& other) {
 //    for (auto it=other.specs.begin();it!=other.specs.end();it++) {
 //        specs[it->first]=it->second->deepcopy();
@@ -178,6 +178,12 @@ std::pair<Statement*,Statement*> gentleSubstitute(Binding* bind,Statement* a,Sta
 //            return std::pair<Statement*,Statement*>(a->deepcopy(),b->substitute(bind,2,stmodif));
 //        }
 //    } else {
+//    if (a->substitute(bind,2,stmodif)->maxloc(stmodif+2)) {
+//        throw;
+//    }
+//    if (b->substitute(bind,2,stmodif)->maxloc(stmodif+2)) {
+//    
+//    }
         if (b->maxloc(stmodif)==0) {
             return std::pair<Statement*,Statement*>(a->substitute(bind,2,stmodif),b->deepcopy());
         } else {
@@ -255,7 +261,16 @@ SolnLink::SolnLink(Statement* from,Statement* to,Soln* link,Entry* a) : containe
 
 
 
-
+bool Statement::is(int disp,Statement* other) {
+    if (other->specifier!=specifier or other->id!=id) return false;
+    if (specifier==0 and local>1) {
+        if (other->local+disp!=local) return false;
+    } else if (other->local!=local) return false;
+    for (int y=0;y<args.size();y++) {
+        if (!args[y]->is(disp,other->args[y])) return false;
+    }
+    return true;
+}
 
 
 

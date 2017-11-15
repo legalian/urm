@@ -56,6 +56,7 @@ struct Statement {
     void cleanup();
     Statement* symmetricbindavoid(int,int);
     
+    bool is(int,Statement*);
     bool containsloop(int);
     
     Statement* scramble(std::map<int,int>&,int&);
@@ -99,20 +100,21 @@ struct Statement {
     Statement(Statement*,int,int,Statement*,Statement*,Statement*,Statement*);
 };
 struct Binding {
+    int stmodif;
     std::vector<std::pair<Statement*,Statement*>> decoms;
-    bool insert(Statement*,Statement*,int);
-    bool decompose(Statement*,Statement*,int,int);
-    bool ensureValidity(Statement*,Statement*,int,int);
-    bool compare(Statement*,Statement*,Statement*,Statement*,int);
+    bool insert(Statement*,Statement*);
+    bool decompose(Statement*,Statement*,int,std::vector<std::pair<Statement*,Statement*>>*);
+    bool ensureValidity(Statement*,Statement*,int);
+    bool compare(Statement*,Statement*,Statement*,Statement*);
     
-    void divide(std::vector<Binding>&,int,MetaBank*);
-    bool functionalAnalysis(std::vector<Binding>&,Statement*,Statement*,int,int,int,Statement*,Statement*,Statement*,MetaBank*);
-    Statement* typecomplete(Statement* body,int stmodif,int& curid,MetaBank* typechain);
+//    void divide(std::vector<Binding>&,int,MetaBank*);
+//    bool functionalAnalysis(std::vector<Binding>&,Statement*,Statement*,int,int,int,Statement*,Statement*,Statement*,MetaBank*);
+//    Statement* typecomplete(Statement* body,int stmodif,int& curid,MetaBank* typechain);
     
     std::vector<Statement*> solvepoints(Statement*);
     
     std::string tostringheavy();
-    Binding();
+    Binding(int);
     Binding(Binding const &);
     Binding& operator=(Binding const &);
     ~Binding();

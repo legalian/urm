@@ -107,7 +107,7 @@ void Statement::globtypecheck() {
     varbank[0]=&args;
     std::cout<<"Accepted axioms:\n";
     for (int u=0;u<args.size();u++) {
-        std::cout<<"\t"<<args[u]->tostringrecursivedoubleheavy()<<"\n";
+        std::cout<<"\t"<<args[u]->tostringdoubleheavy()<<"\n";
         args[u]->headlesstypecheck(varbank, 1);
     }
 }

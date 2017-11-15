@@ -170,13 +170,15 @@ void Soln::expand(MetaBank* mb,SolveInstance* inst) {
         expanded=true;
         ids=head->maxloc(0);
         for (int j=0;j<head->args.size();j++) {
-            Binding newbinds;
+            Binding newbinds(0);
             if (newbinds.decompose(head,head->args[j],2,0)) {
-                std::vector<Binding> alternates;
-                newbinds.divide(alternates,0,mb);
-                for (int x=0;x<alternates.size();x++) {
-//                    append(mb,inst,new Entry(alternates[x],ids));
-                    binqueue.push_back(new Entry(alternates[x],ids));
+                binqueue.push_back(new Entry(newbinds,ids));
+                for (int n=0;n<newbinds.decoms.size();n++) {
+                    if (newbinds.decoms[n].first->maxloc(1) or newbinds.decoms[n].first->maxloc(2) or
+                        newbinds.decoms[n].second->maxloc(1) or newbinds.decoms[n].second->maxloc(2)) {
+                        std::cout<<"INTERNAL STATE CORRUPTED:\n"<<tostringheavy()<<"\n";
+                        throw;
+                    }
                 }
             }
         }
@@ -185,23 +187,21 @@ void Soln::expand(MetaBank* mb,SolveInstance* inst) {
             int nids=ids;
             std::map<std::pair<int,int>,int> remap;
             mb->strategies[w]->clip_upperbound(mb->strategies[w]->local,true,remap,nids);
-//            std::cout<<remap<<"\n";
             Statement* adjust = mb->strategies[w]->paste_upperbound_prim(mb->strategies[w]->local+1,remap,head==0?0:&head->args,0,false);// this is a test. normally ture
-            Binding newbinds;
+            Binding newbinds(0);
             std::cout<<"MATCHING:\n";
             std::cout<<"\t"<<head->tostringdoubleheavy()<<"\n";
             std::cout<<"\t"<<adjust->tostringdoubleheavy()<<"\n";
             
             if (newbinds.decompose(head,adjust,2,0)) {
-                std::cout<<"SUCCESS<-==-=-==--=-=-=-=------=-=\n";
+                std::cout<<"SUCCESS<-==-=-==--=-=-=-=------"<<mb->stratnames[w]<<"\n";
                 std::cout<<newbinds.tostringheavy()<<"\n";
-                std::vector<Binding> alternates;
-                newbinds.divide(alternates,0,mb);
-                for (int x=0;x<alternates.size();x++) {
-//                    append(mb,inst,new Entry(alternates[x],nids));
-                    binqueue.push_back(new Entry(alternates[x],nids));
-                    std::cout<<"BINDING: ---===---===---"<<mb->stratnames[w]<<"\n";
-                    std::cout<<alternates[x].tostringheavy()<<"\n";
+                binqueue.push_back(new Entry(newbinds,nids));
+                for (int n=0;n<newbinds.decoms.size();n++) {
+                    if (newbinds.decoms[n].first->maxloc(2) or newbinds.decoms[n].second->maxloc(2)) {
+                        std::cout<<"INTERNAL STATE CORRUPTED:\n"<<tostringheavy()<<"\n";
+                        throw;
+                    }
                 }
             }
         }
@@ -282,7 +282,8 @@ std::vector<Statement*> Entry::endpoints(MetaBank* mb,Statement* head) {
             if (solvepoints[y]->type->local==0 and solvepoints[y]->type->id==1 and solvepoints[y]->type->specifier==0) {
                 Statement* donworryaboudit = new Statement(solvepoints[y]->type->deepcopy(),0,0);
                 donworryaboudit->specifier=2;
-                if (!bind.ensureValidity(solvepoints[y], donworryaboudit,2,0)) throw;
+//                std::cout<<donworryaboudit<<"\n";
+                if (!bind.ensureValidity(solvepoints[y], donworryaboudit,2)) throw;
                 
                 donworryaboudit->cleanup();
                 satisfied=false;
@@ -290,7 +291,7 @@ std::vector<Statement*> Entry::endpoints(MetaBank* mb,Statement* head) {
             else if (solvepoints[y]->type->observable(mb) and solvepoints[y]->type->observe_boolean(mb)) {
                 Statement* donworryaboudit = new Statement(solvepoints[y]->type->deepcopy(),0,0);
                 donworryaboudit->specifier=1;
-                if (!bind.ensureValidity(solvepoints[y], donworryaboudit,2,0)) throw;
+                if (!bind.ensureValidity(solvepoints[y], donworryaboudit,2)) throw;
                 donworryaboudit->cleanup();
                 satisfied=false;
             }
@@ -307,13 +308,13 @@ bool Entry::asymmetricObsoletes(Entry* other, std::vector<Statement*>* terms) {
     if (downstream.size()!=0) return false;
     for (int s=0;s<terms->size();s++) {
         for (int a=0;a<bind.decoms.size();a++) {
-            Binding comparison;
-            if (comparison.decompose((*terms)[s],bind.decoms[a].first,2,1)) {//needs to be an extra validation.
+            Binding comparison(1);
+            if (comparison.decompose((*terms)[s],bind.decoms[a].first,2,0)) {//needs to be an extra validation.
                 bool founden=false;
                 for (int b=0;b<other->bind.decoms.size();b++) {
-                    Binding comparison2;
-                    if (comparison2.decompose(other->bind.decoms[b].first,bind.decoms[a].first,2,1)) {
-                        if (comparison2.decompose(other->bind.decoms[b].second,bind.decoms[a].second,2,1)) {
+                    Binding comparison2(1);
+                    if (comparison2.decompose(other->bind.decoms[b].first,bind.decoms[a].first,2,0)) {
+                        if (comparison2.decompose(other->bind.decoms[b].second,bind.decoms[a].second,2,0)) {
                         
                             founden=true;
                         }
@@ -365,6 +366,10 @@ void SolveInstance::increment(MetaBank* mb) {
 }
 std::vector<Statement*> Binding::solvepoints(Statement* start) {
     Statement* subbed = start->substitute(this,2,0);
+    if (subbed->maxloc(1) or subbed->maxloc(2) or subbed->maxloc(3) or subbed->maxloc(4)) {
+        std::cout<<subbed->tostringdoubleheavy()<<"\n";
+        throw;
+    }
     std::map<int,Statement*> points;
     std::map<int,bool> obsoleted;
     std::vector<Statement*> res;
@@ -385,14 +390,14 @@ std::vector<Statement*> Binding::solvepoints(Statement* start) {
 Entry* SolnLink::transform(Entry* input) {
     Entry* res = new Entry(container->bind,container->ids);
     for (int y=0;y<input->bind.decoms.size();y++) {
-        res->bind.insert(input->bind.decoms[y].first->scramble(mapr,res->ids),input->bind.decoms[y].second->scramble(mapr,res->ids),0);
+        res->bind.insert(input->bind.decoms[y].first->scramble(mapr,res->ids),input->bind.decoms[y].second->scramble(mapr,res->ids));
     }
     return res;
 }
 Statement* MetaBank::solve(Statement* target) {
     SolveInstance inst;
     inst.solns.push_back(new Soln());
-    Binding kgra;
+    Binding kgra(0);
     kgra.decoms.push_back(std::pair<Statement*,Statement*>(inst.solns[0]->head->deepcopy(),target));
     inst.solns[0]->binqueue.push_back(new Entry(kgra,target->maxloc(0)));
     while (true) {

@@ -129,7 +129,7 @@ Statement* Statement::paste_upperbound_sec(int stat,std::map<std::pair<int,int>,
     }
     Statement* res = new Statement(Statement::universe,id,local);
     res->specifier=specifier;
-    if (local!=0 and local<=stat and local!=1 and specifier!=0) {
+    if (local!=0 and local<=stat and local!=1 and specifier==0) {
         if (remap.find(std::pair<int,int>(id,local))==remap.end()) {
 //            std::cout<<"failure: "<<id<<" , "<<local<<"\n";
             return 0;
@@ -167,8 +167,11 @@ Statement* Statement::substitute(Binding* bind,int stat,int sub_level) {
     if (local==1 and specifier==sub_level) {
         for (int s=0;s<bind->decoms.size();s++) {
             if (bind->decoms[s].first->id==id) {
-                Binding comparison;
-                if (comparison.decompose(bind->decoms[s].first->mapl(sub_level+1,sub_level+2),res,-1,sub_level+2)) {
+                Binding comparison(sub_level+2);
+                if (comparison.decompose(bind->decoms[s].first->mapl(sub_level+1,sub_level+2),res,-1,0)) {
+//                    std::cout<<"SUBINDING:\n"<<comparison.tostringheavy();
+//                    std::cout<<bind->decoms[s].second->mapl(sub_level+1,sub_level+2)->tostringheavy()<<" BECOMES: ";
+//                    std::cout<<bind->decoms[s].second->mapl(sub_level+1,sub_level+2)->substitute(&comparison,0,sub_level+2)->tostringheavy()<<"\n";
                     res->cleanup();
                     return bind->decoms[s].second->mapl(sub_level+1,sub_level+2)->substitute(&comparison,0,sub_level+2);
                 }
