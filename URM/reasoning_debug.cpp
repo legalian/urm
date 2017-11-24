@@ -18,7 +18,7 @@
 //    }
 //}
 Statement* Statement::safe_substitute_level(std::vector<Statement*>* repl,int level,int reflex,int recur,std::string& traceback) {
-    if (args.size()==0 and local==0) {
+    if (args.size()==0 and local<=0) {
         return this;
     }
 //    follow+=deltasub;
@@ -62,7 +62,7 @@ Statement* Statement::safe_substitute_level(std::vector<Statement*>* repl,int le
             }
             ret->args.push_back(subbed);
         }
-        ret->specifier = specifier;
+//        ret->specifier = specifier;
 //        ret->deltasub=deltasub;
         return ret;
     }
@@ -70,7 +70,7 @@ Statement* Statement::safe_substitute_level(std::vector<Statement*>* repl,int le
 Statement* Statement::typechecksub(std::vector<Statement*>* repl,int level,int reflex,int recur) {
 //    std::cout<<"TYPESUBBING: "<<tostringdoubleheavy()<<"\n";
     
-    if (args.size()==0 and local==0) {
+    if (args.size()==0 and local<=0) {
         return this;
     }
     Statement* res = new Statement(id,local);
@@ -135,7 +135,7 @@ void Statement::typecheck(Statement* typ,std::map<int,std::vector<Statement*>*> 
 //        }
     }
 
-    if (specifier!=0) return;
+    if (local==-1 or local==-2) return;
     if (local==1 and haslocals) {
         if (!assert_eq(type,subtype->type)) {
             std::cout<<tostringheavy()<<" failed; mismatch: "<<type->tostringheavy()<<" and "<<subtype->type->tostringheavy()<<"\n";throw;

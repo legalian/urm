@@ -15,8 +15,52 @@
 #include "parser_core.hpp"
 
 int main(int argc, const char * argv[]) {
+    std::cout<<"\n\nbegin:\n";
+    Binding test(1);
+//    Statement* test1 = new Statement(Statement::universe,1,1,new Statement(Statement::universe,1,0));
+//    Statement* test2 = new Statement(Statement::universe,0,1);
+//    if (!test.decompose(test1,test2,0)) throw;
 
-    Statement* solution;
+    Statement* partial1 = new Statement(Statement::universe,0,1,new Statement(Statement::universe,0,2));
+    Statement* partial2 = new Statement(Statement::universe,1,1,new Statement(Statement::universe,0,2));
+    Statement* partial3 = new Statement(Statement::universe,2,1,new Statement(Statement::universe,0,2));
+//    test.binds.push_back();
+//    test.binds.push_back();
+//    test.binds.push_back();
+    test.partials[0]=std::pair<Statement*,Statement*>(partial1,Statement::gap);
+    test.partials[1]=std::pair<Statement*,Statement*>(partial2,Statement::gap);
+    test.partials[2]=std::pair<Statement*,Statement*>(partial3,Statement::gap);
+    
+    Statement* test1 = new Statement(Statement::universe,0,1,Statement::universe);
+    Statement* test2 = new Statement(Statement::universe,1,1,new Statement(Statement::universe,0,1,new Statement(Statement::universe,2,1,Statement::universe)));
+    Statement* test3 = new Statement(Statement::universe,2,1,Statement::universe);
+    test.decompose(test1,new Statement(Statement::universe,1,0),0);
+//    std::cout<<test.tostringheavy()<<"\n";
+    test.decompose(test2,new Statement(Statement::universe,1,0),0);
+//    std::cout<<test.tostringheavy()<<"\n";
+    test.decompose(test3,Statement::universe,0);
+    std::vector<Binding> bindings;
+    std::cout<<test.tostringheavy()<<"\n";
+    
+//    std::vector<std::vector<Statement*>*> required;
+//    required.push_back(&MetaBank::meta_prime.strategies);
+    
+    test.divide(bindings,&MetaBank::meta_prime);
+    
+    std::string res="BINDINGS:\n";
+    for (int it=0;it<bindings.size();it++) {
+        res+="BINDING "+std::to_string(it)+":\n";
+        res+=bindings[it].tostringheavy()+"\n";
+    }
+    std::cout<<res;
+
+
+
+    //f(2:0(3:0)) = 2:0(<2/0>)
+
+
+    
+//    Statement* solution;
 //    std::cout<<"-=-=-=-=-=-=-=-=-=-\n";
 //    SolveInstance::label="Test 1";
 //    solution = invokeSolver("[EQ(AFF,<2/1:AFF>,<2/1:AFF>)]");
@@ -33,21 +77,21 @@ int main(int argc, const char * argv[]) {
 //    }
 //    solution->cleanup();
 
-    std::cout<<"-=-=-=-=-=-=-=-=-=-\n";
-    SolveInstance::label="Test 3";
-    solution = invokeSolver("[[a:AFF]b:AFF|[c:AFF]EQ(AFF,b(c),c)]");
-    for (int d=0;d<solution->args.size();d++) {
-        std::cout<<"\t"<<solution->args[d]->tostringheavy()<<"\n";
-    }
-    solution->cleanup();
-    
-    std::cout<<"-=-=-=-=-=-=-=-=-=-\n";
-    SolveInstance::label="Test 4";
-    solution = invokeSolver("[type:U|[a:type]b:type|[c:type]EQ(type,b(c),c)]");
-    for (int d=0;d<solution->args.size();d++) {
-        std::cout<<"\t"<<solution->args[d]->tostringheavy()<<"\n";
-    }
-    solution->cleanup();
+//    std::cout<<"-=-=-=-=-=-=-=-=-=-\n";
+//    SolveInstance::label="Test 3";
+//    solution = invokeSolver("[[a:AFF]b:AFF|[c:AFF]EQ(AFF,b(c),c)]");
+//    for (int d=0;d<solution->args.size();d++) {
+//        std::cout<<"\t"<<solution->args[d]->tostringheavy()<<"\n";
+//    }
+//    solution->cleanup();
+//    
+//    std::cout<<"-=-=-=-=-=-=-=-=-=-\n";
+//    SolveInstance::label="Test 4";
+//    solution = invokeSolver("[type:U|[a:type]b:type|[c:type]EQ(type,b(c),c)]");
+//    for (int d=0;d<solution->args.size();d++) {
+//        std::cout<<"\t"<<solution->args[d]->tostringheavy()<<"\n";
+//    }
+//    solution->cleanup();
 //    SolveInstance::flushvisualizer();
 
 //    std::vector<std::string> parsingbenchmarks;

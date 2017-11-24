@@ -67,8 +67,6 @@ ParseSpecifier& getGlobParser() {
         globParser.table[p_statement] = ParseStructure(p_statement)
             VARIANT(0) S("{") OBJ(-1) S("/") OBJ(-1) S("}") S("(") OBJ(p_arguments) S(")") END
             VARIANT(1) S("{") OBJ(-1) S("/") OBJ(-1) S("}") END
-            VARIANT(2) S("<") OBJ(-1) S("/") OBJ(-1) S(">") S("(") OBJ(p_arguments) S(")") END
-            VARIANT(3) S("<") OBJ(-1) S("/") OBJ(-1) S(">") END
             VARIANT(4) S("[[]]") S("(") OBJ(p_arguments) S(")") END
             VARIANT(5) S("[[]]") END
             VARIANT(6) OBJ(-2) S("(") OBJ(p_arguments) S(")") END
@@ -116,7 +114,6 @@ ParseSpecifier& getGlobParser() {
             VARIANT(1) S("{") OBJ(-1) S("/") OBJ(-1) S(":") OBJ(p_purestatement) S("}") END
             VARIANT(3) OBJ(-2) S("(") OBJ(p_purearguments) S(")") END
             VARIANT(4) OBJ(-2) END
-            VARIANT(2) S("<") OBJ(-1) S("/") OBJ(-1) S(":") OBJ(p_purestatement) S(">") END
         ;
         globParser.table[p_puremodifiers] = ParseStructure(p_puremodifiers)
             VARIANT(0) OBJ(p_purestrategy) S("|") OBJ(p_puremodifiers) END
@@ -195,11 +192,6 @@ Statement* indexedPureStatementConvert(MetaBank* mb,ParseResult* change,std::map
         } else {
             return roottype;
         }
-    } else if (change->var==4) {
-        head = new Statement(std::stoi(change->children[1]->endpoint),0);
-        head->specifier = std::stoi(change->children[0]->endpoint);
-        head->type = indexedPureStatementConvert(mb,change->children[2],varbank,stat+1);
-        return head;
     }
     throw;
 }
@@ -337,7 +329,6 @@ void indexedCoalesceStatements(MetaBank* mb,ParseResult* change,std::vector<Cons
 Construction indexedStatementConvert(MetaBank* mb,ParseResult* change,std::map<std::string,int>& handle,std::vector<std::string>& supp) {
     if (change->struc!=p_statement) throw;
     Construction head;
-    head.specifier=0;
     head.reconstruct=0;
     if (change->var<2) {
         head.varID = std::stoi(change->children[0]->endpoint);
@@ -345,14 +336,9 @@ Construction indexedStatementConvert(MetaBank* mb,ParseResult* change,std::map<s
         head.reconstruct=6;
         if (change->var%2==0) indexedCoalesceStatements(mb,change->children[2],&head.children,handle,supp);
     } else if (change->var<4) {
-        head.varID = std::stoi(change->children[1]->endpoint);
-        head.strucLocal = 0;
-        head.specifier = std::stoi(change->children[0]->endpoint);
-        if (change->var%2==0) indexedCoalesceStatements(mb,change->children[2],&head.children,handle,supp);
-    } else if (change->var<6) {
         head.reconstruct=5;
         if (change->var%2==0) indexedCoalesceStatements(mb,change->children[0],&head.children,handle,supp);
-    } else if (change->var<8) {
+    } else if (change->var<6) {
         for (int y=0;y<supp.size();y++) {
             if (change->children[0]->endpoint==supp[y]) {
                 head.varID=y;
@@ -364,7 +350,7 @@ Construction indexedStatementConvert(MetaBank* mb,ParseResult* change,std::map<s
             head.strucLocal = 0;
         }
         if (change->var%2==0) indexedCoalesceStatements(mb,change->children[1],&head.children,handle,supp);
-    } else if (change->var<10) {
+    } else if (change->var<8) {
         head = indexedTokenConvert(mb,change->children[0],handle,supp);
         if (change->var%2==0) indexedCoalesceStatements(mb,change->children[1],&head.children,handle,supp);
     }

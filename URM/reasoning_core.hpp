@@ -36,31 +36,38 @@ struct SolveInstance;
 
 struct Statement {
     static Statement* universe;
+    static Statement* gap;
     int local;
     int id;
-    int specifier=0;
+//    int specifier=0;
     Statement* type=0;
     std::vector<Statement*> args;
     Statement(int,int);
 
+//    Statement* localswitch(int);
 //    void erase_deltasub();
-    int maxloc(int);
-    Statement* mapl(int,int);
+    int maxloc();
+//    Statement* mapl(int,int);
     void clip_upperbound(int,bool,std::map<std::pair<int,int>,int>&,int&);
-    Statement* paste_upperbound_prim(int,std::map<std::pair<int,int>,int>&,std::vector<Statement*>*,int,bool);
+    Statement* paste_upperbound_prim(int,std::map<std::pair<int,int>,int>&,std::vector<Statement*>*,bool);
     Statement* paste_upperbound_sec(int,std::map<std::pair<int,int>,int>&,int);
+    
     void obsolete(std::map<int,bool>&);
     void getsolvepoints(std::map<int,Statement*>&,std::map<int,bool>&,bool,bool);
+    
+    
     Statement* substitute(Binding*,int,int);
+    Statement* lam_substitute(Binding*,int,int,int,bool&);
     Statement* deepcopy();
     void cleanup();
-    Statement* symmetricbindavoid(int,int);
     
-    bool is(int,Statement*);
-    bool containsloop(int);
     
-    Statement* scramble(std::map<int,int>&,int&);
-    void unscramble(std::map<int,int>&,int&);
+    bool is(int,int,Statement*);
+    bool containsloop(int,int);
+    bool is_complete();
+    
+    Statement* scramble(std::map<int,int>&,int&,int);
+    void unscramble(std::map<int,int>&,int&,int);
     
     Statement* depth_push(int,int);
     
@@ -69,6 +76,8 @@ struct Statement {
     bool observe_boolean(MetaBank* mb);
     
     void local_list(std::vector<Statement*>* list);
+    
+//    void 
 //    Statement* construction_substitute(std::vector<Statement*>*,int,int,int);
     
     
@@ -100,14 +109,19 @@ struct Statement {
     Statement(Statement*,int,int,Statement*,Statement*,Statement*,Statement*);
 };
 struct Binding {
-    int stmodif;
-    std::vector<std::pair<Statement*,Statement*>> decoms;
-    bool insert(Statement*,Statement*);
-    bool decompose(Statement*,Statement*,int,std::vector<std::pair<Statement*,Statement*>>*);
-    bool ensureValidity(Statement*,Statement*,int);
-    bool compare(Statement*,Statement*,Statement*,Statement*);
+    int sdepth;
+    std::map<int,std::pair<Statement*,Statement*>> partials;
+    std::vector<std::pair<Statement*,Statement*>> binds;
+//    std::vector<std::pair<Statement*,Statement*>> symmetric;//A;
+//    std::vector<std::pair<Statement*,Statement*>> symmetricB;
+//     split();
+//    bool insert(Statement*,Statement*,int);
+    bool substitute();
+    bool decompose(Statement*,Statement*,int);
+//    bool ensureValidity(Statement*,Statement*,int);
+//    bool compare(Statement*,Statement*,Statement*,Statement*);
     
-//    void divide(std::vector<Binding>&,int,MetaBank*);
+    void divide(std::vector<Binding>&,MetaBank*);
 //    bool functionalAnalysis(std::vector<Binding>&,Statement*,Statement*,int,int,int,Statement*,Statement*,Statement*,MetaBank*);
 //    Statement* typecomplete(Statement* body,int stmodif,int& curid,MetaBank* typechain);
     
@@ -115,11 +129,16 @@ struct Binding {
     
     std::string tostringheavy();
     Binding(int);
-    Binding(Binding const &);
-    Binding& operator=(Binding const &);
+//    Binding(Binding const &);
+//    Binding& operator=(Binding const &);
     ~Binding();
 //    int locids=0;
 };
+//struct BindingObject {
+//    std::vector<Binding> bindings;
+//    BindingObject(Binding);
+//    std::string tostringheavy();
+//};
 //struct RecursivePattern {
 //    Binding transformation;
 //    MatchStructure* next;
@@ -169,7 +188,7 @@ struct Entry {
 //    std::vector<SolnLink> links;
     Entry(Binding,int);
     std::vector<Soln*> downstream;
-    bool asymmetricObsoletes(Entry* other,std::vector<Statement*>*);
+//    bool asymmetricObsoletes(Entry* other,std::vector<Statement*>*);
     std::vector<Statement*> endpoints(MetaBank*,Statement*);
 //    bool solved=false;
     int ids;
@@ -198,7 +217,7 @@ Statement* invokeSolver(std::string);
 Statement* invokeSolver(std::map<std::string,Statement*>,std::string);
 
 
-std::pair<Statement*,Statement*> gentleSubstitute(Binding*,Statement*,Statement*,int);
+//std::pair<Statement*,Statement*> gentleSubstitute(Binding*,Statement*,Statement*,int);
 bool amorphousmatch(Statement*,Statement*,std::map<int,int>&,std::map<int,int>&);
 
 

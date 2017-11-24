@@ -466,7 +466,6 @@ Construction Construction::replace(Construction* a,int depth) {
         return ref;
     }
     Construction res;
-    res.specifier=specifier;
     res.ifget=ifget;
     res.tokargs=tokargs;
     res.varID=varID;
@@ -503,7 +502,6 @@ Statement* Construction::convert(ParseSpecifier* parser,std::vector<DictEntry> s
 //            params[stat]=&typ->args;
             ret = new Statement(varID,strucLocal);
             ret->type = typ->type->deepcopy();
-            ret->specifier = specifier;
             if (params.find(strucLocal)==params.end()) throw;
             if (params[strucLocal]->size()<=varID) throw;
             
@@ -519,10 +517,8 @@ Statement* Construction::convert(ParseSpecifier* parser,std::vector<DictEntry> s
             return ret;
         case 1:
             if (strucLocal==-1) {
-                Statement* ha=new Statement(std::stoi(ifget),0);
-                ha->specifier=2;
-                ha->type = new Statement(Statement::universe,1,0);
-                return ha;
+                return new Statement(new Statement(Statement::universe,1,0,0),std::stoi(ifget),-1);
+//                return ha;
             }
             for (int u=0;u<given.size();u++) {
                 space.push_back(given[u]);
@@ -536,7 +532,7 @@ Statement* Construction::convert(ParseSpecifier* parser,std::vector<DictEntry> s
             }
             throw;
         case 5:
-            return new Statement(typ->type->deepcopy(),locid++,1);
+            return new Statement(typ->type->deepcopy(),locid++,1,0);
         case 7:
             if (children.size()) throw;
             
@@ -579,13 +575,12 @@ Statement* ParseSpecifier::fullconvert(const std::string& input) {
         a.children[a.tokargs+d].strucLocal=2;
         a.children[a.tokargs+d].varID=d;
         a.children[a.tokargs+d].reconstruct=0;
-        a.children[a.tokargs+d].specifier=0;
     }
 //    std::cout<<a.tostringheavy()<<"\n";
     int reassign=0;
     std::map<int,int> remap;
     Statement* res = a.convert(this,carry,varbank,locid,2,table[0].type,table[0].type->args,2);
-    res->unscramble(remap,reassign);
+    res->unscramble(remap,reassign,1);
     return res;
 }
 

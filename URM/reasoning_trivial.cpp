@@ -11,34 +11,44 @@
 
 MetaBank MetaBank::meta_prime;
 Statement* Statement::universe=0;
+Statement* Statement::gap=0;
 
 Entry::Entry(Binding q,int id) : bind(q) ,ids(id) {}
 
-Binding::Binding(int s) : stmodif(s) {}
-Binding::Binding(const Binding& other) {
-//    for (auto it=other.specs.begin();it!=other.specs.end();it++) {
-//        specs[it->first]=it->second->deepcopy();
+Binding::Binding(int s) : sdepth(s) {}
+//Binding::Binding(const Binding& other) {
+////    for (auto it=other.specs.begin();it!=other.specs.end();it++) {
+////        specs[it->first]=it->second->deepcopy();
+////    }
+//    for (int it=0;it<other.decoms.size();it++) {
+//        decoms.push_back(std::pair<Statement*,Statement*>(other.decoms[it].first->deepcopy(),other.decoms[it].second->deepcopy()));
 //    }
-    for (int it=0;it<other.decoms.size();it++) {
-        decoms.push_back(std::pair<Statement*,Statement*>(other.decoms[it].first->deepcopy(),other.decoms[it].second->deepcopy()));
-    }
-}
-Binding& Binding::operator=(const Binding & other) {
-    for (int it=0;it<decoms.size();it++) {
-        decoms[it].first->cleanup();
-        decoms[it].second->cleanup();
-    }
-    decoms.clear();
-    for (int it=0;it<other.decoms.size();it++) {
-        decoms.push_back(std::pair<Statement*,Statement*>(other.decoms[it].first->deepcopy(),other.decoms[it].second->deepcopy()));
-    }
-    return *this;
-}
+//}
+//Binding& Binding::operator=(const Binding & other) {
+//    for (int it=0;it<decoms.size();it++) {
+//        decoms[it].first->cleanup();
+//        decoms[it].second->cleanup();
+//    }
+//    decoms.clear();
+//    for (int it=0;it<other.decoms.size();it++) {
+//        decoms.push_back(std::pair<Statement*,Statement*>(other.decoms[it].first->deepcopy(),other.decoms[it].second->deepcopy()));
+//    }
+//    return *this;
+//}
 Binding::~Binding() {
-    for (int it=0;it<decoms.size();it++) {
-        decoms[it].first->cleanup();
-        decoms[it].second->cleanup();
-    }
+//    throw;
+//    for (int it=0;it<symmetricA.size();it++) {
+//        decoms[it].first->cleanup();
+//        decoms[it].second->cleanup();
+//    }
+//    for (int it=0;it<decoms.size();it++) {
+//        decoms[it].first->cleanup();
+//        decoms[it].second->cleanup();
+//    }
+//    for (int it=0;it<decoms.size();it++) {
+//        decoms[it].first->cleanup();
+//        decoms[it].second->cleanup();
+//    }
 }
 
 Statement::Statement(int idr,int loc) {
@@ -57,7 +67,7 @@ void Statement::cleanup() {
     }
 }
 Statement* Statement::deepcopy() {
-    if (local==0 and args.size()==0) {
+    if (local<=0 and args.size()==0) {
         return this;
     }
     Statement* res = new Statement(id,local);
@@ -66,10 +76,6 @@ Statement* Statement::deepcopy() {
     }
     if (type) res->type = type->deepcopy();
     else res->type=0;
-//#ifdef safe_play
-//    res->deltasub=deltasub;
-//#endif
-    res->specifier=specifier;
     return res;
 }
 
@@ -107,37 +113,37 @@ int MetaBank::getAxiom(std::string ax) {
     std::cout<<"Cannot find axiom: "<<ax<<"\n";
     throw;
 }
-bool Statement::containsloop(int a) {
-    if (local==1 and specifier==0 and id==a) return true;
+bool Statement::containsloop(int a,int sdepth) {
+    if (local==sdepth and id==a) return true;
     for (int q=0;q<args.size();q++) {
-        if (args[q]->containsloop(a)) return true;
+        if (args[q]->containsloop(a,sdepth)) return true;
     }
     return false;
 }
 
-Statement* Statement::symmetricbindavoid(int stmodif,int amt) {
-    if (local==0 and args.size()==0) {
-        return this;
-    }
-    Statement* res = new Statement(local==1&&specifier==stmodif?amt+id:id,local);
-    for (int q=0;q<args.size();q++) {
-        res->args.push_back(args[q]->symmetricbindavoid(stmodif,amt));
-    }
-    if (type) res->type = type->symmetricbindavoid(stmodif,amt);
-    else res->type=0;
-//#ifdef safe_play
-//    res->deltasub=deltasub;
-//#endif
-    res->specifier=specifier;
-    return res;
-}
+//Statement* Statement::symmetricbindavoid(int sdepth,int amt) {
+//    if (local==0 and args.size()==0) {
+//        return this;
+//    }
+//    Statement* res = new Statement(local==1&&specifier==stmodif?amt+id:id,local);
+//    for (int q=0;q<args.size();q++) {
+//        res->args.push_back(args[q]->symmetricbindavoid(stmodif,amt));
+//    }
+//    if (type) res->type = type->symmetricbindavoid(stmodif,amt);
+//    else res->type=0;
+////#ifdef safe_play
+////    res->deltasub=deltasub;
+////#endif
+//    res->specifier=specifier;
+//    return res;
+//}
 
-Statement* Statement::scramble(std::map<int,int>& mapr,int& push) {
-    if (local==0 and args.size()==0) {
+Statement* Statement::scramble(std::map<int,int>& mapr,int& push,int sdepth) {
+    if (local<=0 and args.size()==0) {
         return this;
     }
     Statement* res = new Statement(id,local);
-    if (local==1) {
+    if (local==sdepth) {
         if (mapr.find(id)!=mapr.end()) {
             res->id=mapr[id];
         } else {
@@ -146,89 +152,63 @@ Statement* Statement::scramble(std::map<int,int>& mapr,int& push) {
         }
     }
     for (int q=0;q<args.size();q++) {
-        res->args.push_back(args[q]->scramble(mapr,push));
+        res->args.push_back(args[q]->scramble(mapr,push,sdepth));
     }
-    if (type) res->type = type->scramble(mapr,push);
+    if (type) res->type = type->scramble(mapr,push,sdepth);
     else res->type = 0;
-    
-    res->specifier=specifier;
     return res;
 }
-void Statement::unscramble(std::map<int,int>& mapr,int& push) {
-    if (local==1 and specifier==0) {
+void Statement::unscramble(std::map<int,int>& mapr,int& push,int sdepth) {
+    if (local==sdepth) {
         if (mapr.find(id)==mapr.end()) {
             mapr[id]=push++;
         }
         id=mapr[id];
     }
     for (int q=0;q<args.size();q++) {
-        args[q]->unscramble(mapr,push);
+        args[q]->unscramble(mapr,push,sdepth);
     }
 }
 
 
-std::pair<Statement*,Statement*> gentleSubstitute(Binding* bind,Statement* a,Statement* b,int stmodif) {
-    if (bind->decoms.size()==0) {
-        return std::pair<Statement*,Statement*>(a->deepcopy(),b->deepcopy());
-    }
-//    if (a->args.size()==0) {
-//        if (b->maxloc(stmodif)==0) {
-//            return std::pair<Statement*,Statement*>(a->deepcopy(),b->deepcopy());
-//        } else {
-//            return std::pair<Statement*,Statement*>(a->deepcopy(),b->substitute(bind,2,stmodif));
-//        }
-//    } else {
-//    if (a->substitute(bind,2,stmodif)->maxloc(stmodif+2)) {
-//        throw;
-//    }
-//    if (b->substitute(bind,2,stmodif)->maxloc(stmodif+2)) {
-//    
-//    }
-        if (b->maxloc(stmodif)==0) {
-            return std::pair<Statement*,Statement*>(a->substitute(bind,2,stmodif),b->deepcopy());
-        } else {
-            return std::pair<Statement*,Statement*>(a->substitute(bind,2,stmodif),b->substitute(bind,2,stmodif));
-        }
-//    }
-}
-Soln::Soln() : expanded(true), head(new Statement(0,-1,1)) {}
+Soln::Soln() : expanded(true), head(new Statement(0,-1,1,0)) {}
 Soln::Soln(Statement* point) : head(point) {}
 
 Statement* Soln::getsolution() {
     for (int y=0;y<bin.size();y++) {
         if (bin[y]->downstream.size()==0) {
 //            std::cout<<bin[y]->bind.tostringheavy()<<"asdf\n";
-            return head->substitute(&bin[y]->bind,2,0);
+            return head->substitute(&bin[y]->bind,2,1);
         }
     }
     return 0;
 }
-int Statement::maxloc(int loc) {
-    int amt=local==1&&specifier==loc?id+1:0;
+int Statement::maxloc() {
+    int amt=local==1?id+1:0;
     for (int r=0;r<args.size();r++) {
-        int an=args[r]->maxloc(loc);
+        int an=args[r]->maxloc();
         if (an>amt) amt=an;
     }
     return amt;
 }
-Statement* Statement::mapl(int stmodif,int nstmodif) {
-    if (local==0 and args.size()==0) {
-        return this;
-    }
-    Statement* res = new Statement(id,local);
-    for (int q=0;q<args.size();q++) {
-        res->args.push_back(args[q]->mapl(stmodif,nstmodif));
-    }
-    if (type) res->type = type->mapl(stmodif,nstmodif);
-    else res->type = 0;
-//#ifdef safe_play
-//    res->deltasub=deltasub;
-//#endif
-    res->specifier=(local==1 and specifier==stmodif)?nstmodif:specifier;
-    return res;
-}
+//Statement* Statement::mapl(int stmodif,int nstmodif) {
+//    if (local==0 and args.size()==0) {
+//        return this;
+//    }
+//    Statement* res = new Statement(id,local);
+//    for (int q=0;q<args.size();q++) {
+//        res->args.push_back(args[q]->mapl(stmodif,nstmodif));
+//    }
+//    if (type) res->type = type->mapl(stmodif,nstmodif);
+//    else res->type = 0;
+////#ifdef safe_play
+////    res->deltasub=deltasub;
+////#endif
+//    res->specifier=(local==1 and specifier==stmodif)?nstmodif:specifier;
+//    return res;
+//}
 void Statement::local_list(std::vector<Statement*>* list) {
-    if (local==0 and args.size()==0) return;
+    if (local<=0 and args.size()==0) return;
     if (local==1) {
         list->push_back(this);
     }
@@ -240,8 +220,8 @@ void Statement::local_list(std::vector<Statement*>* list) {
 bool amorphousmatch(Statement* a,Statement* b,std::map<int,int>& forward,std::map<int,int>& backward) {
     if (a==0 and b==0) return true;
     if (a==0 or b==0) return false;
-    if (a->local!=b->local or a->args.size()!=b->args.size() or a->specifier!=b->specifier) return false;
-    if (a->local==1 and a->specifier==0) {
+    if (a->local!=b->local or a->args.size()!=b->args.size()) return false;
+    if (a->local==1) {
         if (forward.find(a->id) !=forward.end()  and forward[a->id]!=b->id) return false;
         if (backward.find(b->id)!=backward.end() and backward[b->id]!=a->id) return false;
         forward[a->id]=b->id;
@@ -261,13 +241,13 @@ SolnLink::SolnLink(Statement* from,Statement* to,Soln* link,Entry* a) : containe
 
 
 
-bool Statement::is(int disp,Statement* other) {
-    if (other->specifier!=specifier or other->id!=id) return false;
-    if (specifier==0 and local>1) {
+bool Statement::is(int disp,int cutoff,Statement* other) {
+    if (other->id!=id) return false;
+    if (local>cutoff) {
         if (other->local+disp!=local) return false;
     } else if (other->local!=local) return false;
     for (int y=0;y<args.size();y++) {
-        if (!args[y]->is(disp,other->args[y])) return false;
+        if (!args[y]->is(disp,cutoff,other->args[y])) return false;
     }
     return true;
 }

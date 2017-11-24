@@ -1,0 +1,15 @@
+
+input c;
+affine r;
+affine x;
+r=2;
+x=0;
+while (x<20) {
+    x=x+1;
+    r=r+2;
+}
+output x/r
+
+
+
+

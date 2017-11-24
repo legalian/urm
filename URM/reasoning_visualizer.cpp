@@ -44,7 +44,7 @@ void SolveInstance::visualize() {
     for (int i=0;i<solns.size();i++) {
         for (int o=0;o<solns[i]->upstream.size();o++) {
             Binding interm =solns[i]->upstream[o].container->bind;
-            Statement* linkname=solns[i]->upstream[o].linked->head->substitute(&interm,2,0);
+            Statement* linkname=solns[i]->upstream[o].linked->head->substitute(&interm,2,1);
             js+="[\""+solns[i]->head->tostringdoubleheavy()+"\",\""+solns[i]->upstream[o].linked->head->tostringdoubleheavy()+"\",{label:'"+
             linkname->tostringrecursivedoubleheavy()
             +"'}]";
@@ -66,7 +66,7 @@ void SolveInstance::heavyvisualize() {
     for (int i=0;i<solns.size();i++) {
         for (int o=0;o<solns[i]->bin.size();o++) {
             Binding interm =solns[i]->bin[o]->bind;
-            Statement* linkname=solns[i]->head->substitute(&interm,2,0);
+            Statement* linkname=solns[i]->head->substitute(&interm,2,1);
             js+="\""+linkname->tostringheavy()+"\"";
             linkname->cleanup();
             if (i!=solns.size()-1 or o!=solns[i]->upstream.size()) js+=",";
@@ -76,7 +76,7 @@ void SolveInstance::heavyvisualize() {
     for (int i=0;i<solns.size();i++) {
         for (int o=0;o<solns[i]->bin.size();o++) {
             Binding interm =solns[i]->bin[o]->bind;
-            Statement* linkname=solns[i]->head->substitute(&interm,2,0);
+            Statement* linkname=solns[i]->head->substitute(&interm,2,1);
             js+="[\"["+solns[i]->head->tostringstrategy()+"]\",\""+linkname->tostringheavy()+"\",{color:'#0000FF',label:'"+std::to_string(o)+"'}]";
             linkname->cleanup();
 //            if (i!=solns.size()-1 or o!=solns[i]->upstream.size())
@@ -86,9 +86,9 @@ void SolveInstance::heavyvisualize() {
     for (int i=0;i<solns.size();i++) {
         for (int o=0;o<solns[i]->upstream.size();o++) {
             Binding interm =solns[i]->upstream[o].container->bind;
-            Statement* linkname=solns[i]->upstream[o].linked->head->substitute(&interm,2,0);
+            Statement* linkname=solns[i]->upstream[o].linked->head->substitute(&interm,2,1);
             int rm=0;
-            Statement* target=solns[i]->head->scramble(solns[i]->upstream[o].mapr, rm);
+            Statement* target=solns[i]->head->scramble(solns[i]->upstream[o].mapr,rm,1);
             
 //            ->tostringheavy();
             js+="[\""+linkname->tostringheavy()+"\",\"["+solns[i]->head->tostringstrategy()+"]\",{color:'#FF0000',label:'"+target->tostringheavy()+"'}]";

@@ -64,7 +64,7 @@ struct DictEntry;
 struct Construction {
     int strucLocal;
     int varID;
-    int specifier;
+//    int specifier;
     int reconstruct;
     int tokargs;
     std::string ifget;

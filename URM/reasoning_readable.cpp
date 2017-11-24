@@ -12,17 +12,19 @@
 
 std::string Binding::tostringheavy() {
     std::string res="";
-    for (auto it=0;it<decoms.size();it++) {
-        res+=decoms[it].first->tostringdoubleheavy()+"|"+decoms[it].second->tostringdoubleheavy()+"\n";
+    for (int it=0;it<binds.size();it++) {
+        res+=binds[it].first->tostringheavy()+"|"+binds[it].second->tostringheavy()+"\n";
     }
     return res;
 }
+
+
 
 std::string Soln::tostringheavy() {
     std::string res="";
     res+=head->tostringdoubleheavy()+";\n";
     for (int t=0;t<bin.size();t++) {
-        Statement* subbed = head->substitute(&bin[t]->bind,2,0);
+        Statement* subbed = head->substitute(&bin[t]->bind,2,1);
         res+="\t"+subbed->tostringdoubleheavy()+"\n";
         for (int i=0;i<bin[t]->downstream.size();i++) {
             res+="\t\t"+bin[t]->downstream[i]->head->tostringdoubleheavy()+"\n";
@@ -64,10 +66,8 @@ std::string Statement::tostringdoubleheavy() {
 //    return tostringrecursivedoubleheavy()+":NULL";
 //}
 std::string Statement::tostringrecursivedoubleheavy() {
-    std::string ret = std::to_string(local)+":"+std::to_string(id);
-    if (local==1) ret = "["+std::to_string(specifier)+"]:"+std::to_string(id);
-    else if (specifier!=0) ret = "<"+std::to_string(specifier)+"/"+std::to_string(id)+">";
-    else if (0==local and MetaBank::meta_prime.stratnames.size()>id) {
+    std::string ret = "{"+std::to_string(local)+":"+std::to_string(id)+"}";
+    if (local==0 and MetaBank::meta_prime.stratnames.size()>id) {
         ret = MetaBank::meta_prime.stratnames[id];
     }
     
@@ -90,10 +90,8 @@ std::string Statement::tostringrecursivedoubleheavy() {
     return ret;
 }
 std::string Statement::tostringheavy() {
-    std::string ret = std::to_string(local)+":"+std::to_string(id);
-    if (local==1) ret = "["+std::to_string(specifier)+"]:"+std::to_string(id);
-    else if (specifier!=0) ret = "<"+std::to_string(specifier)+"/"+std::to_string(id)+">";
-    else if (0==local and MetaBank::meta_prime.stratnames.size()>id) {
+    std::string ret = "{"+std::to_string(local)+":"+std::to_string(id)+"}";
+    if (local==0 and MetaBank::meta_prime.stratnames.size()>id) {
         ret = MetaBank::meta_prime.stratnames[id];
     }
     
@@ -132,10 +130,8 @@ std::string Construction::tostringheavy() {
     switch (reconstruct) {
         case 6:
         case 0:
-            ret = std::to_string(strucLocal)+":"+std::to_string(varID);
-            if (strucLocal==1) ret = "["+std::to_string(specifier)+"]:"+std::to_string(varID);
-            else if (specifier!=0) ret = "<"+std::to_string(specifier)+"/"+std::to_string(varID)+">";
-            else if (strucLocal==0) {
+            ret = "{"+std::to_string(strucLocal)+":"+std::to_string(varID)+"}";
+            if (strucLocal==0 and MetaBank::meta_prime.stratnames.size()>varID) {
                 ret = MetaBank::meta_prime.stratnames[varID];
             }
             for (int r=0;r<given.size();r++) {
