@@ -13,48 +13,49 @@ MetaBank MetaBank::meta_prime;
 Statement* Statement::universe=0;
 Statement* Statement::gap=0;
 
-Entry::Entry(Binding q,int id) : bind(q) ,ids(id) {}
+Entry::Entry(Binding q) : bind(q) {}
 
-Binding::Binding(int s) : sdepth(s) {}
-//Binding::Binding(const Binding& other) {
-////    for (auto it=other.specs.begin();it!=other.specs.end();it++) {
-////        specs[it->first]=it->second->deepcopy();
-////    }
-//    for (int it=0;it<other.decoms.size();it++) {
-//        decoms.push_back(std::pair<Statement*,Statement*>(other.decoms[it].first->deepcopy(),other.decoms[it].second->deepcopy()));
-//    }
-//}
-//Binding& Binding::operator=(const Binding & other) {
-//    for (int it=0;it<decoms.size();it++) {
-//        decoms[it].first->cleanup();
-//        decoms[it].second->cleanup();
-//    }
-//    decoms.clear();
-//    for (int it=0;it<other.decoms.size();it++) {
-//        decoms.push_back(std::pair<Statement*,Statement*>(other.decoms[it].first->deepcopy(),other.decoms[it].second->deepcopy()));
-//    }
-//    return *this;
-//}
+SingleBind::SingleBind(Statement* a,Statement* b,std::vector<Strategy*>& c) : head(a),body(b),itinerary(c) {}
+
+Branches::Branches(int j) {
+    for (int k=0;k<j;k++) {
+        branches.push_back(std::vector<int>());
+    }
+}
+Binding::Binding(MetaBank* mb,std::vector<Strategy*>& lt,std::vector<Branches>& pi) : localtypes(lt),principles(pi) {
+    tracks.push_back(&mb->strategies);
+    tracks.push_back(&localtypes);
+    for (int u=0;u<lt.size();u++) {
+        partials.push_back(Statement::gap);
+    }
+}
+Binding::Binding(std::vector<std::vector<Strategy*>*>& t,std::vector<Strategy*>& lt,std::vector<Branches>& pi) : tracks(t),localtypes(lt),principles(pi) {
+    tracks.push_back(&localtypes);
+    for (int u=0;u<lt.size();u++) {
+        partials.push_back(Statement::gap);
+    }
+}
+
 Binding::~Binding() {
-//    throw;
-//    for (int it=0;it<symmetricA.size();it++) {
-//        decoms[it].first->cleanup();
-//        decoms[it].second->cleanup();
-//    }
-//    for (int it=0;it<decoms.size();it++) {
-//        decoms[it].first->cleanup();
-//        decoms[it].second->cleanup();
-//    }
-//    for (int it=0;it<decoms.size();it++) {
-//        decoms[it].first->cleanup();
-//        decoms[it].second->cleanup();
-//    }
+
 }
 
-Statement::Statement(int idr,int loc) {
-    local=loc;id=idr;
-}
+//Statement::Statement(int idr,int loc) {
+//    local=loc;id=idr;
+//}
 void Statement::cleanup() {
+    if (local>0 or args.size()!=0) {
+        for (int v=0;v<args.size();v++) {
+            args[v]->cleanup();
+        }
+//        if (type) type->cleanup();
+        local=9001;
+        id=900;
+//        type = (Statement*)99;
+        delete this;
+    }
+}
+void Strategy::cleanup() {
     if (local!=0 or args.size()!=0) {
         for (int v=0;v<args.size();v++) {
             args[v]->cleanup();
@@ -62,7 +63,7 @@ void Statement::cleanup() {
         if (type) type->cleanup();
         local=9001;
         id=900;
-        type = (Statement*)99;
+//        type = (Statement*)99;
         delete this;
     }
 }
@@ -74,30 +75,60 @@ Statement* Statement::deepcopy() {
     for (int q=0;q<args.size();q++) {
         res->args.push_back(args[q]->deepcopy());
     }
-    if (type) res->type = type->deepcopy();
-    else res->type=0;
+    return res;
+}
+Strategy* Strategy::deepcopy() {
+    Strategy* res = new Strategy(type->deepcopy(),id,local);
+    for (int q=0;q<args.size();q++) {
+        res->args.push_back(args[q]->deepcopy());
+    }
     return res;
 }
 
-Statement::Statement(Statement* ty,int idr,int loc) {
+Statement::Statement(int idr,int loc) {
+    local=loc;id=idr;
+}
+Statement::Statement(int idr,int loc,Statement* a) {
+    local=loc;id=idr;
+    args.push_back(a);
+}
+Statement::Statement(int idr,int loc,Statement* a,Statement* b) {
+    local=loc;id=idr;
+    args.push_back(a);
+    args.push_back(b);
+}
+Statement::Statement(int idr,int loc,Statement* a,Statement* b,Statement* c) {
+    local=loc;id=idr;
+    args.push_back(a);
+    args.push_back(b);
+    args.push_back(c);
+}
+Statement::Statement(int idr,int loc,Statement* a,Statement* b,Statement* c,Statement* d) {
+    local=loc;id=idr;
+    args.push_back(a);
+    args.push_back(b);
+    args.push_back(c);
+    args.push_back(d);
+}
+Strategy::Strategy(Statement* ty,int idr,int loc) {
     local=loc;id=idr;type=ty;
 }
-Statement::Statement(Statement* ty,int idr,int loc,Statement* a) {
+Strategy::Strategy(Statement* ty,int idr,int loc,Strategy* a) {
     local=loc;id=idr;type=ty;
     args.push_back(a);
 }
-Statement::Statement(Statement* ty,int idr,int loc,Statement* a,Statement* b) {
+Strategy::Strategy(Statement* ty,int idr,int loc,Strategy* a,Strategy* b) {
     local=loc;id=idr;type=ty;
     args.push_back(a);
     args.push_back(b);
 }
-Statement::Statement(Statement* ty,int idr,int loc,Statement* a,Statement* b,Statement* c) {
+Strategy::Strategy(Statement* ty,int idr,int loc,Strategy* a,Strategy* b,Strategy* c) {
     local=loc;id=idr;type=ty;
     args.push_back(a);
     args.push_back(b);
     args.push_back(c);
 }
-Statement::Statement(Statement* ty,int idr,int loc,Statement* a,Statement* b,Statement* c,Statement* d) {
+Strategy::Strategy(Statement* ty,int idr,int loc,Strategy* a,Strategy* b,Strategy* c,Strategy* d) {
     local=loc;id=idr;type=ty;
     args.push_back(a);
     args.push_back(b);
@@ -154,8 +185,8 @@ Statement* Statement::scramble(std::map<int,int>& mapr,int& push,int sdepth) {
     for (int q=0;q<args.size();q++) {
         res->args.push_back(args[q]->scramble(mapr,push,sdepth));
     }
-    if (type) res->type = type->scramble(mapr,push,sdepth);
-    else res->type = 0;
+//    if (type) res->type = type->scramble(mapr,push,sdepth);
+//    else res->type = 0;
     return res;
 }
 void Statement::unscramble(std::map<int,int>& mapr,int& push,int sdepth) {
@@ -171,26 +202,26 @@ void Statement::unscramble(std::map<int,int>& mapr,int& push,int sdepth) {
 }
 
 
-Soln::Soln() : expanded(true), head(new Statement(0,-1,1,0)) {}
+Soln::Soln() : expanded(true), head(new Statement(-1,1)) {}
 Soln::Soln(Statement* point) : head(point) {}
 
 Statement* Soln::getsolution() {
     for (int y=0;y<bin.size();y++) {
         if (bin[y]->downstream.size()==0) {
 //            std::cout<<bin[y]->bind.tostringheavy()<<"asdf\n";
-            return head->substitute(&bin[y]->bind,2,1);
+//            return head->substitute(&bin[y]->bind);
         }
     }
     return 0;
 }
-int Statement::maxloc() {
-    int amt=local==1?id+1:0;
-    for (int r=0;r<args.size();r++) {
-        int an=args[r]->maxloc();
-        if (an>amt) amt=an;
-    }
-    return amt;
-}
+//int Statement::maxloc() {
+//    int amt=local==1?id+1:0;
+//    for (int r=0;r<args.size();r++) {
+//        int an=args[r]->maxloc();
+//        if (an>amt) amt=an;
+//    }
+//    return amt;
+//}
 //Statement* Statement::mapl(int stmodif,int nstmodif) {
 //    if (local==0 and args.size()==0) {
 //        return this;
@@ -215,7 +246,7 @@ void Statement::local_list(std::vector<Statement*>* list) {
     for (int q=0;q<args.size();q++) {
         args[q]->local_list(list);
     }
-    if (type) type->local_list(list);
+//    if (type) type->local_list(list);
 }
 bool amorphousmatch(Statement* a,Statement* b,std::map<int,int>& forward,std::map<int,int>& backward) {
     if (a==0 and b==0) return true;
@@ -230,7 +261,7 @@ bool amorphousmatch(Statement* a,Statement* b,std::map<int,int>& forward,std::ma
     for (int i=0;i<a->args.size();i++) {
         if (!amorphousmatch(a->args[i],b->args[i],forward,backward)) return false;
     }
-    if ((a->type!=Statement::universe or b->type!=Statement::universe) and !amorphousmatch(a->type,b->type,forward,backward)) return false;
+//    if ((a->type!=Statement::universe or b->type!=Statement::universe) and !amorphousmatch(a->type,b->type,forward,backward)) return false;
     return true;
 }
 
@@ -239,18 +270,22 @@ SolnLink::SolnLink(Statement* from,Statement* to,Soln* link,Entry* a) : containe
     amorphousmatch(from,to,backward,mapr);
 }
 
-
-
-bool Statement::is(int disp,int cutoff,Statement* other) {
-    if (other->id!=id) return false;
-    if (local>cutoff) {
-        if (other->local+disp!=local) return false;
-    } else if (other->local!=local) return false;
-    for (int y=0;y<args.size();y++) {
-        if (!args[y]->is(disp,cutoff,other->args[y])) return false;
-    }
-    return true;
+Binding Binding::emptycopy() {
+    Binding out = *this;
+    out.binds.clear();
+    return out;
 }
+
+//bool Statement::is(int disp,int cutoff,Statement* other) {
+//    if (other->id!=id) return false;
+//    if (local>cutoff) {
+//        if (other->local+disp!=local) return false;
+//    } else if (other->local!=local) return false;
+//    for (int y=0;y<args.size();y++) {
+//        if (!args[y]->is(disp,cutoff,other->args[y])) return false;
+//    }
+//    return true;
+//}
 
 
 

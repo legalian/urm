@@ -72,7 +72,7 @@ struct Construction {
     ConstructArgReference alt;
     std::vector<Construction> children;
     std::string tostringheavy();
-    Statement* convert(ParseSpecifier*,std::vector<DictEntry>,std::map<int,std::vector<Statement*>*>&,int&,int,Statement*,std::vector<Statement*>&,int);
+    Statement* convert(ParseSpecifier*,std::vector<DictEntry>,int&,int,std::vector<Statement*>&,int);
     Construction reference(ConstructArgReference);
     Construction();
     Construction(ParseSpecifier*,ParseResult*);
@@ -91,7 +91,7 @@ struct Conversion {
     std::vector<ConversionChoice> choices;
     Construction elapse;
     std::string tostringheavy(int tabs);
-    Statement* convert(ParseSpecifier*,std::vector<DictEntry>,Construction*,std::map<int,std::vector<Statement*>*>& params,int&,int,ParseVariant&,std::vector<Statement*>&,int);
+    Statement* convert(ParseSpecifier*,std::vector<DictEntry>,Construction*,int&,int,std::vector<Statement*>&,int);
 };
 struct ConversionChoice {
     ConstructArgReference head;
@@ -125,7 +125,7 @@ struct ParseStructure {
     std::string englishname;
     std::map<int,bool> flippedorders;
     bool verbose;
-    Statement* type=0;
+    Strategy* type=0;
 //    std::vector<std::string> varnames;
     std::vector<ParseVariant> variants;
     ParseStructure();
@@ -159,10 +159,10 @@ struct ParseSpecifier {
 ParseSpecifier& getGlobParser();
 ParseSpecifier& getLangFile(const std::string&);
 
-Statement* parse_TTML(const std::string&,int);
-Statement* parse_TTML(const std::string&,int,std::map<std::string,Statement*>);
-Statement* parse_TTML(const std::string&,int,std::map<std::string,Statement*>,std::vector<std::string>*);
-Statement* parse_TTML(const std::string&,int,std::vector<std::string>*);
+Strategy* parse_TTML(const std::string&,int);
+Strategy* parse_TTML(const std::string&,int,std::map<std::string,Statement*>);
+Strategy* parse_TTML(const std::string&,int,std::map<std::string,Statement*>,std::vector<std::string>*);
+Strategy* parse_TTML(const std::string&,int,std::vector<std::string>*);
 ParseSpecifier parse_parser(std::map<std::string,std::string>,std::map<std::string,std::string>,const std::string&,const std::string&);
 
 

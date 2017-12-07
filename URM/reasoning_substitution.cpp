@@ -17,148 +17,246 @@ Statement* Statement::depth_push(int cutoff,int amt) {//anything >=stat will be 
     for (int q=0;q<args.size();q++) {
         res->args.push_back(args[q]->depth_push(cutoff,amt));
     }
-    if (type) res->type = type->depth_push(cutoff,amt);
-    else res->type=0;
+//    if (type) res->type = type->depth_push(cutoff,amt);
+//    else res->type=0;
     return res;
 }
-void Statement::clip_upperbound(int stat,bool par,std::map<std::pair<int,int>,int>& remap,int& mappoint) {//anything <=stat will be replaced.
-    if ((local!=0 and local!=1 and local<=stat) or (par and local%2==1)) {
+void Statement::clip_upperbound(int stat,int stmodif,std::map<std::pair<int,int>,int>& remap,int& mappoint) {
+    if (local>stmodif and local<stat) {
         if (remap.find(std::pair<int,int>(id,local))==remap.end()) {
             remap[std::pair<int,int>(id,local)] = mappoint++;
         }
     }
     for (int u=0;u<args.size();u++) {
-        args[u]->clip_upperbound(stat,par,remap,mappoint);
+        args[u]->clip_upperbound(stat,stmodif,remap,mappoint);
     }
 }
 
-Statement* Statement::paste_upperbound_prim(int stat,std::map<std::pair<int,int>,int>& remap,std::vector<Statement*>* prepend,bool inc) {//anything <=stat will be replaced.
-    if (local<=0 and args.size()==0) {
-        return this;
+Statement* Strategy::snapshot() {
+    Statement* res = new Statement(id,local);
+    for (int q=0;q<args.size();q++) {
+        res->args.push_back(args[q]->snapshot());
     }
-    Statement* res = new Statement(Statement::universe,id,local);
-    if (local!=0 and local<=stat and local%2==1) {
-        if (remap.find(std::pair<int,int>(id,local))==remap.end()) {
-            return 0;
-        }
+    return res;
+}
+
+//std::vector<Strategy*>& poptypes, etc
+//int& remapper,bool pair
+
+Statement* Strategy::locsnapshot(std::vector<Statement*>* prepend,bool pair,int stat,std::vector<Strategy*>& poptypes,std::vector<Branches>& popprin) {
+    Statement* res = new Statement(id,local);
+    if (pair) {
         res->local = 1;
-        res->id = remap[std::pair<int,int>(id,local)];
+        res->id = poptypes.size();
+        Strategy* ret = deepcopy();
         if (prepend) {
             for (int j=0;j<prepend->size();j++) {
                 res->args.push_back((*prepend)[j]->deepcopy());
             }
         }
+        poptypes.push_back(ret);
+        int nextid = poptypes.size();
+        Branches res(0);
+        for (int x=0;x<args.size();x++) {
+            res.branches.push_back(std::vector<int>());
+            for (int y=0;y<args[x]->args.size();y++) {
+                
+            }
+        }
+        popprin.push_back(res);
+//        popprin.push_back(locsnapshot(prepend,true,1,nextid));
     }
     for (int q=0;q<args.size();q++) {
-        Statement* possib = args[q]->paste_upperbound_prim(inc?stat+1:stat,remap,prepend,inc);
-        if (possib==0) {
-        
-            res->cleanup();
-            return 0;
-        }
-        res->args.push_back(possib);
+        res->args.push_back(args[q]->locsnapshot(prepend,!pair,stat+1,poptypes,popprin));
     }
-    res->type = type->paste_upperbound_prim(inc?stat+1:stat,remap,prepend,false);
     return res;
 }
-Statement* Statement::paste_upperbound_sec(int stat,std::map<std::pair<int,int>,int>& remap,int general) {//anything <=stat will be replaced.
+//Statement* Strategy::locsnapshot(std::vector<Statement*>* prepend,bool pair,int stat,int& paint) {
+//    Statement* res = new Statement(id,stat);
+//    if (pair) {
+//        res->local = 1;
+//        res->id = paint++;
+//        if (prepend) {
+//            for (int j=0;j<prepend->size();j++) {
+//                res->args.push_back((*prepend)[j]->deepcopy());
+//            }
+//        }
+//    }
+//    for (int q=0;q<args.size();q++) {
+//        res->args.push_back(args[q]->locsnapshot(prepend,!pair,stat+1,paint));
+//    }
+//    return res;
+//}
+Statement* Statement::paste_upperbound(int stat,std::map<std::pair<int,int>,int>& remap,int general) {//anything <=stat will be replaced.
     if (local<=0 and args.size()==0) {
         return this;
     }
-    Statement* res = new Statement(Statement::universe,id,local);
-    if (local<=stat and local>general) {
+    Statement* res = new Statement(id,local);
+    if (local==general) {
+        res->local=general+1;
+    }
+    if (local>general and local<stat) {
         if (remap.find(std::pair<int,int>(id,local))==remap.end()) {
-//            std::cout<<"failure: "<<id<<" , "<<local<<"\n";
             return 0;
         }
         res->local = general;
         res->id = remap[std::pair<int,int>(id,local)];
     }
     for (int q=0;q<args.size();q++) {
-        Statement* possib = args[q]->paste_upperbound_sec(stat,remap,general);
+        Statement* possib = args[q]->paste_upperbound(stat,remap,general);
         if (possib==0) {
             res->cleanup();
             return 0;
         }
         res->args.push_back(possib);
     }
-    res->type = type->paste_upperbound_sec(stat,remap,general);
     return res;
 }
 
-Statement* Statement::substitute(Binding* bind,int stat,int sub_level) {
-    if (stat>100 or sub_level>100) {
-        throw;
+std::string Statement::substitute_tostring(Binding* bind) {
+    std::vector<Statement*> din;
+    substitute(bind,bind->tracks,din);
+    return din[0]->tostring();
+}
+void Statement::substitute(Binding* bind,std::vector<std::vector<Strategy*>*>& params,std::vector<Statement*>& results) {
+    bool trash;
+    substitute(bind,params,results,-1,trash,false);
+}
+void Statement::substitute(Binding* bind,std::vector<std::vector<Strategy*>*>& params,std::vector<Statement*>& results,int avoidex,bool& changed,bool gapyield) {
+    #define out (local==bind->tracks.size()-1?buffer:results)
+    #define CAR1 (c1?cartesian1:cartesian2)
+    #define CAR2 (c1?cartesian2:cartesian1)
+    if (local<=0 and args.size()==0) {results.push_back(this);return;}
+    Strategy* calctype = (*params[local])[id]->typechecksub(&args, (*params[local])[id]->local+1,(int)params.size(),1);
+    std::vector<std::vector<Strategy*>*> continued;
+    std::vector<Statement*> cartesian1;
+    std::vector<Statement*> cartesian2;
+    std::vector<Statement*> buffer;
+    std::vector<Statement*> sb;
+    bool c1=true;
+    switch (args.size()) {
+        case 0:
+        if (local<=0) out.push_back(this);
+        else out.push_back(deepcopy());
+        break;
+        case 1:
+        continued = params;
+        continued.push_back(&calctype->args[0]->args);
+        args[0]->substitute(bind,continued,sb,-1,changed,gapyield);
+        for (int i=0;i<sb.size();i++) out.push_back(new Statement(id,local,sb[i]));
+        break;
+        default:
+        continued = params;
+        continued.push_back(&calctype->args[0]->args);
+        args[0]->substitute(bind,continued,sb,-1,changed,gapyield);
+        for (int i=0;i<sb.size();i++) cartesian1.push_back(new Statement(id,local,sb[i]));
+        sb.clear();
+        for (int q=1;q<args.size();q++) {
+            continued = params;
+            continued.push_back(&calctype->args[q]->args);
+            args[q]->substitute(bind,continued,sb,-1,changed,gapyield);
+            for (int u=0;u<CAR1.size();u++) {
+                for (int p=0;p<sb.size();p++) {
+                    Statement* dup = CAR1[u]->deepcopy();
+                    dup->args.push_back(sb[p]);
+                    (q<args.size()-1?CAR2:out).push_back(dup);
+                }
+            }
+            sb.clear();
+            CAR1.clear();
+            c1 = not c1;
+        }
     }
-    if (local<=0 and args.size()==0) {
+    bool found=false;
+    for (int g=0;g<buffer.size();g++) {
+        if (buffer[g]->is_complete()) {
+            if (bind->partials[id]->is_complete()) {
+                changed=true;
+                results.push_back(bind->partials[id]->substitute_level(&buffer[g]->args,2,2,1));
+                return;
+            } else if (gapyield) {
+                results.push_back(bind->partials[id]->substitute_level(&buffer[g]->args,2,2,1));
+                changed=true;
+            }
+            for (int s=0;s<bind->binds.size();s++) {
+                if (bind->binds[s].head->id==id and bind->binds[s].body->is_complete() and bind->binds[s].body->local!=bind->tracks.size()-1) {
+                    if (s==avoidex) continue; else if (s<=avoidex) {
+                        Binding reverse = Binding(params,bind->binds[avoidex].itinerary,bind->binds[avoidex].principles);
+                        reverse.tracks[reverse.tracks.size()-2] = &bind->binds[s].itinerary;
+                        if (reverse.decompose(bind->binds[s].head->depth_push(bind->tracks.size(),1),buffer[g]->depth_push(bind->tracks.size()+1,1))) continue;
+                    }
+                    Binding comparison = Binding(params,bind->binds[s].itinerary,bind->binds[s].principles);
+                    if (comparison.decompose(
+                    bind->binds[s].head->depth_push(bind->tracks.size(),params.size()-bind->tracks.size()),
+                    buffer[g]->depth_push(params.size(),1)
+                    )) {//check depth matchups here... from theory
+                        std::vector<Binding> switcher;
+                        comparison.divide(switcher);
+                        for (int o=0;o<switcher.size();o++) {
+                            Statement* result = bind->binds[s].body
+                                ->depth_push(bind->tracks.size(),params.size()-bind->tracks.size())
+                                ->substitute_level(&comparison.partials,comparison.tracks.size()-1,comparison.tracks.size(),0);
+                            if (result->is_complete()) {
+                                results.push_back(result);
+                            }
+                        }
+                        changed=true;
+                        found=true;
+                    }
+                }
+            }
+        }
+    }
+    if (!found) {
+        for (int k=0;k<buffer.size();k++) {
+            results.push_back(buffer[k]);
+        }
+    }
+    #undef out
+    #undef CAR1
+    #undef CAR2
+}
+
+Statement* Statement::substitute_level(std::vector<Statement*>* repl,int level,int reflex,int recur) {
+    if (args.size()==0 and local<=0) {
         return this;
     }
-    Statement* res = new Statement(id,local);
-    for (int q=0;q<args.size();q++) {
-        res->args.push_back(args[q]->substitute(bind,stat+1,sub_level));
+    if (local==level) {
+        if (repl->size()<=id) {
+            throw;
+        }
+        std::vector<Statement*> fargs;
+        for (int s=0;s<args.size();s++) {
+            Statement* subbed = args[s]->substitute_level(repl,level,reflex, recur+1);
+            fargs.push_back(subbed);
+        }
+        Statement* a = (*repl)[id]->depth_push(reflex,recur-1)->substitute_level(&fargs,reflex+recur-1,level+recur+1,0);
+        for (int s=0;s<args.size();s++) {
+            fargs[s]->cleanup();
+        }
+        return a;
+    } else {
+        Statement* ret = new Statement(id,local);
+        for (int w=0;w<args.size();w++) {
+            ret->args.push_back(args[w]->substitute_level(repl,level,reflex,recur+1));
+        }
+        return ret;
     }
-    if (type) res->type = type->substitute(bind,stat+1,sub_level);
-    else res->type = 0;
-    
-    if (local==sub_level) {
-        if (bind->partials[id].second->is_complete()) {
-            Binding comparison(sub_level+1);
-            if (comparison.decompose(bind->partials[id].first,res->depth_push(sub_level+1,1),0)) {
-                res->cleanup();
-                return bind->partials[id].second->substitute(&comparison,0,sub_level+1);
-            }
-        }
-        for (int s=0;s<bind->binds.size();s++) {
-            if (bind->binds[s].first->id==id and bind->binds[s].second->is_complete() and bind->binds[s].second->local!=sub_level) {
-                Binding comparison(sub_level+1);
-                if (comparison.decompose(bind->binds[s].first,res->depth_push(sub_level+1,1),0)) {
-                    res->cleanup();
-                    return bind->binds[s].second->substitute(&comparison,0,sub_level+1);
-                }
-            }
-        }
+}
+Strategy* Strategy::typechecksub(std::vector<Statement*>* repl,int level,int reflex,int recur) {
+    Strategy* res = new Strategy(type->substitute_level(repl,level,reflex,recur),id,local);
+    for (int w=0;w<args.size();w++) {
+        res->args.push_back(args[w]->typechecksub(repl,level,reflex,recur+1));
     }
     return res;
 }
-
-
-
-Statement* Statement::lam_substitute(Binding* bind,int stat,int sub_level,int avoidex,bool& changed) {
-    if (stat>100 or sub_level>100) throw;
-    if (local<=0 and args.size()==0) return this;
-    Statement* res = new Statement(id,local);
-    for (int q=0;q<args.size();q++) {
-        res->args.push_back(args[q]->lam_substitute(bind,stat+1,sub_level,-1,changed));
-    }
-    if (type) res->type = type->lam_substitute(bind,stat+1,sub_level,-1,changed);
-    else res->type = 0;
-    
-    if (local==sub_level) {
-        if (bind->partials[id].second->is_complete()) {
-            Binding comparison(sub_level+1);
-            if (comparison.decompose(bind->partials[id].first,res->depth_push(sub_level+1,1),0)) {
-                res->cleanup();
-                return bind->partials[id].second->substitute(&comparison,0,sub_level+1);
-            }
-        }
-        for (int s=0;s<bind->binds.size();s++) {
-            if (bind->binds[s].first->id==id and bind->binds[s].second->is_complete() and bind->binds[s].second->local!=sub_level) {
-                if (s<=avoidex) {
-                    Binding reverse(sub_level+1);
-                    if (reverse.decompose(bind->binds[s].first->depth_push(sub_level+1,1),res,0)) continue;
-                }
-                Binding comparison(sub_level+1);
-                if (comparison.decompose(bind->binds[s].first,res->depth_push(sub_level+1,1),0)) {//check depth matchups here... from theory
-                    changed=true;
-                    res->cleanup();
-                    return bind->binds[s].second->substitute(&comparison,0,sub_level+1);
-                }
-            }
-        }
+Strategy* Strategy::bring_depth(int cutoff,int depth) {
+    Strategy* res = new Strategy(type->depth_push(cutoff,depth),id,local+depth);//>=cutoff; cutoff=stmodif+1,depth=stmodif+1-loc
+    for (int w=0;w<args.size();w++) {
+        res->args.push_back(args[w]->bring_depth(cutoff,depth));
     }
     return res;
 }
-
 
 
 

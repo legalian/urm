@@ -110,8 +110,8 @@ ParseSpecifier& getGlobParser() {
             VARIANT(4) S("[") OBJ(p_puremodifiers) S("]") END
         ;
         globParser.table[p_purestatement] = ParseStructure(p_purestatement)
-            VARIANT(0) S("{") OBJ(-1) S("/") OBJ(-1) S(":") OBJ(p_purestatement) S("}") S("(") OBJ(p_purearguments) S(")") END
-            VARIANT(1) S("{") OBJ(-1) S("/") OBJ(-1) S(":") OBJ(p_purestatement) S("}") END
+            VARIANT(0) S("{") OBJ(-1) S("/") OBJ(-1) S("}") S("(") OBJ(p_purearguments) S(")") END
+            VARIANT(1) S("{") OBJ(-1) S("/") OBJ(-1) S("}") END
             VARIANT(3) OBJ(-2) S("(") OBJ(p_purearguments) S(")") END
             VARIANT(4) OBJ(-2) END
         ;
@@ -162,9 +162,9 @@ Statement* indexedPureStatementConvert(MetaBank* mb,ParseResult* change,std::map
     Statement* head=0;
     if (change->var<2) {
         head = new Statement(std::stoi(change->children[0]->endpoint),std::stoi(change->children[1]->endpoint));
-        head->type = indexedPureStatementConvert(mb,change->children[2],varbank,stat+1);
+//        head->type = indexedPureStatementConvert(mb,change->children[2],varbank,stat+1);
         if (change->var==0) {
-            indexedPureCoalesceStatements(mb,change->children[3],varbank,&head->args,stat+1);
+            indexedPureCoalesceStatements(mb,change->children[2],varbank,&head->args,stat+1);
         }
         return head;
     } else if (change->var<4) {
@@ -172,22 +172,12 @@ Statement* indexedPureStatementConvert(MetaBank* mb,ParseResult* change,std::map
         int lp1 = varbank[change->children[0]->endpoint]->local+1;
         Statement* roottype = varbank[change->children[0]->endpoint]->depth_push(lp1,stat-(lp1));
         if (change->var==2) {
-//            head = new Statement(roottype->id,roottype->local);
             std::vector<Statement*> fargs;
             indexedPureCoalesceStatements(mb,change->children[1],varbank,&fargs,stat+1);
-            std::string traceback="";
             
-            head = roottype->safe_substitute_level(&fargs,stat,stat+1,0,traceback);
-            if (head==0) {
-                std::cout<<"\nTraceback:\n"<<roottype->tostringheavy()<<"\n"<<traceback<<"\n";
-                throw;
-            }
-//            head->erase_deltasub();
-//            std::cout<<"-=-=-=-=-="<<stat<<"\n";
-//            for (int e=0;e<fargs.size();e++) {
-//                std::cout<<"\t"<<fargs[e]->tostringdoubleheavy()<<"\n";
-//            }
-//            std::cout<<roottype->tostringdoubleheavy()<<" --> "<<head->tostringdoubleheavy()<<"\n";
+            head = roottype->substitute_level(&fargs,stat,stat+1,0);
+            
+            
             return head;
         } else {
             return roottype;
@@ -198,43 +188,36 @@ Statement* indexedPureStatementConvert(MetaBank* mb,ParseResult* change,std::map
 
 
 
-Statement* indexedPureStrategyConvert(MetaBank*,ParseResult*,std::map<std::string,Statement*>&,int paint,int depth);
-void indexedPureCoalesceStrategies(MetaBank* mb,ParseResult* change,std::map<std::string,Statement*>& varbank,std::vector<Statement*>* list,int paint,int depth) {
-    Statement* uwu = indexedPureStrategyConvert(mb,change->children[0],varbank,paint,depth);
-    list->push_back(uwu);
+Strategy* indexedPureStrategyConvert(MetaBank*,ParseResult*,std::map<std::string,Statement*>&,int paint,int depth);
+void indexedPureCoalesceStrategies(MetaBank* mb,ParseResult* change,std::map<std::string,Statement*>& varbank,std::vector<Strategy*>* list,int paint,int depth) {
+    list->push_back(indexedPureStrategyConvert(mb,change->children[0],varbank,paint,depth));
     if (change->var==0) {
         indexedPureCoalesceStrategies(mb,change->children[1],varbank,list,paint+1,depth);
     }
 }
-Statement* indexedPureStrategyConvert(MetaBank* mb,ParseResult* change,std::map<std::string,Statement*>& varbank,int paint,int depth) {
+Strategy* indexedPureStrategyConvert(MetaBank* mb,ParseResult* change,std::map<std::string,Statement*>& varbank,int paint,int depth) {
     if (change->struc!=p_purestrategy) throw;
-    Statement* res;
+    Strategy* res;
     switch (change->var) {
         case 0:
-            res = new Statement(paint,depth);
-            res->type = indexedPureStatementConvert(mb,change->children[0],varbank,depth+2);
-            return res;
+            return new Strategy(indexedPureStatementConvert(mb,change->children[0],varbank,depth+2),paint,depth);
         case 1:
-            res = new Statement(paint,depth);
-            res->type = indexedPureStatementConvert(mb,change->children[1],varbank,depth+2);
-            varbank[change->children[0]->endpoint] = res;
-//            std::cout<<change->children[0]->endpoint<<" = "<<res->tostringdoubleheavy()<<"\n";
+            res =  new Strategy(indexedPureStatementConvert(mb,change->children[1],varbank,depth+2),paint,depth);
+            varbank[change->children[0]->endpoint] = res->snapshot();
             return res;
         case 2:
-            res = new Statement(paint,depth);
+            res = new Strategy(0,paint,depth);
             indexedPureCoalesceStrategies(mb,change->children[0],varbank,&res->args,0,depth+1);
             res->type = indexedPureStatementConvert(mb,change->children[1],varbank,depth+2);
             return res;
         case 3:
-            res = new Statement(paint,depth);
+            res = new Strategy(0,paint,depth);
             indexedPureCoalesceStrategies(mb,change->children[0],varbank,&res->args,0,depth+1);
-            res->type = indexedPureStatementConvert(mb,change->children[2],varbank,depth+2);
-            varbank[change->children[1]->endpoint] = res;
-//            std::cout<<change->children[1]->endpoint<<" = "<<res->tostringdoubleheavy()<<"\n";
+            res->type =indexedPureStatementConvert(mb,change->children[2],varbank,depth+2);
+            varbank[change->children[1]->endpoint] = res->snapshot();
             return res;
         case 4:
-            res = new Statement(-1,depth);
-            res->type = 0;
+            res = new Strategy(0,-1,depth);
             indexedPureCoalesceStrategies(mb,change->children[0],varbank,&res->args,0,depth+1);
             return res;
     }
@@ -429,7 +412,7 @@ void liststrucs(MetaBank* mb,std::map<std::string,int>& handle,ParseSpecifier& p
     if (tokenized->var==0) {
         std::map<std::string,Statement*> typevarbank;
         for (int a=0;a<mb->strategies.size();a++) {
-            typevarbank[mb->stratnames[a]]=mb->strategies[a];
+            typevarbank[mb->stratnames[a]]=mb->strategies[a]->snapshot();
         }
         std::vector<std::string> labels;
         parser.table[resid].type = indexedPureStrategyConvert(mb,tokenized->children[1],typevarbank,0,0);
@@ -543,29 +526,29 @@ ParseSpecifier parse_parser(std::map<std::string,std::string> comments,std::map<
     
     return result;
 }
-Statement* parse_TTML(const std::string & parse,int tdepth,std::map<std::string,Statement*> varbank,std::vector<std::string>* pop) {
+Strategy* parse_TTML(const std::string & parse,int tdepth,std::map<std::string,Statement*> varbank,std::vector<std::string>* pop) {
     ParseResult* tokenized = getGlobParser().parse(p_purestrategy, parse);
     if (pop) {
         if (tokenized->var<2) throw;
         indexedLabelExtraction(pop,tokenized->children[0]);
     }
     MetaBank* mb = &MetaBank::meta_prime;
-    varbank["U"]=Statement::universe;
+    varbank["U"] = Statement::universe;
     for (int a=0;a<mb->strategies.size();a++) {
-        varbank[mb->stratnames[a]]=mb->strategies[a];
+        varbank[mb->stratnames[a]]=mb->strategies[a]->snapshot();
     }
-    Statement* result = indexedPureStrategyConvert(mb,tokenized,varbank,0,tdepth);
+    Strategy* result = indexedPureStrategyConvert(mb,tokenized,varbank,0,tdepth);
     tokenized->cleanup();
     return result;
 }
-Statement* parse_TTML(const std::string & parse,int tdepth,std::map<std::string,Statement*> varbank) {
+Strategy* parse_TTML(const std::string & parse,int tdepth,std::map<std::string,Statement*> varbank) {
     return parse_TTML(parse,tdepth,varbank,0);
 }
-Statement* parse_TTML(const std::string & parse,int tdepth) {
+Strategy* parse_TTML(const std::string & parse,int tdepth) {
     std::map<std::string,Statement*> varbank;
     return parse_TTML(parse,tdepth,varbank);
 }
-Statement* parse_TTML(const std::string & parse,int tdepth,std::vector<std::string>* pop) {
+Strategy* parse_TTML(const std::string & parse,int tdepth,std::vector<std::string>* pop) {
     std::map<std::string,Statement*> varbank;
     return parse_TTML(parse,tdepth,varbank,pop);
 }

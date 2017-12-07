@@ -37,18 +37,17 @@ void SolveInstance::flushvisualizer() {
 void SolveInstance::visualize() {
     std::string js="{\"nodes\": [";
     for (int i=0;i<solns.size();i++) {
-        js+="\""+solns[i]->head->tostringdoubleheavy()+"\"";
+        js+="\""+solns[i]->head->tostring()+"\"";
         if (i!=solns.size()-1) js+=",";
     }
     js+="],\"edges\":[\n";
     for (int i=0;i<solns.size();i++) {
         for (int o=0;o<solns[i]->upstream.size();o++) {
-            Binding interm =solns[i]->upstream[o].container->bind;
-            Statement* linkname=solns[i]->upstream[o].linked->head->substitute(&interm,2,1);
-            js+="[\""+solns[i]->head->tostringdoubleheavy()+"\",\""+solns[i]->upstream[o].linked->head->tostringdoubleheavy()+"\",{label:'"+
-            linkname->tostringrecursivedoubleheavy()
+            Binding& interm =solns[i]->upstream[o].container->bind;
+            std::string linkname=solns[i]->upstream[o].linked->head->substitute_tostring(&interm);
+            js+="[\""+solns[i]->head->tostring()+"\",\""+solns[i]->upstream[o].linked->head->tostring()+"\",{label:'"+
+            linkname
             +"'}]";
-            linkname->cleanup();
             if (i!=solns.size()-1 or o!=solns[i]->upstream.size()) js+=",";
         }
     }
@@ -59,41 +58,33 @@ void SolveInstance::visualize() {
 void SolveInstance::heavyvisualize() {
     std::string js="{\"nodes\": [";
     for (int i=0;i<solns.size();i++) {
-        js+="\"["+solns[i]->head->tostringstrategy()+"]\"";
-//        if (i!=solns.size()-1)
+        js+="\"["+solns[i]->head->tostring()+"]\"";
         js+=",";
     }
     for (int i=0;i<solns.size();i++) {
         for (int o=0;o<solns[i]->bin.size();o++) {
-            Binding interm =solns[i]->bin[o]->bind;
-            Statement* linkname=solns[i]->head->substitute(&interm,2,1);
-            js+="\""+linkname->tostringheavy()+"\"";
-            linkname->cleanup();
+            Binding& interm =solns[i]->bin[o]->bind;
+            std::string linkname=solns[i]->head->substitute_tostring(&interm);
+            js+="\""+linkname+"\"";
             if (i!=solns.size()-1 or o!=solns[i]->upstream.size()) js+=",";
         }
     }
     js+="],\"edges\":[\n";
     for (int i=0;i<solns.size();i++) {
         for (int o=0;o<solns[i]->bin.size();o++) {
-            Binding interm =solns[i]->bin[o]->bind;
-            Statement* linkname=solns[i]->head->substitute(&interm,2,1);
-            js+="[\"["+solns[i]->head->tostringstrategy()+"]\",\""+linkname->tostringheavy()+"\",{color:'#0000FF',label:'"+std::to_string(o)+"'}]";
-            linkname->cleanup();
-//            if (i!=solns.size()-1 or o!=solns[i]->upstream.size())
+            Binding& interm =solns[i]->bin[o]->bind;
+            std::string linkname=solns[i]->head->substitute_tostring(&interm);
+            js+="[\"["+solns[i]->head->tostring()+"]\",\""+linkname+"\",{color:'#0000FF',label:'"+std::to_string(o)+"'}]";
             js+=",";
         }
     }
     for (int i=0;i<solns.size();i++) {
         for (int o=0;o<solns[i]->upstream.size();o++) {
-            Binding interm =solns[i]->upstream[o].container->bind;
-            Statement* linkname=solns[i]->upstream[o].linked->head->substitute(&interm,2,1);
+            Binding& interm =solns[i]->upstream[o].container->bind;
+            std::string linkname=solns[i]->upstream[o].linked->head->substitute_tostring(&interm);
             int rm=0;
             Statement* target=solns[i]->head->scramble(solns[i]->upstream[o].mapr,rm,1);
-            
-//            ->tostringheavy();
-            js+="[\""+linkname->tostringheavy()+"\",\"["+solns[i]->head->tostringstrategy()+"]\",{color:'#FF0000',label:'"+target->tostringheavy()+"'}]";
-//            js+="[\"["+solns[i]->head->tostringstrategy()+"]\",\""+linkname->tostringdoubleheavy()+"\",{color:'#FF0000'}]";
-            linkname->cleanup();
+            js+="[\""+linkname+"\",\"["+solns[i]->head->tostring()+"]\",{color:'#FF0000',label:'"+target->tostring()+"'}]";
             if (i!=solns.size()-1 or o!=solns[i]->upstream.size()) js+=",";
         }
     }

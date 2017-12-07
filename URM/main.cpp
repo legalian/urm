@@ -16,41 +16,58 @@
 
 int main(int argc, const char * argv[]) {
     std::cout<<"\n\nbegin:\n";
-    Binding test(1);
-//    Statement* test1 = new Statement(Statement::universe,1,1,new Statement(Statement::universe,1,0));
-//    Statement* test2 = new Statement(Statement::universe,0,1);
-//    if (!test.decompose(test1,test2,0)) throw;
 
-    Statement* partial1 = new Statement(Statement::universe,0,1,new Statement(Statement::universe,0,2));
-    Statement* partial2 = new Statement(Statement::universe,1,1,new Statement(Statement::universe,0,2));
-    Statement* partial3 = new Statement(Statement::universe,2,1,new Statement(Statement::universe,0,2));
-//    test.binds.push_back();
-//    test.binds.push_back();
-//    test.binds.push_back();
-    test.partials[0]=std::pair<Statement*,Statement*>(partial1,Statement::gap);
-    test.partials[1]=std::pair<Statement*,Statement*>(partial2,Statement::gap);
-    test.partials[2]=std::pair<Statement*,Statement*>(partial3,Statement::gap);
+
+//    std::vector<Strategy*> loctypes;
+//    loctypes.push_back(new Strategy(Statement::universe,0,1,new Strategy(Statement::universe,0,2)));
+//    loctypes.push_back(new Strategy(Statement::universe,1,1,new Strategy(Statement::universe,0,2)));
+//    loctypes.push_back(new Strategy(Statement::universe,2,1,new Strategy(Statement::universe,0,2)));
+//    Binding test = Binding(&MetaBank::meta_prime,loctypes);
+//    
+//    Statement* test1 = new Statement(0,1,Statement::universe);
+//    Statement* test2 = new Statement(1,1,new Statement(0,1,new Statement(2,1,Statement::universe)));
+//    Statement* test3 = new Statement(2,1,Statement::universe);
+//    test.decompose(test1,new Statement(1,0));
+//    test.decompose(test2,new Statement(1,0));
+//    test.decompose(test3,Statement::universe);
     
-    Statement* test1 = new Statement(Statement::universe,0,1,Statement::universe);
-    Statement* test2 = new Statement(Statement::universe,1,1,new Statement(Statement::universe,0,1,new Statement(Statement::universe,2,1,Statement::universe)));
-    Statement* test3 = new Statement(Statement::universe,2,1,Statement::universe);
-    test.decompose(test1,new Statement(Statement::universe,1,0),0);
-//    std::cout<<test.tostringheavy()<<"\n";
-    test.decompose(test2,new Statement(Statement::universe,1,0),0);
-//    std::cout<<test.tostringheavy()<<"\n";
-    test.decompose(test3,Statement::universe,0);
+    std::vector<Strategy*> loctypes;
+    std::vector<Branches> locprin;
+    loctypes.push_back(new Strategy(new Statement(1,0),0,1,new Strategy(new Statement(1,0),0,2,new Strategy(new Statement(1,0),0,3))));
+    loctypes.push_back(new Strategy(new Statement(1,0),1,1));
+    loctypes.push_back(new Strategy(new Statement(1,0),2,1,new Strategy(new Statement(1,0),0,2)));
+    Branches loc1(1);
+    loc1.branches[0].push_back(1);
+    locprin.push_back(Branches(0));
+    locprin.push_back(Branches(1));
+    Binding test = Binding(&MetaBank::meta_prime,loctypes,locprin);
+    
+    Statement* test1 = //new Statement(5,0,new Statement(5,-1),
+//                        new Statement(5,0,new Statement(4,-1),
+//                         new Statement(5,0,new Statement(3,-1),
+                          new Statement(5,0,new Statement(2,-1),
+                           new Statement(1,-1)
+//                          )
+//                         )
+//                        )
+                       );
+    test.decompose(test1,new Statement(0,1,new Statement(2,1,new Statement(0,2))));
+//    test.decompose(test1,new Statement(0,1,new Statement(1,1,new Statement(2,-1))));
+//    test.decompose(test1,new Statement(0,1,new Statement(0,2)));
+//    test.decompose(test1,new Statement(0,1,new Statement(2,-1)));
+    
+    
+//    test.decompose(test1,new Statement(0,1,new Statement(1,1)));
+    
     std::vector<Binding> bindings;
-    std::cout<<test.tostringheavy()<<"\n";
+    std::cout<<test.tostring()<<"\n";
     
-//    std::vector<std::vector<Statement*>*> required;
-//    required.push_back(&MetaBank::meta_prime.strategies);
-    
-    test.divide(bindings,&MetaBank::meta_prime);
+    test.divide(bindings);
     
     std::string res="BINDINGS:\n";
     for (int it=0;it<bindings.size();it++) {
         res+="BINDING "+std::to_string(it)+":\n";
-        res+=bindings[it].tostringheavy()+"\n";
+        res+=bindings[it].tostring()+"\n";
     }
     std::cout<<res;
 
@@ -211,10 +228,6 @@ int main(int argc, const char * argv[]) {
     
     return 0;
 }
-
-
-
-
 
 
 
