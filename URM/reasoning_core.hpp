@@ -39,110 +39,113 @@ struct SolveInstance;
 //Statement* convertTTML(MetaBank*,ParseResult*,int);
 //Statement* convertTTFL(MetaBank*,ParseResult*);
 
-struct Branches {
-    std::vector<std::vector<int>> branches;
-    Branches(int);
-};
 struct Statement {
     static Statement* universe;
-    static Statement* gap;
-    std::vector<Statement*> args;
-    int local;
-    int id;
+    Statement* args=0;
+    int local=99999;
+    int id=99999;
+    int ara=0;
+    
 
     void clip_upperbound(int,int,std::map<std::pair<int,int>,int>&,int&);
-    Statement* paste_upperbound(int,std::map<std::pair<int,int>,int>&,int);
+    Statement paste_upperbound(int,std::map<std::pair<int,int>,int>&,int);
     
     void obsolete(std::map<int,bool>&);
-    void getsolvepoints(std::map<int,Statement*>&,std::map<int,bool>&,std::vector<std::vector<Strategy*>*>&,bool,bool);
+    void getsolvepoints(std::map<int,Statement>&,std::map<int,bool>&,std::vector<std::vector<Strategy>*>&,bool,bool);
     
-    Statement* generate_type(std::vector<std::vector<Strategy*>*>&);
+    Statement generate_type(std::vector<std::vector<Strategy>*>&);
     
     
-    Statement* substitute_level(std::vector<Statement*>*,int,int,int);
-    void substitute(Binding*,std::vector<std::vector<Strategy*>*>&,std::vector<Statement*>&);
-    void substitute(Binding*,std::vector<std::vector<Strategy*>*>&,std::vector<Statement*>&,int,bool&,bool);
+    Statement substitute_level(std::vector<Statement>*,int,int,int);
+    void substitute(Binding*,std::vector<std::vector<Strategy>*>&,std::vector<Statement>&);
+    void substitute(Binding*,std::vector<std::vector<Strategy>*>&,std::vector<Statement>&,int,bool&);
     std::string substitute_tostring(Binding*);
     
-    Statement* deepcopy();
+    Statement deepcopy();
     void cleanup();
     
     
-    bool containsloop(int,int);
-    bool is_complete();
+//    bool containsloop(int,int);
+    bool is_complete(int);
     
-    Statement* scramble(std::map<int,int>&,int&,int);
-    void unscramble(std::map<int,int>&,int&,int);
+//    Statement* scramble(std::map<int,int>&,int&,int);
+//    void unscramble(std::map<int,int>&,int&,int);
     
-    Statement* depth_push(int,int);
+    Statement depth_push(int,int);
     
-    bool observable(MetaBank* mb);
-    double observe_affine(MetaBank* mb);
-    bool observe_boolean(MetaBank* mb);
+//    bool observable(MetaBank* mb);
+//    double observe_affine(MetaBank* mb);
+//    bool observe_boolean(MetaBank* mb);
     
-    void local_list(std::vector<Statement*>* list);
+//    void local_list(std::vector<Statement*>* list);
     
 
-    void typecheck(Strategy*,std::vector<std::vector<Strategy*>*>);
-    void constcheck(std::vector<std::vector<Strategy*>*>);
+    void typecheck(Strategy*,std::vector<std::vector<Strategy>*>);
+    void constcheck(std::vector<std::vector<Strategy>*>);
 
 
-    std::string tostring();
+    std::string tostring() const;
     
     
-    
+    Statement();
     Statement(int,int);
-    Statement(int,int,Statement*);
-    Statement(int,int,Statement*,Statement*);
-    Statement(int,int,Statement*,Statement*,Statement*);
-    Statement(int,int,Statement*,Statement*,Statement*,Statement*);
+    Statement(int,int,int);
+    Statement(int,int,Statement);
+    Statement(int,int,Statement,Statement);
+    Statement(int,int,Statement,Statement,Statement);
+    Statement(int,int,Statement,Statement,Statement,Statement);
 };
+
 struct Strategy {
-    int local;
-    int id;
-    std::vector<Strategy*> args;
-    Statement* type=0;
-    Strategy* deepcopy();
+    Strategy* args=0;
+    int local=963369;
+    int id=963369;
+    int ara=0;
+    Statement type;
+    
+    Strategy deepcopy();
+    
     void cleanup();
-    void typecheck(std::vector<std::vector<Strategy*>*>);
-    Strategy* typechecksub(std::vector<Statement*>*,int,int,int);
-    Statement* snapshot();
+    void typecheck(std::vector<std::vector<Strategy>*>);
+    Strategy typechecksub(std::vector<Statement>*,int,int,int);
+    Statement snapshot();
 //    Statement* locsnapshot(std::vector<Statement*>*,bool,int,std::vector<Strategy*>&,std::vector<Statement*>&);
     
     
-    Statement* locsnapshot(std::vector<Statement*>*,bool,int,std::vector<Strategy*>&,std::vector<Branches>&);
+//    Statement* locsnapshot(std::vector<Statement*>*,bool,int,std::vector<Strategy*>&);
 //    Statement* locsnapshot(std::vector<Statement*>*,bool,int,int&);
     
-    Strategy* bring_depth(int,int);
+    Strategy bring_depth(int,int);
     
-    Strategy(Statement*,int,int);
-    Strategy(Statement*,int,int,Strategy*);
-    Strategy(Statement*,int,int,Strategy*,Strategy*);
-    Strategy(Statement*,int,int,Strategy*,Strategy*,Strategy*);
-    Strategy(Statement*,int,int,Strategy*,Strategy*,Strategy*,Strategy*);
+    Strategy();
+    Strategy(Statement,int,int);
+    Strategy(Statement,int,int,int);
+    Strategy(Statement,int,int,Strategy);
+    Strategy(Statement,int,int,Strategy,Strategy);
+    Strategy(Statement,int,int,Strategy,Strategy,Strategy);
+    Strategy(Statement,int,int,Strategy,Strategy,Strategy,Strategy);
     
     std::string tostring();
 };
 struct SingleBind {
     Statement* head;
     Statement* body;
-    std::vector<Strategy*> itinerary;
-    std::vector<Branches> principles;
-    SingleBind(Statement*,Statement*,std::vector<Strategy*>&);
+    std::vector<Strategy> itinerary;
+    SingleBind(Statement,Statement,std::vector<Strategy>&);
 };
 struct Binding {
-    std::vector<Strategy*> localtypes;
-    std::vector<Branches> principles;
-    std::vector<std::vector<Strategy*>*> tracks;
-    std::vector<Statement*> partials;
+    std::vector<Strategy> localtypes;
+    std::vector<std::vector<Strategy>*> tracks;
+    std::vector<Statement> partials;
     std::vector<SingleBind> binds;
     
-    bool decompose(Statement*,Statement*);
-    bool decompose(Statement*,Statement*,std::vector<std::vector<Strategy*>*>&);
-    bool decomposeverbal(Statement*,Statement*,std::vector<std::vector<Strategy*>*>&,int);
+    bool decompose(Statement,Statement);
+    bool decompose(Statement,Statement,std::vector<std::vector<Strategy>*>&);
+    bool decomposeverbal(Statement,Statement,std::vector<std::vector<Strategy>*>&,int);
     bool simplify();
     
     void divide(std::vector<Binding>&);
+//    void divide(std::vector<Binding>&,bool);
 //    void trimto(int,Binding&);
     Binding emptycopy();
     std::string tostring();
@@ -150,19 +153,19 @@ struct Binding {
 //    int registerlocal(Strategy*);
 //    Binding(MetaBank*);
 //    Binding(std::vector<std::vector<Strategy*>*>&);
-    Binding(MetaBank*,std::vector<Strategy*>&,std::vector<Branches>&);
-    Binding(std::vector<std::vector<Strategy*>*>&,std::vector<Strategy*>&,std::vector<Branches>&);
+    Binding(MetaBank*,const std::vector<Strategy>&);
+    Binding(const std::vector<std::vector<Strategy>*>&,const std::vector<Strategy>&);
 //    Binding(std::vector<std::vector<Strategy*>*>&,int);
     ~Binding();
 };
 struct MetaBank {
     static MetaBank meta_prime;
     MetaBank();
-    std::vector<Strategy*> strategies;
+    std::vector<Strategy> strategies;
     std::vector<std::string> stratnames;
 //    std::vector<MatchStructure> typefamilies;
 //    Statement* solve(std::string);
-    Statement* solve(Statement*,std::vector<Strategy*>&,std::vector<Branches>&);
+    Statement* solve(Statement,std::vector<Strategy>&);
     int getAxiom(std::string);
 };
 
@@ -172,7 +175,7 @@ struct SolveInstance {
     static std::vector<std::string> labels;
     std::vector<Soln*> solns;
     static std::string label;
-    Soln* makeorcreate(Statement*);
+    Soln* makeorcreate(Statement);
     void increment(MetaBank*);
     void visualize();
     static void flushvisualizer();
@@ -183,7 +186,7 @@ struct SolnLink {
     std::map<int,int> mapr;
     Soln* linked;
     Entry* container;
-    SolnLink(Statement*,Statement*,Soln*,Entry*);
+    SolnLink(Statement,Statement,Soln*,Entry*);
     Entry* transform(Entry*);
 };
 struct Entry {
@@ -192,7 +195,7 @@ struct Entry {
     Entry(Binding);
     std::vector<Soln*> downstream;
 //    bool asymmetricObsoletes(Entry* other,std::vector<Statement*>*);
-    std::vector<Statement*> endpoints(MetaBank*,Statement*);
+    std::vector<Statement> endpoints(MetaBank*,Statement);
 //    bool solved=false;
 //    int ids;
 };
@@ -201,16 +204,15 @@ struct Soln {
     std::vector<Entry*> bin;
     std::vector<Entry*> binqueue;
     std::vector<SolnLink> upstream;
-    std::vector<Strategy*> loctypes;
-    std::vector<Branches> principles;
+    std::vector<Strategy> loctypes;
     
-    Statement* head;
+    Statement head;
     bool expanded=false;
     
     std::string tostring();
 
     Soln();
-    Soln(Statement*);
+    Soln(Statement);
     void remove(SolveInstance*,int);
     void expand(MetaBank*,SolveInstance*);
     bool recieveEnergy(MetaBank*,SolveInstance*,int);
@@ -223,7 +225,7 @@ struct Soln {
 
 
 //std::pair<Statement*,Statement*> gentleSubstitute(Binding*,Statement*,Statement*,int);
-bool amorphousmatch(Statement*,Statement*,std::map<int,int>&,std::map<int,int>&);
+bool amorphousmatch(Statement,Statement,std::map<int,int>&,std::map<int,int>&);
 
 
 

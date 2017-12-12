@@ -32,15 +32,10 @@ int main(int argc, const char * argv[]) {
 //    test.decompose(test3,Statement::universe);
     
     std::vector<Strategy*> loctypes;
-    std::vector<Branches> locprin;
     loctypes.push_back(new Strategy(new Statement(1,0),0,1,new Strategy(new Statement(1,0),0,2,new Strategy(new Statement(1,0),0,3))));
-    loctypes.push_back(new Strategy(new Statement(1,0),1,1));
-    loctypes.push_back(new Strategy(new Statement(1,0),2,1,new Strategy(new Statement(1,0),0,2)));
-    Branches loc1(1);
-    loc1.branches[0].push_back(1);
-    locprin.push_back(Branches(0));
-    locprin.push_back(Branches(1));
-    Binding test = Binding(&MetaBank::meta_prime,loctypes,locprin);
+    loctypes.push_back(new Strategy(new Statement(1,0),1,1,new Strategy(new Statement(1,0),0,2)));
+
+    Binding test = Binding(&MetaBank::meta_prime,loctypes);
     
     Statement* test1 = //new Statement(5,0,new Statement(5,-1),
 //                        new Statement(5,0,new Statement(4,-1),
@@ -51,7 +46,8 @@ int main(int argc, const char * argv[]) {
 //                         )
 //                        )
                        );
-    test.decompose(test1,new Statement(0,1,new Statement(2,1,new Statement(0,2))));
+                       
+    test.decompose(test1,new Statement(0,1,new Statement(1,1,new Statement(0,2))));
 //    test.decompose(test1,new Statement(0,1,new Statement(1,1,new Statement(2,-1))));
 //    test.decompose(test1,new Statement(0,1,new Statement(0,2)));
 //    test.decompose(test1,new Statement(0,1,new Statement(2,-1)));

@@ -27,7 +27,7 @@ void SolveInstance::flushvisualizer() {
     int c=0;
     std::string carry="";
     for (int u=0;u<json.size();u++) {
-        vfile<<"<a href='javascript:displaygraph("<<u<<")'>"+labels[u]+" "<<u<<"</a><br>";
+        vfile<<"<a href='javascript:displaygraph("<<u<<")'>"<<labels[u]<<" "<<u<<"</a><br>";
         if (carry==labels[u]) c++;
         else c=0;
     }

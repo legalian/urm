@@ -16,9 +16,9 @@ MetaBank::MetaBank() {
         Statement::universe = new Statement(0,0);
 //        Statement::universe->type = Statement::universe;
     }
-    if (Statement::gap==0) {
-        Statement::gap = new Statement(-1,0);
-    }
+//    if (Statement::gap==0) {
+//        Statement::gap = new Statement(-1,0);
+//    }
     
     Strategy* context = parse_TTML(
     
@@ -182,7 +182,7 @@ void Soln::expand(MetaBank* mb,SolveInstance* inst) {
         expanded=true;
 //        ids=head->maxloc();
         for (int j=0;j<head->args.size();j++) {
-            Binding newbinds(mb,loctypes,principles);
+            Binding newbinds(mb,loctypes);
             if (newbinds.decompose(head,head->args[j])) {
                 binqueue.push_back(new Entry(newbinds));
 //                for (int n=0;n<newbinds.decoms.size();n++) {
@@ -196,13 +196,16 @@ void Soln::expand(MetaBank* mb,SolveInstance* inst) {
         }
 //        std::cout<<"TESTING AGAINST EACH STRATEGY\n\n\n";
         for (int w=0;w<mb->strategies.size();w++) {
-            int nids=loctypes.size();
             if (head==0) throw;
             std::vector<Strategy*> newloctypes = loctypes;
-            std::vector<Branches> newprinciples = principles;
-            Statement* adjust = mb->strategies[w]->locsnapshot(head==0?0:&head->args,false,nids,newloctypes,newprinciples);
             
-            Binding newbinds(mb,newloctypes,newprinciples);
+            Statement* adjust = mb->strategies[w]->snapshot();
+            for (int u=0;u<adjust->args.size();u++) {
+                adjust->args[u]->id=newloctypes.size();
+                newloctypes.push_back(mb->strategies[w]->args[u]);
+            }
+            
+            Binding newbinds(mb,newloctypes);
             if (newbinds.decompose(head,adjust)) {
 //                std::cout<<"SUCCESS<-==-=-==--=-=-=-=------"<<mb->stratnames[w]<<"\n";
 //                std::cout<<newbinds.tostringheavy()<<"\n";
@@ -399,10 +402,10 @@ Entry* SolnLink::transform(Entry* input) {
 //    }
     return res;
 }
-Statement* MetaBank::solve(Statement* target,std::vector<Strategy*>& loc,std::vector<Branches>& prin) {
+Statement* MetaBank::solve(Statement* target,std::vector<Strategy*>& loc) {
     SolveInstance inst;
     inst.solns.push_back(new Soln());
-    Binding kgra(this,loc,prin);
+    Binding kgra(this,loc);
     kgra.decompose(inst.solns[0]->head,target);
     inst.solns[0]->binqueue.push_back(new Entry(kgra));
     while (true) {

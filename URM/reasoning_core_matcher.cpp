@@ -9,10 +9,11 @@
 #include <stdio.h>
 #include "reasoning_core.hpp"
 
-bool Statement::is_complete() {
-    if (this==Statement::gap) return false;
+bool Statement::is_complete(int loc) {
+//    if (this==Statement::gap) return false;
+    if (id==-1 and local==loc) return false;
     for (int u=0;u<args.size();u++) {
-        if (!args[u]->is_complete()) return false;
+        if (!args[u]->is_complete(loc)) return false;
     }
     return true;
 }
@@ -81,13 +82,15 @@ bool Binding::decompose(Statement* left,Statement* right,std::vector<std::vector
     left->constcheck(params);
     right->constcheck(params);
     if (left==0 or right==0) throw;
-    if (left==Statement::gap or right==Statement::gap) return true;
+//    if (left==Statement::gap or right==Statement::gap) return true;
     if (left->local==tracks.size()-1 or right->local==tracks.size()-1) {
+        if (left->id==-1 or right->id==-1) return true;
         Statement* ltype = left->generate_type(params);
         Statement* rtype = right->generate_type(params);
         if (!decompose(ltype,rtype,params)) return false;
         ltype->cleanup();
         rtype->cleanup();
+        
         if (left->local==tracks.size()-1 and right->local==tracks.size()-1) {
             SingleBind a = emplace(left,right,tracks.size(),params);
             SingleBind b = emplace(right,left,tracks.size(),params);
@@ -119,228 +122,121 @@ bool Binding::decompose(Statement* left,Statement* right,std::vector<std::vector
     }
     return false;
 }
-//bool Binding::compare(Statement* head1,Statement* head2,Statement* body1,Statement* body2) {
-//    head2=head2->symmetricbindavoid(stmodif+1,head1->maxloc(stmodif+1))->localswitch(stmodif+1);
-//    body2=body2->symmetricbindavoid(stmodif+1,head1->maxloc(stmodif+1))->localswitch(stmodif+1);
-//    head1=head1->localswitch(stmodif+1);
-//    body1=body1->localswitch(stmodif+1);
-//    std::vector<std::pair<Statement*,Statement*>> pairs;
-//    for (int i=0;i<head1->args.size();i++) {
-//        pairs.push_back(std::pair<Statement*,Statement*>(head1->args[i],head2->args[i]));
+
+//Statement* trickplace(Statement* a,int target) {
+//    if (a->local==target) return Statement::gap;
+//    if (a->local<=0 and a->args.size()==0) {
+//        return a;
 //    }
-////    std::cout<<"COMPARING:\n";
-////    std::cout<<head1->tostringheavy()<<" | "<<body1->tostringheavy()<<"\n";
-////    std::cout<<head2->tostringheavy()<<" | "<<body2->tostringheavy()<<"\n";
-////    std::cout<<"\n";
-//    bool res = decompose(body1,body2,2,&pairs);
-//    head2->cleanup();
-//    body2->cleanup();
-//    head1->cleanup();
-//    body1->cleanup();
-//    return res;
-//}
-//Statement* trimrip(Statement* a,int trim,int target) {
-//    if (a->local<=0 and a->args.size()==0) return a;
-//    if (a->local==target and a->id>=trim) return Statement::gap;
 //    Statement* res = new Statement(a->id,a->local);
 //    for (int q=0;q<a->args.size();q++) {
-//        res->args.push_back(trimrip(a->args[q],trim,target));
+//        res->args.push_back(trickplace(a->args[q],target));
 //    }
 //    return res;
 //}
-//void Binding::trimto(int trim,Binding& other) {
-////    std::vector<SingleBind> purify;
-////    for (int u=0;u<binds.size();u++) {
-////        purify.push_back(SingleBind(
-////            ,
-////            trimrip(binds[u].body,trim,tracks.size()-1),
-////            binds[u].itinerary
-////        ));
-////    }
-////    for (int y=trim;y<localtypes.size();y++) {
-////        partials.erase(y);
-////    }
-////    localtypes.erase(localtypes.begin()+trim,localtypes.end());
-//    
-//    for (int u=0;u<binds.size();u++) {
-//        std::vector<std::vector<Strategy*>*> tplusi;
-//        tplusi.push_back(&binds[u].itinerary);
-//        decompose(trimrip(binds[u].head,trim,tracks.size()-1),trimrip(binds[u].body,trim,tracks.size()-1),tracks);
-//    }
-//
-//    
-//}
-Statement* trickplace(Statement* a,int target) {
-    if (a->local==target) return Statement::gap;
-    if (a->local<=0 and a->args.size()==0) {
-        return a;
-    }
-    Statement* res = new Statement(a->id,a->local);
-    for (int q=0;q<a->args.size();q++) {
-        res->args.push_back(trickplace(a->args[q],target));
-    }
-    return res;
-}
-//void checkPartialDescent(Statement* a,Statement* partial,Statement* head,
-//                        Binding& in,std::vector<Statement*>& statout,std::vector<Binding>& bindout,
-//                        bool& changed,std::vector<std::vector<Strategy*>*>& params) {//this will need to accept parameter types and match them.
-//    if (a==Statement::gap) {
-//        statout.push_back(partial->deepcopy());//sub args beforehand.
-//        bindout.push_back(in);
-//    }
-//    if (a->local==in.tracks.size()-1) {
-//        Statement* subbed = in.partials[a->id]->substitute_level(&a->args,in.tracks.size(),in.tracks.size(),params.size());
-//        checkPartialDescent(subbed,partial,head,in,statout,bindout,changed,params);//this screws up depth<-=--==-=-=--==--==-=--=-=-=-=-=-=-=-=-=
-//        subbed->cleanup();
-//        return;
-//    }
-//    if (partial==Statement::gap) {
-//        for (int p=0;p<head->args.size();p++) {
-//            changed=true;
-//            statout.push_back(<#const_reference __x#>);
-////            Statement* pushed = head->args[p]->substitute_level(&in.principles[head->id]->args[p]->args,in.tracks.size()+1,in.tracks.size(),1);
-////            pushed = pushed->depth_push(in.tracks.size()+2,params.size()-(in.tracks.size()+2));
-////            Binding soap = in;
-////            if (soap.decompose(pushed,a)) {
-////                statout.push_back(in.principles[head->id]->args[p]);
-////                bindout.push_back(soap);
-////            }
-////            pushed=pushed->substitute_level(&in.principles[head->id]->args[p]->args,in.tracks.size()+1,, );
-////            Statement* h = trickplace(pushed,in.tracks.size()+1);
-////            Binding grime = in.emptycopy();
-////            std::vector<Binding> firstsplit;
-//////            std::cout<<h->tostring()<<",,,,,,,,,,,\n";
-////            if (grime.decompose(h,a,params)) grime.divide(firstsplit);
-////            for (int x=0;x<firstsplit.size();x++) {
-//////                std::cout<<"---====1>"<<pushed->tostring()<<"\n";
-////                Statement* f = pushed->substitute_level(&firstsplit[x].partials,in.tracks.size()-1,firstsplit[x].tracks.size(),params.size());
-//////                std::cout<<firstsplit[x].tostringheavy();
-////                std::vector<std::vector<Strategy*>*> nextbinder = in.tracks;
-////                nextbinder.push_back(params[nextbinder.size()]);
-////                Binding filth = Binding(nextbinder,in.localtypes[head->id]->args[p]->args);
-////                std::vector<Binding> secondsplit;
-//////                std::cout<<"---====2>"<<f->tostring()<<"\n";
-////                if (filth.decompose(f,a)) filth.divide(secondsplit);
-////                for (int y=0;y<secondsplit.size();y++) {
-////                    Statement* l = pushed->substitute_level(&secondsplit[y].partials,in.tracks.size()+1,secondsplit[y].tracks.size(),params.size());
-////                    Binding scum = in;
-////                    scum.partials = firstsplit[x].partials;
-//////                    std::cout<<"COMPARING("<<in.tracks.size()<<"): "<<pushed->tostring()<<" then "<<l->tostring()<<" and "<<a->tostring()<<"\n";
-////                    if (scum.decompose(l,a)) {
-//////                        std::cout<<scum.tostringheavy()<<"\n";
-////                        bindout.push_back(scum);
-////                        Statement* snap = in.localtypes[head->id]->args[p]->snapshot();
-////                        snap=snap->depth_push(in.tracks.size()+1,params.size()-in.tracks.size());//secondsplit is not parameters
-//////                        std::cout<<"<-----========0=0=0=0=0=0=0=0=0=----------   "<<snap->tostring()<<"\n";
-////
-////                        snap=snap->substitute_level(&secondsplit[y].partials,params.size()+1,secondsplit[y].tracks.size(), 1);
-////                        
-//////                        std::cout<<"<------------0000==00=0=00=0=0=0=0=0=0=0=0=0=0=0=---   "<<snap->tostring()<<"\n";
-////                        
-////                        statout.push_back(snap);
-////                    }
-////                }
-//            
-//        }
-//        Statement* neg=new Statement(a->id,a->local);
-//        for (int y=0;y<a->args.size();y++) {
-//            neg->args.push_back(Statement::gap);
-//        }
-//        changed=true;
-//        checkPartialDescent(a,neg,head,in,statout,bindout,changed,params);
-//        delete neg;
-//    } else if (partial->local==in.tracks.size()) {
-//        Binding grime=in;
-////        std::cout<<"COMPARING "<<partial->substitute_level(&head->args,in.tracks.size(),in.tracks.size(),1)->tostring()<<" and "<<a<<"\n";
-////->substitute_level(&head->args,in.tracks.size(),in.tracks.size()+1,in.tracks.size()-1)
-//        if (grime.decompose(partial,a,params)) {
-////            changed=true;
-//            statout.push_back(partial->deepcopy());
-//            bindout.push_back(grime);
-//        }
-//    } else if (a->local==in.tracks.size()-1) {
-//        Binding grime=in;
-//        if (grime.decompose(a,partial,params)) {
-//            changed=true;
-//            statout.push_back(partial->deepcopy());
-//            bindout.push_back(grime);
-//        }
-//    } else {
-//        if (a->id!=partial->id or a->local!=partial->local) return;
-//        if (a->args.size()==0) {
-//            statout.push_back(a->deepcopy());
-//            bindout.push_back(in);
-//            return;
-//        }
-//        std::vector<Statement*> buffer;
-//        Strategy* calctype = (*params[a->local])[a->id]->typechecksub(&a->args, (*params[a->local])[a->id]->local+1,(int)params.size(),1);
-//        std::vector<std::vector<Strategy*>*> continued0 = params;
-//        continued0.push_back(&calctype->args[0]->args);
-//        if (a->args.size()==1) {//depth push on substitute for bindings. actually just make sure depth works slotwise with both substitutions.
-//            checkPartialDescent(a->args[0],partial->args[0],head,in,buffer,bindout,changed,continued0);
-//            for (int g=0;g<buffer.size();g++) {
-//                statout.push_back(new Statement(a->id,a->local,buffer[g]));
-//            }
-//            return;
-//        }
-//        std::vector<Statement*> cartesian1;
-//        std::vector<Statement*> cartesian2;
-//        std::vector<Binding> bcartesian1;
-//        std::vector<Binding> bcartesian2;
-//        bool c1=true;
-//        #define CAR1 (c1?cartesian1:cartesian2)
-//        #define CAR2 (c1?cartesian2:cartesian1)
-//        #define BCAR1 (c1?bcartesian1:bcartesian2)
-//        #define BCAR2 (c1?bcartesian2:bcartesian1)
-//        checkPartialDescent(a->args[0],partial->args[0],head,in,buffer,bcartesian1,changed,continued0);
-//        for (int g=0;g<buffer.size();g++) {
-//            cartesian1.push_back(new Statement(partial->id,partial->local,buffer[g]));
-//        }
-//        buffer.clear();
-//        for (int q=1;q<a->args.size();q++) {
-//            std::vector<std::vector<Strategy*>*> continued = params;
-//            continued.push_back(&calctype->args[q]->args);
-//            for (int u=0;u<CAR1.size();u++) {
-//                checkPartialDescent(a->args[q],partial->args[q],head,BCAR1[u],buffer,(q<a->args.size()-1?BCAR2:bindout),changed,continued);
-//                for (int p=0;p<buffer.size();p++) {
-//                    Statement* dup = CAR1[u]->deepcopy();
-//                    dup->args.push_back(buffer[p]);
-//                    (q<a->args.size()-1?CAR2:statout).push_back(dup);
-//                }
-//                buffer.clear();
-//            }
-//            CAR1.clear();
-//            c1 = not c1;
-//        }
-//        #undef CAR1
-//        #undef CAR2
-//        #undef BCAR1
-//        #undef BCAR2
-//    }
-//}
 
-void generatePartial(Statement* a,Statement* partial,Strategy* head,std::vector<Statement*>& statout,std::vector<Statement*>& opartials,int loc,
-                        bool& changed,std::vector<std::vector<Strategy*>*>& params) {//this will need to accept parameter types and match them.
-    if (a==Statement::gap) {
-        statout.push_back(partial->deepcopy());//sub args beforehand.
+struct CartesianCarry {
+    std::vector<Statement*> partials;
+    std::vector<Strategy*> types;
+    CartesianCarry(std::vector<Statement*>& p,std::vector<Strategy*>& t) : partials(p),types(t) {}
+};
+
+//int idcheck(Statement* a,int target,int threshold) {
+//    int max=0;
+//    if (a->id>=threshold and a->local==target) {
+//        max=a->id-threshold;
+//    }
+//    for (int u=0;u<a->args.size();u++) {
+//        int t=idcheck(a->args[u],target,threshold);
+//        if (t>max) max=t;
+//    }
+//    return max;
+//}
+//void idbump(Statement* a,int target,int threshold,int amt) {
+//    if (a->local==target and a->id>=threshold) a->id+=amt;
+//    for (int u=0;u<a->args.size();u++) {
+//        idbump(a->args[u],target,threshold,amt);
+//    }
+//}
+Statement* reduce(Statement* in,int loc,int l1off,int l2off) {
+    Statement* ret = new Statement(in->id,in->local);
+    if (in->local>=loc+2) {
+        ret->local-=2;
+        if (ret->local==loc)   ret->id+=l1off;
+        if (ret->local==loc+1) ret->id+=l2off;
     }
+    for (int u=0;u<in->args.size();u++) {
+        ret->args.push_back(reduce(in->args[u],loc,l1off,l2off));
+    }
+    return ret;
+}
+Strategy* reduce(Strategy* in,int loc,int l1off,Strategy* append,int pnum) {
+    Strategy* ret = new Strategy(reduce(in->type,loc,l1off,append->args.size()),in->id,in->local-2);
+    
+    if (ret->local==loc) {
+        ret->id+=l1off;
+        for (int u=0;u<pnum;u++) {
+            ret->args.push_back(append->args[u]);
+        }
+    }
+    if (ret->local==loc+1) ret->id+=append->args.size();
+    for (int u=0;u<in->args.size();u++) {
+        ret->args.push_back(reduce(in->args[u],loc,l1off,append,pnum));
+    }
+    return ret;
+}
+void idtrans(Statement* a,int target,std::vector<Strategy*>& types,Strategy* loctype,int loc,int pnum) {
+
+    if (a->local==target) {
+        types.push_back(reduce(loctype->args[pnum]->args[a->id],loc,types.size(),loctype,pnum));
+        a->local=1;
+        a->id=types.size()-1;
+        
+    }
+    for (int u=0;u<pnum;u++) {
+        a->args.insert(a->args.begin()+u,loctype->args[u]->snapshot());
+    }
+    for (int u=0;u<a->args.size();u++) {
+        idtrans(a->args[u],target,types,loctype,loc,pnum);
+    }
+}
+void godtrans(Statement* a,int loc,std::vector<Strategy*>& types,Strategy* type,int stat) {
+
+    if (a->local==loc+1) {
+        for (int u=0;u<a->args.size();u++) {
+            idtrans(a->args[u],stat,types,type,loc,u);
+        }
+    }
+    for (int u=0;u<a->args.size();u++) {
+        godtrans(a->args[u],loc,types,type,stat+1);
+    }
+}
+void generatePartial(Statement* a,Statement* partial,Strategy* head,std::vector<Statement*>& statout,CartesianCarry& opartials,int loc,bool& changed,std::vector<std::vector<Strategy*>*>& params) {
     if (a->local==loc) {
-        Statement* subbed = opartials[a->id]->substitute_level(&a->args,loc+1,loc+1,params.size());
+        if (a->id==-1) {
+            statout.push_back(partial->deepcopy());
+            return;
+        }
+        Statement* subbed = opartials.partials[a->id]->substitute_level(&a->args,loc+1,loc+1,params.size());
         generatePartial(subbed,partial,head,statout,opartials,loc,changed,params);//this screws up depth<-=--==-=-=--==--==-=--=-=-=-=-=-=-=-=-=
         subbed->cleanup();
         return;
     }
-    if (partial==Statement::gap) {
+    if (partial->local==loc) {
+        if (partial->id!=-1) throw;
         for (int u=0;u<head->args.size();u++) {
-            statout.push_back(head->args[u]->snapshot());
-        }
-        Statement* neg=new Statement(a->id,a->local);
-        for (int y=0;y<a->args.size();y++) {
-            neg->args.push_back(Statement::gap);
+            statout.push_back(head->args[u]->snapshot()->depth_push(loc+2,params.size()-loc-2));
         }
         changed=true;
+        
+//        if (a->local!=loc+1) {
+        Statement* neg=new Statement(a->id,a->local);
+        for (int y=0;y<a->args.size();y++) {
+            neg->args.push_back(new Statement(-1,loc));
+        }
         generatePartial(a,neg,head,statout,opartials,loc,changed,params);
         delete neg;
+//        } else throw;
     } else {
         if (partial->local==loc+1) {
             statout.push_back(partial->deepcopy());
@@ -379,7 +275,9 @@ void generatePartial(Statement* a,Statement* partial,Strategy* head,std::vector<
             for (int u=0;u<CAR1.size();u++) {
                 for (int p=0;p<buffer.size();p++) {
                     Statement* dup = CAR1[u]->deepcopy();
-                    dup->args.push_back(buffer[p]);
+//                    int ju = idcheck(dup,loc,params[loc]->size());
+                    dup->args.push_back(buffer[p]->deepcopy());
+//                    idbump(dup->args[dup->args.size()-1],loc,params[loc]->size(),ju);
                     (q<a->args.size()-1?CAR2:statout).push_back(dup);
                 }
             }
@@ -391,59 +289,99 @@ void generatePartial(Statement* a,Statement* partial,Strategy* head,std::vector<
         #undef CAR2
     }
 }
-
+Statement* partialsub(Statement* p,Binding* o,int rec) {
+    if ((p->local<=0 or p->id==-1) and p->args.size()==0) return p;
+    Statement* res = new Statement(p->id,p->local);
+    for (int u=0;u<p->args.size();u++) {
+        res->args.push_back(partialsub(p->args[u],o,rec+1));
+    }
+    if (res->local==o->tracks.size()-1) {
+        if (o->partials[res->id]->is_complete(o->tracks.size()-1)) {
+            return o->partials[res->id]->substitute_level(&res->args,o->tracks.size(),rec,1);
+        }
+    }
+    return res;
+}
 bool Binding::simplify() {
     std::vector<SingleBind> purify;
     bool changeflag=false;
+    for (int u=0;u<partials.size();u++) {
+        partials[u] = partialsub(partials[u],this,3);
+    }
+//    std::cout<<"SIMPLIFYING:\n\n"<<tostring()<<"\n";
+//    int oldbinds = binds.size();
     for (int u=0;u<binds.size();u++) {
         std::vector<std::vector<Strategy*>*> tplusi=tracks;
         tplusi.push_back(&binds[u].itinerary);
         std::vector<Statement*> s1;
         std::vector<Statement*> s2;
-        binds[u].head->substitute(this,tplusi,s1,binds[u].body->local==tracks.size()-1?-1:u,changeflag,true);
-        binds[u].body->substitute(this,tplusi,s2,-1,changeflag,true);
-        std::cout<<s1.size()<<","<<s2.size()<<"\n";
+        
+        binds[u].head->substitute(this,tplusi,s1,binds[u].body->local==tracks.size()-1?-1:u,changeflag);
+        binds[u].body->substitute(this,tplusi,s2,-1,changeflag);
+//        std::cout<<"-->"<<binds[u].head->tostring()<<"<-->"<<binds[u].body->tostring()<<"<--:\n";
         for (int x=0;x<s1.size();x++) {
             for (int y=0;y<s2.size();y++) {
+//                std::cout<<"\t-->"<<s1[x]->tostring()<<"<-->"<<s2[y]->tostring()<<"<--:\n";
                 purify.push_back(SingleBind(s1[x],s2[y],binds[u].itinerary));
             }
         }
     }
     if (changeflag) {
-        std::cout<<"printing:\n";
+//        std::cout<<"simplification:\n";
         binds.clear();
         for (int u=0;u<purify.size();u++) {
             
             std::vector<std::vector<Strategy*>*> tplusi=tracks;
             tplusi.push_back(&purify[u].itinerary);
-            if (!decomposeverbal(purify[u].head,purify[u].body,tracks,1)) return false;
+            if (!decompose(purify[u].head,purify[u].body,tplusi)) return false;
         }
+        return simplify();
     }
     return true;
 }
-
-
+//void Binding::divide(std::vector<Binding>& list) {
+//    if (!simplify()) return;
+//    divide(list,true);
+//}
 void Binding::divide(std::vector<Binding>& list) {
     if (!simplify()) return;
-    std::vector<std::vector<Statement*>> cartesian1;
-    std::vector<std::vector<Statement*>> cartesian2;
+    std::vector<CartesianCarry> cartesian1;
+    std::vector<CartesianCarry> cartesian2;
     bool changed=false;
     bool c1=true;
     std::vector<Statement*> buffer;
     #define CAR1 (c1?cartesian1:cartesian2)
     #define CAR2 (c1?cartesian2:cartesian1)
-    cartesian1.push_back(partials);
+    cartesian1.push_back(CartesianCarry(partials,localtypes));
     
     for (int q=0;q<binds.size();q++) {
         std::vector<std::vector<Strategy*>*> continued = tracks;
         continued.push_back(&binds[q].itinerary);
         for (int u=0;u<CAR1.size();u++) {
             int bbinds = (int)CAR2.size();
-            generatePartial(binds[q].body,CAR1[u][binds[q].head->id],localtypes[q],buffer,CAR1[u],tracks.size()-1,changed,continued);
+//            std::cout<<"dissembling: "<<binds[q].body->tostring()<<" under type: "<<localtypes[binds[q].head->id]->tostring()<<" , partial: "<<CAR1[u].partials[binds[q].head->id]->tostring()<<"\n";
+            generatePartial(binds[q].body,CAR1[u].partials[binds[q].head->id],localtypes[binds[q].head->id],buffer,CAR1[u],tracks.size()-1,changed,continued);
             for (int p=0;p<buffer.size();p++) {
-                std::cout<<"sugguestd: "<<buffer[p]->tostring()<<"\n";
-                CAR2.push_back(CAR1[u]);
-                CAR2[bbinds+p][binds[q].head->id] = buffer[p]->deepcopy();
+                std::vector<Strategy*> stratbuffer = CAR1[u].types;
+//                std::cout<<"godtrans for "<<buffer[p]->tostring()<<"\n";
+                godtrans(buffer[p],tracks.size()-1,stratbuffer,localtypes[binds[q].head->id],tracks.size()+1);
+                
+                
+                
+        std::vector<std::vector<Strategy*>*> debugtra = tracks;
+        debugtra.push_back(&localtypes[binds[q].head->id]->args);
+        debugtra[tracks.size()-1] = &stratbuffer;
+        
+        
+                
+                buffer[p]->constcheck(debugtra);
+//                std::cout<<"created: "<<buffer[p]->tostring()<<"\n";
+                
+                CAR2.push_back(CartesianCarry(CAR1[u].partials,stratbuffer));
+                CAR2[bbinds+p].partials[binds[q].head->id] = buffer[p]->deepcopy();
+                for (int j=CAR2[bbinds+p].partials.size();j<stratbuffer.size();j++) {
+                    CAR2[bbinds+p].partials.push_back(new Statement(-1,tracks.size()-1));
+                }
             }
             buffer.clear();
         }
@@ -452,10 +390,12 @@ void Binding::divide(std::vector<Binding>& list) {
         if (binds[q].body->local==tracks.size()-1) {
             for (int u=0;u<CAR1.size();u++) {
                 int bbinds = (int)CAR2.size();
-                generatePartial(binds[q].body,CAR1[u][binds[q].head->id],localtypes[q],buffer,CAR1[u],tracks.size()-1,changed,continued);
+                generatePartial(binds[q].body,CAR1[u].partials[binds[q].head->id],localtypes[binds[q].body->id],buffer,CAR1[u],tracks.size()-1,changed,continued);
                 for (int p=0;p<buffer.size();p++) {
-                    CAR2.push_back(CAR1[u]);
-                    CAR2[bbinds+p][binds[q].head->id] = buffer[p]->deepcopy();
+                    std::vector<Strategy*> stratbuffer = CAR1[u].types;
+                    godtrans(buffer[p],tracks.size()-1,stratbuffer,localtypes[binds[q].body->id],tracks.size()+1);
+                    CAR2.push_back(CartesianCarry(CAR1[u].partials,stratbuffer));
+                    CAR2[bbinds+p].partials[binds[q].body->id] = buffer[p]->deepcopy();
                 }
                 buffer.clear();
             }
@@ -463,13 +403,41 @@ void Binding::divide(std::vector<Binding>& list) {
             c1 = not c1;
         }
     }
+//    std::cout<<"--===--=-=--=--=-=-==-=--==--=-===---=\n"<<tostring()<<"\n";
+//    for (int u=0;u<CAR1.size();u++) {
+//        Binding soap = *this;
+//        soap.partials = CAR1[u].partials;
+//        soap.localtypes = CAR1[u].types;
+//        soap.tracks[soap.tracks.size()-1] = &soap.localtypes;
+//        std::cout<<soap.tostring()<<"\n";
+//    }
+    
     for (int u=0;u<CAR1.size();u++) {
         Binding soap = *this;
-        soap.partials = CAR1[u];
-        if (soap.binds.size()==binds.size() and not changed) {
-            if (soap.simplify()) list.push_back(soap);
-        } else {
-            soap.divide(list);
+        soap.partials = CAR1[u].partials;
+        soap.localtypes = CAR1[u].types;
+        soap.tracks[soap.tracks.size()-1] = &soap.localtypes;
+        bool valid=true;
+        
+        for (int u=0;u<binds.size();u++) {
+            std::vector<std::vector<Strategy*>*> tplusi=soap.tracks;
+            tplusi.push_back(&soap.binds[u].itinerary);//which itinerary
+            Statement* compare = soap.partials[soap.binds[u].head->id]->substitute_level(&soap.binds[u].head->args,tracks.size(),tracks.size()+1,1);
+            if (!soap.decomposeverbal(compare,soap.binds[u].body,tplusi,1)) valid=false;
+            if (binds[u].body->local==tracks.size()-1) {
+                Statement* compare = soap.partials[soap.binds[u].body->id]->substitute_level(&soap.binds[u].body->args,tracks.size(),tracks.size()+1,1);
+                if (!soap.decomposeverbal(compare,soap.binds[u].head,tplusi,1)) valid=false;
+            }
+        }
+        
+        
+        if (valid) {
+            std::cout<<"PUSHING: \n"<<soap.tostring()<<"\n";
+            if (soap.binds.size()==binds.size() and not changed) {
+                list.push_back(soap);
+            } else {
+                soap.divide(list);
+            }
         }
     }
     #undef CAR1

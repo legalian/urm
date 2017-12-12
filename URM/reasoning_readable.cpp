@@ -21,8 +21,6 @@ std::string Binding::tostring() {
     return res;
 }
 
-
-
 std::string Soln::tostring() {
     std::string res="";
     res+=head->tostring()+";\n";
@@ -34,16 +32,8 @@ std::string Soln::tostring() {
     }
     return res;
 }
-//std::string Soln::getdebugpath() {
-//    std::string res="";
-//    for (int y=0;y<debugpath.size();y++) {
-//        res+=std::to_string(debugpath[y]);
-//        if (y!=debugpath.size()-1) {
-//            res+=",";
-//        }
-//    }
-//    return res;
-//}
+
+
 std::string Strategy::tostring() {
     std::string res="";
     if (args.size()) {
@@ -59,53 +49,16 @@ std::string Strategy::tostring() {
     return res;
 }
 
-//std::string Statement::tostringdoubleheavy() {
-//    if (type) return tostringheavy()+":"+type->tostringheavy();
-//    return tostringheavy()+":NULL";
-//}
-//std::string Statement::tostringrecursivedoubleheavy() {
-//    if (type) return tostringrecursivedoubleheavy()+":"+type->tostringrecursivedoubleheavy();
-//    return tostringrecursivedoubleheavy()+":NULL";
-//}
-//std::string Statement::tostringrecursivedoubleheavy() {
-//    std::string ret = "{"+std::to_string(local)+":"+std::to_string(id)+"}";
-//    if (local==0 and MetaBank::meta_prime.stratnames.size()>id) {
-//        ret = MetaBank::meta_prime.stratnames[id];
-//    }
-//    
-//    if (args.size()) {
-//        ret += "(";
-//        for (int e=0;e<args.size();e++) {
-//            if (args[e]==0) {
-//                ret = ret+"NULL";
-//            } else {
-//                ret = ret+args[e]->tostringrecursivedoubleheavy();
-//            }
-//            if (e<args.size()-1) {
-//                ret = ret+",";
-//            }
-//        }
-//        ret = ret+")";
-//    }
-//    if (type==0) ret+=":NULL";
-//    else if (type!=Statement::universe) ret+=":"+type->tostringrecursivedoubleheavy();
-//    return ret;
-//}
-std::string Statement::tostring() {
+
+std::string Statement::tostring() const {
     std::string ret = "{"+std::to_string(id)+":"+std::to_string(local)+"}";
-    if (this==gap) ret="?";
-    if (local==0 and MetaBank::meta_prime.stratnames.size()>id and id>=0) {
-        ret = MetaBank::meta_prime.stratnames[id];
-    }
-    
+    if (id==-1) ret = "{?:"+std::to_string(local)+"}";
+    if (local==-1) ret = ""+std::to_string(id)+"";
+    if (local==0 and MetaBank::meta_prime.stratnames.size()>id and id>=0) ret = MetaBank::meta_prime.stratnames[id];
     if (args.size()) {
         ret += "(";
         for (int e=0;e<args.size();e++) {
-//            if (args[e]==0) {
-//                ret = ret+"NULL";
-//            } else {
             ret = ret+args[e]->tostring();
-//            }
             if (e<args.size()-1) {
                 ret = ret+",";
             }
@@ -114,7 +67,6 @@ std::string Statement::tostring() {
     }
     return ret;
 }
-
 
 std::string ntabs(int tabs) {
     std::string res="";
@@ -176,7 +128,6 @@ std::string Construction::tostringheavy() {
             return "["+this->ifget+":"+children[0].tostringheavy()+"]";
         case 5:
             return "[[]]";
-            
     }
     throw;
 }
