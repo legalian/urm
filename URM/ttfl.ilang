@@ -9,7 +9,7 @@
 Lines : [h:HEAP]HEAP {
     Line Lines {
         -.0.~2{
-            [.1.;address .0.0.=AVAILABLE(h,<2/1>)](.0.(h))
+            [.1.;address .0.0.=AVAILABLE(h,{1/-1})](.0.(h))
         }
         .1.(.0.(h))
     }
@@ -22,8 +22,8 @@ Block : [h:HEAP]HEAP {
 Line : [h:HEAP]HEAP {
     \if(\ Statement \)\    Block {DEC(HEAP,[boolconvert 0|.0.](h),.1.(h),h)}
     \while(\ Statement \)\ Block {INDUCTION(HEAP,HEAP,DEC(HEAP,[boolconvert 0|.0.]({0/0}),{1/0}(.1.({0/0})),{0/0}),h,[[]])}
-    \affine\ STRING \;\          {RESERVE(h,<2/1>)}
-    STRING \=\ Statement \;\     {SET(h,[address:.0.],<2/1>,<1/0>,[numberconvert 0|.1.](h))}
+    \affine\ STRING \;\          {RESERVE(h,{1/-1})}
+    STRING \=\ Statement \;\     {SET(h,[address:.0.],{1/-1},[[]],[numberconvert 0|.1.](h))}
     \pass\                       {h}
 }
 Statement {
@@ -68,10 +68,10 @@ numberconvert : [h:HEAP]AFF {
         -.0.~10{MULTIPLY([numberconvert 0|.0.0.](h),[numberconvert 0|.0.1.](h))}
         -.0.~11{DIVIDE([numberconvert 0|.0.1.](h),[[]],[numberconvert 0|.0.0.](h))}
         -.0.~12{MODULO([numberconvert 0|.0.1.](h),[[]],[numberconvert 0|.0.0.](h))}
-        -.0.~14{MULTIPLY([numberconvert 0|.0.0.](h),<2/-1>)}
+        -.0.~14{MULTIPLY([numberconvert 0|.0.0.](h),{-1/-1})}
         -.0.~15{[numberconvert 0|.0.0.](h)}
         -.0.~16{.0.0.}
-        -.0.~17{GET(h,[address:.0.0.],<2/1>,<1/0>)}
+        -.0.~17{GET(h,[address:.0.0.],{1/-1},[[]])}
         null
     }
 }

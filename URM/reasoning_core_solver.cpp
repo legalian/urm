@@ -12,15 +12,8 @@
 
 
 MetaBank::MetaBank() {
-    if (Statement::universe==0) {
-        Statement::universe = new Statement(0,0);
-//        Statement::universe->type = Statement::universe;
-    }
-//    if (Statement::gap==0) {
-//        Statement::gap = new Statement(-1,0);
-//    }
     
-    Strategy* context = parse_TTML(
+    Strategy context = parse_TTML(
     
     "[U"//0
     "|AFF:U"
@@ -29,7 +22,7 @@ MetaBank::MetaBank() {
     "|[AFF|AFF]GT:U"
     "|[U]NOT:U"
     
-//    "|[U|U]AND:U"//5
+    "|[U|U]AND:U"//5
 //    "|[A:U|B:U|AND(A,B)]ANDACC:A"
 //    "|[A:U|B:U]AND_COMMUTATIVE:EQ(U,AND(A,B),AND(B,A))"//could add member specification axioms for AND
 //    "|[A:U|B:U|A|B]UNION:AND(A,B)"
@@ -58,7 +51,7 @@ MetaBank::MetaBank() {
 //    "|[a:AFF|b:AFF]ADD_COMMUTATIVE:EQ(AFF,ADD(a,b),ADD(b,a))"//25
 //    "|[a:AFF|b:AFF]MULTIPLY_COMMUTATIVE:EQ(AFF,MULTIPLY(a,b),MULTIPLY(b,a))"
 
-    "|[a:AFF]ADD_IDENTITY:EQ(AFF,ADD(a,{0/-1}),a)"
+//    "|[a:AFF]ADD_IDENTITY:EQ(AFF,ADD(a,{0/-1}),a)"
 //    "|[a:AFF]MULTIPLY_IDENTITY:EQ(AFF,MULTIPLY(a,{1/-1}),a)"
 //    "|[a:AFF]ADD_IDENTITY_ANNIHALATE:EQ(AFF,SUBTRACT(a,a),{0/-1})"
 //    "|[a:AFF|g:NOT(EQ(AFF,a,{0/-1}))]MULTIPLY_IDENTITY_ANNIHALATE:EQ(AFF,DIVIDE(a,g,a),{1/-1})"//30
@@ -73,17 +66,33 @@ MetaBank::MetaBank() {
     "|[A:U|a:A|b:A]REFLEXIVITY:EQ(U,EQ(A,b,a),EQ(A,a,b))"
     "|[A:U|B:U|[A]f:B|a:A|b:A|EQ(A,a,b)]PRESERVATION:EQ(B,f(a),f(b))"
     
-//    "|[T:U|K:U|[K]T|[NOT(K)]T]DEC:T"
-//    "|[T:U|K:U|[K]a:T|[NOT(K)]b:T|k:K     ]DEC_POSITIVE:EQ(T,DEC(T,K,a({0/4}),b({0/4})),a(k))"
-//    "|[T:U|K:U|[K]a:T|[NOT(K)]b:T|k:NOT(K)]DEC_NEGATIVE:EQ(T,DEC(T,K,a({0/4}),b({0/4})),b(k))"//40
-//    
-//    
-//    "|[A:U|[A]B:U|[a1:A|[a2:A]B(a2)]f:B(a1)|a3:A]TERMINATION:U"
+    
+    
+    //here onwards is optional for tentative testing
+    
+    
+    
+    
+    "|[[AFF]AFF]test:U"
+    "|[[AFF]a:AFF]test2:test(a({0/2}))"
+    
+    
+    
+    "|[T:U|K:U|[K]T|[NOT(K)]T]DEC:T"
+    "|[T:U|K:U|[K]a:T|[NOT(K)]b:T|k:K     ]DEC_POSITIVE:EQ(T,DEC(T,K,a({0/3}),b({0/3})),a(k))"
+    "|[T:U|K:U|[K]a:T|[NOT(K)]b:T|k:NOT(K)]DEC_NEGATIVE:EQ(T,DEC(T,K,a({0/3}),b({0/3})),b(k))"//40
+
+    
+    "|[A:U|[A]B:U|[a1:A|[a2:A]B(a2)]f:B(a1)|a3:A]TERMINATION:U"
+    
+    
 //    "|[A:U|[A]B:U|[a1:A]f:B(a1)|a3:A]UNRECURSIVE:TERMINATION(A,B({0/3}),f({0/3}),a3)"
 //    
 //    "|[A:U|[A]h:A|[A]B:U|[a1:A|B(h(a1))]f:B(a1)|a3:A|TERMINATION(A,B({0/4}),f({0/4},{1/4}(h({0/4}))),h(a3))]RECURSION:TERMINATION(A,B({0/3}),f({0/3},{1/3}(h({0/3}))),a3)"
-//    
-//    "|[A:U|[A]B:U|[a1:A|[a2:A]B(a2)]f:B(a1)|a3:A|TERMINATION(A,B({0/4}),f({0/4},{1/4:B({0/5})}({0/5})),a3)]INDUCTION:B(a3)"
+//
+
+
+    "|[A:U|[A]B:U|[a1:A|[a2:A]B(a2)]f:B(a1)|a3:A|TERMINATION(A,B({0/3}),f({0/3},{1/3}({0/4})),a3)]INDUCTION:B(a3)"
     
     
     //not this:
@@ -94,15 +103,15 @@ MetaBank::MetaBank() {
 ////    "|[[AFF]B:U|a3:AFF|e:AFF|delta:AFF|GT(<2/0:AFF>,delta)|GT(a3,e)]TERMINATION_MAPPING:"
 //    
 //
-//    "|HEAP:U"//45
-//    "|[HEAP|AFF]AVAILABLE:AFF"
-//    "|[HEAP|AFF]ALLOCATED:U"
-//    "|[HEAP|AFF]ACCESSIBLE:AFF"
-//    
-//    "|[HEAP|AFF]RESERVE:HEAP"
-//    "|[h:HEAP|a:AFF|ALLOCATED(h,a)]DELETE:HEAP"//50
-//    "|[h:HEAP|a:AFF|b:AFF|NOT(GT(b,ACCESSIBLE(h,a)))|AFF]SET:HEAP"
-//    "|[h:HEAP|a:AFF|b:AFF|NOT(GT(b,ACCESSIBLE(h,a)))]GET:AFF"
+    "|HEAP:U"//45
+    "|[HEAP|AFF]AVAILABLE:AFF"
+    "|[HEAP|AFF]ALLOCATED:U"
+    "|[HEAP|AFF]ACCESSIBLE:AFF"
+    
+    "|[HEAP|AFF]RESERVE:HEAP"
+    "|[h:HEAP|a:AFF|ALLOCATED(h,a)]DELETE:HEAP"//50
+    "|[h:HEAP|a:AFF|b:AFF|NOT(GT(b,ACCESSIBLE(h,a)))|AFF]SET:HEAP"
+    "|[h:HEAP|a:AFF|b:AFF|NOT(GT(b,ACCESSIBLE(h,a)))]GET:AFF"
     
     
     
@@ -128,13 +137,16 @@ MetaBank::MetaBank() {
     
     
 
-//    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]U]zipper:U"
-//    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]t:U]zippertest:zipper(t({0/3:AFF}({0/4:HEAP}({0/5:U}({0/6:AFF}({0/7:HEAP}({0/8:U})))))))"
-//    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]t:U|zipper(t({0/4:AFF}({0/5:HEAP}({0/6:U}({0/7:AFF}({0/8:HEAP}({0/9:U})))))))]zipperconfirm:U"
-//    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]t:U]zipperfinal:zipperconfirm(t({0/3:AFF}({0/4:HEAP}({0/5:U}({0/6:AFF}({0/7:HEAP}({0/8:U})))))),zippertest(t({0/4:AFF}({0/5:HEAP}({0/6:U}({0/7:AFF}({0/8:HEAP}({0/9:U}))))))))"
-//    "|[[AFF]AFF]testingfunc:AFF"
+    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]U]zipper:U"
+    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]t:U]zippertest:zipper(t({0/2}({0/3}({0/4}({0/5}({0/6}({0/7})))))))"
+    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]t:U|zipper(t({0/3}({0/4}({0/5}({0/6}({0/7}({0/8})))))))]zipperconfirm:U"
+    
+    "|[[[[[[[U]HEAP]AFF]U]HEAP]AFF]t:U]zipperfinal:"
+    "zipperconfirm(t({0/2}({0/3}({0/4}({0/5}({0/6}({0/7})))))),zippertest(t({0/3}({0/4}({0/5}({0/6}({0/7}({0/8}))))))))"
+    "|[[AFF]AFF]testingfunc:AFF"
 //    "|[a:AFF|b:AFF|EQ(AFF,testingfunc(ADD(a,{0/5:AFF})),testingfunc(ADD(b,{0/5:AFF})))]testingshortcircuit:U"
 //    "|[b:AFF]testingblock:NOT(NOT(NOT(testingshortcircuit(b,b,IDENTITY(AFF,testingfunc(ADD(b,{0/8:AFF})))))))"
+    
 //    "|[[[HEAP]HEAP]s:U]imminenttest:s("
 //    "INDUCTION(HEAP,HEAP,DEC(HEAP,GT(<2/2:AFF>,<2/5:AFF>),{1/4:HEAP}({0/4:HEAP}),{0/4:HEAP}),{0/3:HEAP},<1/0:"
 //    "TERMINATION(HEAP,HEAP,DEC(HEAP,GT(<2/2:AFF>,<2/5:AFF>),{1/5:HEAP}({0/5:HEAP}),{0/5:HEAP}),{0/3:HEAP})"
@@ -146,93 +158,110 @@ MetaBank::MetaBank() {
     stratnames[0]="U";
     
     std::cout<<"Accepted axioms:\n";
-    for (int u=0;u<context->args.size();u++) {
-        std::cout<<"\t"<<context->args[u]->tostring()<<"\n";
+    strategies = context.args;
+    ara = context.ara;
+    for (int u=0;u<ara;u++) {
+        std::cout<<"\t"<<strategies[u].tostring()<<"\n";
     }
-    context->typecheck(std::vector<std::vector<Strategy*>*>());
-    strategies=context->args;
-    delete context;
+    context.typecheck(ParameterContext());
 }
 void Statement::obsolete(std::map<int,bool>& obsoleted) {
     if (local==1) {
         obsoleted[id]=true;
     }
-    for (int u=0;u<args.size();u++) {
-        args[u]->obsolete(obsoleted);
+    for (int u=0;u<ara;u++) {
+        args[u].obsolete(obsoleted);
     }
 }
-void Statement::getsolvepoints(std::map<int,Statement*>& endpoints,std::map<int,bool>& obsoleted,std::vector<std::vector<Strategy*>*>& params,bool stage,bool inlocal) {
-    Strategy* calctype = (*params[local])[id]->typechecksub(&args, (*params[local])[id]->local+1,(int)params.size(),1);
+void Statement::getsolvepoints(std::map<int,Statement>& endpoints,std::map<int,bool>& obsoleted,ParameterContext& params,bool stage,bool inlocal) {
+//    if (id>=params[local].second) throw;
+//    int lloc = params[local].first[id].local;
+//    Strategy calctype = params[local].first[id].typechecksub(args,ara,lloc+1,(int)params.size(),1);
+//    Strategy* calctype = (*params[local])[id]->typechecksub(&args, (*params[local])[id]->local+1,(int)params.size(),1);
+    Strategy calctype = params.generateType(*this);
+
     if (local==1) {
-        if (stage or calctype->type->local!=1) calctype->type->obsolete(obsoleted);
-        if (stage or calctype->type->local!=1) endpoints[id]=deepcopy();
+        if (stage or calctype.type.local!=1) calctype.type.obsolete(obsoleted);
+        if (stage or calctype.type.local!=1) endpoints[id]=deepcopy();
     }
     if (inlocal) {
-        calctype->type->obsolete(obsoleted);
+        calctype.type.obsolete(obsoleted);
     }
-    for (int r=0;r<args.size();r++) {
-        std::vector<std::vector<Strategy*>*> continued = params;
-        continued.push_back(&calctype->args[r]->args);
-        args[r]->getsolvepoints(endpoints, obsoleted, continued,stage,local==1 or inlocal);
+    for (int r=0;r<ara;r++) {
+        ParameterContext continued = params.append(calctype.args[r]);
+//        continued.push_back(std::pair<Strategy*,int>(calctype.args[r].args,calctype.args[r].ara));
+        args[r].getsolvepoints(endpoints, obsoleted, continued,stage,local==1 or inlocal);
     }
-    calctype->cleanup();
+    calctype.cleanup();
+}
+
+
+Statement idpush(Statement a,int amt) {
+    Statement res = Statement(a.local==1?a.id+amt:a.id,a.local,a.ara);
+    for (int p=0;p<a.ara;p++) {
+        res.args[p] = idpush(a.args[p],amt);
+    }
+    return res;
+}
+Strategy idpush(Strategy a,int amt) {
+    Strategy res = Strategy(idpush(a.type,amt),a.local==1?a.id+amt:a.id,a.local,a.ara);
+    for (int p=0;p<a.ara;p++) {
+        res.args[p] = idpush(a.args[p],amt);
+    }
+    return res;
 }
 void Soln::expand(MetaBank* mb,SolveInstance* inst) {
     if (!expanded) {
         expanded=true;
-//        ids=head->maxloc();
-        for (int j=0;j<head->args.size();j++) {
-            Binding newbinds(mb,loctypes);
-            if (newbinds.decompose(head,head->args[j])) {
-                binqueue.push_back(new Entry(newbinds));
-//                for (int n=0;n<newbinds.decoms.size();n++) {
-//                    if (newbinds.decoms[n].first->maxloc(1) or newbinds.decoms[n].first->maxloc(2) or
-//                        newbinds.decoms[n].second->maxloc(1) or newbinds.decoms[n].second->maxloc(2)) {
-//                        std::cout<<"INTERNAL STATE CORRUPTED:\n"<<tostringheavy()<<"\n";
-//                        throw;
-//                    }
-//                }
+        for (int j=0;j<head.ara;j++) {
+            Binding newbinds(mb,loctypes,ara);
+            if (newbinds.decompose(head,head.args[j])) {
+                std::vector<Binding> splitter;
+                newbinds.divide(splitter,0);
+                for (int k=0;k<splitter.size();k++) {
+                    binqueue.push_back(new Entry(splitter[k]));
+                }
             }
         }
-//        std::cout<<"TESTING AGAINST EACH STRATEGY\n\n\n";
-        for (int w=0;w<mb->strategies.size();w++) {
-            if (head==0) throw;
-            std::vector<Strategy*> newloctypes = loctypes;
-            
-            Statement* adjust = mb->strategies[w]->snapshot();
-            for (int u=0;u<adjust->args.size();u++) {
-                adjust->args[u]->id=newloctypes.size();
-                newloctypes.push_back(mb->strategies[w]->args[u]);
+        for (int w=0;w<mb->ara;w++) {
+            Statement adjust = mb->strategies[w].snapshot();
+            Strategy* newloctypes = new Strategy[adjust.ara+ara];
+            for (int k=0;k<ara;k++) {
+                newloctypes[k] = loctypes[k];
             }
-            
-            Binding newbinds(mb,newloctypes);
-            if (newbinds.decompose(head,adjust)) {
-//                std::cout<<"SUCCESS<-==-=-==--=-=-=-=------"<<mb->stratnames[w]<<"\n";
-//                std::cout<<newbinds.tostringheavy()<<"\n";
-                binqueue.push_back(new Entry(newbinds));
-//                for (int n=0;n<newbinds.decoms.size();n++) {
-//                    if (newbinds.decoms[n].first->maxloc(2) or newbinds.decoms[n].second->maxloc(2)) {
-//                        std::cout<<"INTERNAL STATE CORRUPTED:\n"<<tostringheavy()<<"\n";
-//                        throw;
-//                    }
-//                }
+            for (int u=0;u<adjust.ara;u++) {
+                adjust.args[u].id = ara+u;
+                newloctypes[ara+u] = idpush(mb->strategies[w].args[u],ara);
+//                newloctypes[ara+u].id = ara+u;
+            }
+            Binding newbinds(mb,newloctypes,adjust.ara+ara);
+            if (newbinds.decomposeverbal(head,adjust,newbinds.tracks,1)) {
+                std::vector<Binding> splitter;
+                newbinds.divide(splitter,0);
+                for (int k=0;k<splitter.size();k++) {
+                    std::cout<<"\t\tSUCCESS\n";
+                    std::cout<<splitter[k].tostring(0);
+                    binqueue.push_back(new Entry(splitter[k]));
+                }
             }
         }
     }
     for (int j=0;j<binqueue.size();j++) {
     
-        std::vector<Statement*> solvepoints = binqueue[j]->endpoints(mb,head);
+        std::vector<Statement> solvepoints = binqueue[j]->endpoints(mb,head);
+        std::cout<<binqueue[j]->bind.tostring(0)<<"\n";
+        
 //        std::vector<Statement*> antisolvepoints;
     //    head->local_list(&antisolvepoints);
 //        if (head->type) head->type->local_list(&antisolvepoints);
-        bool obsolete=false;
+//        bool obsolete=false;
         
-        for (int q=(int)bin.size()-1;q>=0;q--) {
-//            if (bin[q]->asymmetricObsoletes(binqueue[j],&antisolvepoints)) {
-//                obsolete=true;
-//            }
-        }
-        if (!obsolete) {
+//        for (int q=(int)bin.size()-1;q>=0;q--) {
+////            if (bin[q]->asymmetricObsoletes(binqueue[j],&antisolvepoints)) {
+////                obsolete=true;
+////            }
+//        }
+//        if (!obsolete) {
             bin.push_back(binqueue[j]);
             if (solvepoints.size()==0) {
                 for (int y=0;y<upstream.size();y++) {
@@ -241,25 +270,38 @@ void Soln::expand(MetaBank* mb,SolveInstance* inst) {
             }
             
             for (int g=0;g<solvepoints.size();g++) {
-                Soln* next = inst->makeorcreate(solvepoints[g]);
+                std::vector<int> afa;
+                std::vector<int> dfa;
+                solvepoints[g].extract(afa,binqueue[j]->bind.tracks);
+                Strategy* augtypes = new Strategy[afa.size()];
+//                for (int p=afa.size()-1;p>=0;p--) {
+                for (int p=0;p<afa.size();p++) {
+                    dfa.push_back(afa[afa.size()-1-p]);
+//                    throw;//this must be fixed with scrambling function.
+                    augtypes[p] = binqueue[j]->bind.localtypes[dfa[p]].applyreverse(dfa);
+                    std::cout<<augtypes[p].tostring()<<"\n";
+                }
+                
+                
+                
+                
+                Soln* next = inst->makeorcreate(solvepoints[g].applyreverse(dfa),augtypes,afa.size());
+                
                 binqueue[j]->downstream.push_back(next);
-//            }
-//            for (int u=0;u<binqueue[j]->downstream.size();u++) {
-        //////        bin[bin.size()-1].links.push_back(SolnLink(this,next,&bin[bin.size()-1]));
-                SolnLink gra = SolnLink(solvepoints[g],next->head,this,binqueue[j]);
+                SolnLink gra = SolnLink(dfa,this,binqueue[j]);
                 next->upstream.push_back(gra);
                 for (int w=0;w<next->bin.size();w++) {
                     if (next->bin[w]->downstream.size()==0) {
                         binqueue.push_back(gra.transform(next->bin[w]));
                     }
                 }
+//            }
+//            for (int q=(int)bin.size()-2;q>=0;q--) {
+////                if (binqueue[j]->asymmetricObsoletes(bin[q],&antisolvepoints)) {
+////                    remove(mb,inst,q);
+////                }
             }
-            for (int q=(int)bin.size()-2;q>=0;q--) {
-//                if (binqueue[j]->asymmetricObsoletes(bin[q],&antisolvepoints)) {
-//                    remove(mb,inst,q);
-//                }
-            }
-        }
+//        }
     }
     binqueue.clear();
 }
@@ -284,28 +326,31 @@ void Soln::remove(SolveInstance* inst,int n) {
 
 
 
-std::vector<Statement*> Entry::endpoints(MetaBank* mb,Statement* head) {
-    std::vector<Statement*> solvepoints;
+std::vector<Statement> Entry::endpoints(MetaBank* mb,Statement head) {
+    std::vector<Statement> solvepoints;
 //    bool satisfied=false;
 //    while (!satisfied) {
-    throw;
-    Statement* subbed = 0;//head->substitute(&bind);
-    std::map<int,Statement*> points;
+//    throw;
+    std::vector<Statement> interp;
+    head.substitute(&bind,bind.tracks,interp);
+    
+    std::map<int,Statement> points;
     std::map<int,bool> obsoleted;
-    std::vector<std::vector<Strategy*>*> p;
-    p.push_back(&mb->strategies);
-    p.push_back(&bind.localtypes);
-    subbed->getsolvepoints(points,obsoleted,p,false,false);
-    for (auto it=points.begin();it!=points.end();it++) {
-        if (!obsoleted[it->first]) solvepoints.push_back(it->second);
-    }
-    if (solvepoints.size()==0) {
+//    std::vector<std::pair<Strategy*,int>> p;
+//    p.push_back(std::pair<Strategy*,int>(mb->strategies,mb->ara));
+//    p.push_back(std::pair<Strategy*,int>(bind.localtypes,bind.ara));
+    std::cout<<head.tostring()<<"=--==--==--==--==-\n";
+    for (bool stage=false;;stage=true) {
+        for (int p=0;p<interp.size();p++) {
+            std::cout<<interp[p].tostring()<<"<-----\n";
+            interp[p].getsolvepoints(points,obsoleted,bind.tracks,false,false);
+            for (auto it=points.begin();it!=points.end();it++) {
+                if (!obsoleted[it->first]) solvepoints.push_back(it->second);
+            }
+        }
         points.clear();
         obsoleted.clear();
-        subbed->getsolvepoints(points,obsoleted,p,true,false);
-        for (auto it=points.begin();it!=points.end();it++) {
-            if (!obsoleted[it->first]) solvepoints.push_back(it->second);
-        }
+        if (solvepoints.size() or stage) break;
     }
         
 //        satisfied=true;
@@ -361,13 +406,19 @@ std::vector<Statement*> Entry::endpoints(MetaBank* mb,Statement* head) {
 //    }
 //    return true;
 //}
-Soln* SolveInstance::makeorcreate(Statement* match) {
+Soln* SolveInstance::makeorcreate(Statement match,Strategy* potypes,int a) {
     for (int g=0;g<solns.size();g++) {
-        std::map<int,int> forward;
-        std::map<int,int> backward;
-        if (amorphousmatch(match,solns[g]->head,forward,backward)) return solns[g];
+        bool val=true;
+        if (a!=solns[g]->ara) continue;
+        for (int j=0;j<a;j++) {
+            if (!judgemental_eq(potypes[j],solns[g]->loctypes[j])) {
+                val=false;
+                break;
+            }
+        }
+        if (val and judgemental_eq(match,solns[g]->head)) return solns[g];
     }
-    solns.push_back(new Soln(match));
+    solns.push_back(new Soln(match,potypes,a));
     return solns[solns.size()-1];
 }
 bool Soln::recieveEnergy(MetaBank* mb,SolveInstance* si,int energy) {
@@ -385,7 +436,8 @@ bool Soln::recieveEnergy(MetaBank* mb,SolveInstance* si,int energy) {
     return false;
 }
 void SolveInstance::increment(MetaBank* mb) {
-    solns[0]->recieveEnergy(mb,this,-1);
+
+    mainsoln.recieveEnergy(mb,this,-1);
     for (int w=(int)solns.size()-1;w>0;w--) {
         if (solns[w]->upstream.size()==0) {
             delete solns[w];
@@ -396,23 +448,24 @@ void SolveInstance::increment(MetaBank* mb) {
     flushvisualizer();
 }
 Entry* SolnLink::transform(Entry* input) {
+    throw;
     Entry* res = new Entry(container->bind);
 //    for (int y=0;y<input->bind.decoms.size();y++) {
 //        res->bind.insert(input->bind.decoms[y].first->scramble(mapr,res->ids),input->bind.decoms[y].second->scramble(mapr,res->ids));
 //    }
     return res;
 }
-Statement* MetaBank::solve(Statement* target,std::vector<Strategy*>& loc) {
-    SolveInstance inst;
-    inst.solns.push_back(new Soln());
-    Binding kgra(this,loc);
-    kgra.decompose(inst.solns[0]->head,target);
-    inst.solns[0]->binqueue.push_back(new Entry(kgra));
+Statement MetaBank::solve(Statement type,Strategy* loc,int buf) {
+    SolveInstance inst(type,loc,buf);
     while (true) {
         inst.increment(this);
-        Statement* res = inst.solns[0]->getsolution();
-        if (res!=0) {
-            return res;
+        for (int y=0;y<inst.mainsoln.bin.size();y++) {
+            if (inst.mainsoln.bin[y]->downstream.size()==0) {
+    //            std::cout<<bin[y]->bind.tostringheavy()<<"asdf\n";
+    //            return head->substitute(&bin[y]->bind);
+                std::cout<<"FOUND\n";
+                throw;
+            }
         }
     }
 }

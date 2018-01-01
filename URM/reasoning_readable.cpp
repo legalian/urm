@@ -10,24 +10,29 @@
 #include "reasoning_core.hpp"
 #include "parser_core.hpp"
 
-std::string Binding::tostring() {
+std::string ntabs(int tabs) {
     std::string res="";
-    for (int it=0;it<localtypes.size();it++) {
-        res+=localtypes[it]->tostring()+"-->"+partials[it]->tostring()+"\n";
+    for (int nu=0;nu<tabs;nu++) res+="\t";
+    return res;
+}
+std::string Binding::tostring(int tabs) {
+    std::string res="";
+    for (int it=0;it<ara;it++) {
+        res+=ntabs(tabs)+localtypes[it].tostring()+"-->"+partials[it].tostring()+"\n";
     }
     for (int it=0;it<binds.size();it++) {
-        res+=binds[it].head->tostring()+"|"+binds[it].body->tostring()+"\n";
+        res+=ntabs(tabs)+binds[it].head.tostring()+"|"+binds[it].body.tostring()+"\n";
     }
     return res;
 }
 
 std::string Soln::tostring() {
     std::string res="";
-    res+=head->tostring()+";\n";
+    res+=head.tostring()+";\n";
     for (int t=0;t<bin.size();t++) {
-        res+="\t"+head->substitute_tostring(&bin[t]->bind)+"\n";
+        res+="\t"+head.substitute_tostring(&bin[t]->bind)+"\n";
         for (int i=0;i<bin[t]->downstream.size();i++) {
-            res+="\t\t"+bin[t]->downstream[i]->head->tostring()+"\n";
+            res+="\t\t"+bin[t]->downstream[i]->head.tostring()+"\n";
         }
     }
     return res;
@@ -36,16 +41,15 @@ std::string Soln::tostring() {
 
 std::string Strategy::tostring() {
     std::string res="";
-    if (args.size()) {
+    if (ara) {
         res+="[";
-        for (int u=0;u<args.size();u++) {
-            res+=args[u]->tostring();
-            if (u!=args.size()-1) res+="|";
+        for (int u=0;u<ara;u++) {
+            res+=args[u].tostring();
+            if (u!=ara-1) res+="|";
         }
         res+="]";
     }
-    if (type) res+=type->tostring();
-    else res+="root";
+    res+=type.tostring();
     return res;
 }
 
@@ -55,24 +59,17 @@ std::string Statement::tostring() const {
     if (id==-1) ret = "{?:"+std::to_string(local)+"}";
     if (local==-1) ret = ""+std::to_string(id)+"";
     if (local==0 and MetaBank::meta_prime.stratnames.size()>id and id>=0) ret = MetaBank::meta_prime.stratnames[id];
-    if (args.size()) {
+    if (ara) {
         ret += "(";
-        for (int e=0;e<args.size();e++) {
-            ret = ret+args[e]->tostring();
-            if (e<args.size()-1) {
-                ret = ret+",";
-            }
+        for (int e=0;e<ara;e++) {
+            ret = ret+args[e].tostring();
+            if (e<ara-1) ret = ret+",";
         }
         ret = ret+")";
     }
     return ret;
 }
 
-std::string ntabs(int tabs) {
-    std::string res="";
-    for (int nu=0;nu<tabs;nu++) res+="\t";
-    return res;
-}
 std::string ConstructArgReference::tostringheavy() {
     std::string res=".";
     for (int u=0;u<path.size();u++) {

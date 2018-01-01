@@ -494,20 +494,17 @@ Construction Construction::reference(ConstructArgReference e) {
     Construction a= children[p].reference(e);
     return a;
 }
-Statement* Construction::convert(ParseSpecifier* parser,std::vector<DictEntry> space,int& locid,int stat,std::vector<Statement*>& varref,int olddepth) {
-    Statement* ret;
-    Strategy* root;
+Statement Construction::convert(ParseSpecifier* parser,std::vector<DictEntry> space,int& locid,int stat,std::vector<Statement>& varref,int olddepth) {
     switch (reconstruct) {
-        case 0:
-            ret = new Statement(varID,strucLocal);
-            if (children.size()!=root->args.size()) throw;
+        case 0: {
+            Statement ret = Statement(varID,strucLocal,children.size());
             for (int e=0;e<children.size();e++) {
-                ret->args.push_back(children[e].convert(parser,space,locid,stat+1,varref,olddepth));
+                ret.args[e] = children[e].convert(parser,space,locid,stat+1,varref,olddepth);
             }
             return ret;
-        case 1:
+        } case 1:
             if (strucLocal==-1) {
-                return new Statement(std::stoi(ifget),-1);
+                return Statement(std::stoi(ifget),-1);
             }
             for (int u=0;u<given.size();u++) {
                 space.push_back(given[u]);
@@ -521,49 +518,49 @@ Statement* Construction::convert(ParseSpecifier* parser,std::vector<DictEntry> s
             }
             throw;
         case 5:
-            return new Statement(locid++,1);
+            return Statement(locid++,1);
         case 7:
             if (children.size()) throw;
-            
-            return varref[varID]->depth_push(olddepth+1,stat-olddepth);
+            return varref[varID].depth_push(olddepth+1,stat-olddepth);
     }
     throw;
 }
-Statement* Conversion::convert(ParseSpecifier* parser,std::vector<DictEntry> space,Construction* token,int& locid,int stat,std::vector<Statement*>& varref,int olddepth) {
-
+Statement Conversion::convert(ParseSpecifier* parser,std::vector<DictEntry> space,Construction* token,int& locid,int stat,std::vector<Statement>& varref,int olddepth) {
     for (int y=0;y<choices.size();y++) {
         Construction party = token->reference(choices[y].head);
         if (party.varID==choices[y].id) {
             return choices[y].body.convert(parser,space,token,locid,stat,varref,olddepth);
         }
     }
-    std::vector<Statement*> fargs;
+    std::vector<Statement> fargs;
     for (int y=token->tokargs;y<token->children.size();y++) {
         fargs.push_back(token->children[y].convert(parser,space,locid,stat,varref,olddepth));
     }
     
     return elapse.replace(token,stat).convert(parser,space,locid,stat,fargs,stat);
 }
-Statement* ParseSpecifier::fullconvert(const std::string& input) {
+Statement ParseSpecifier::fullconvert(const std::string& input) {
     ParseResult* tokens = parse(0,input);
     
     std::vector<DictEntry> carry;
-    std::vector<Statement*> upset;
+    std::vector<Statement> upset;
     int locid=0;
     
     Construction a = Construction(this,tokens);
-    for (int d=0;d<table[0].type->args.size();d++) {
+    for (int d=0;d<table[0].type.ara;d++) {
         a.children.push_back(Construction());
         a.children[a.tokargs+d].strucLocal=2;
         a.children[a.tokargs+d].varID=d;
         a.children[a.tokargs+d].reconstruct=0;
-        upset.push_back(table[0].type->args[d]->snapshot());
+        upset.push_back(table[0].type.args[d].snapshot());
     }
 //    std::cout<<a.tostringheavy()<<"\n";
     int reassign=0;
-    std::map<int,int> remap;
-    Statement* res = a.convert(this,carry,locid,2,upset,2);
-    res->unscramble(remap,reassign,1);
+    std::vector<int> remap;
+    Statement res = a.convert(this,carry,locid,2,upset,2);
+    throw;//make sure this works
+    
+//    res.unscramble(remap,reassign,1);
     return res;
 }
 
