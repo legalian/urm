@@ -9,14 +9,14 @@
 #include <stdio.h>
 #include "reasoning_core.hpp"
 
-bool Statement::is_complete(int loc) {
-//    if (this==Statement::gap) return false;
-    if (id==-1 and local==loc) return false;
-    for (int u=0;u<ara;u++) {
-        if (!args[u].is_complete(loc)) return false;
-    }
-    return true;
-}
+//bool Statement::is_complete(int loc) {
+////    if (this==Statement::gap) return false;
+//    if (id==-1 and local==loc) return false;
+//    for (int u=0;u<ara;u++) {
+//        if (!args[u].is_complete(loc)) return false;
+//    }
+//    return true;
+//}
 
 //bool Binding::substitute() {
 //
@@ -40,18 +40,22 @@ bool Statement::is_complete(int loc) {
 //    return true;
 //}
 
-SingleBind emplace(Statement head,Statement body,int tracksize,ParameterContext& params) {
+SingleBind emplace(Statement head,Statement body,int loc,ParameterContext& params) {
     std::map<std::pair<int,int>,int> remap;
     int mappoint = 0;
     std::string placing = head.tostring()+"  "+body.tostring();
     
     
-    Statement modhead = head.depth_push(tracksize,1);
-    Statement modbody = body.depth_push(tracksize,1);
-    modhead.clip_upperbound(params.loc()+2,tracksize+1,remap,mappoint);
-    modhead = modhead.paste_upperbound(params.loc()+2,remap,tracksize).depth_push(tracksize+1,tracksize-params.loc()-1);
-    modbody = modbody.paste_upperbound(params.loc()+2,remap,tracksize).depth_push(tracksize+1,tracksize-params.loc()-1);
+    Statement modhead = head.depth_push(loc+1,1);
+    Statement modbody = body.depth_push(loc+1,1);
+//    std::cout<<modhead.tostring()<<"=-=-00-=-=00=-0-=\n";
+    modhead.clip_upperbound(params.loc()+2,loc,remap,mappoint);
     
+//    std::cout<<modhead.paste_upperbound(params.loc()+2,remap,loc).tostring()<<"<><><><><><\n";
+//    throw;
+    modhead = modhead.paste_upperbound(params.loc()+2,remap,loc).depth_push(loc+2,loc+1-params.loc()-1);
+    modbody = modbody.paste_upperbound(params.loc()+2,remap,loc).depth_push(loc+2,loc+1-params.loc()-1);
+    //desired output:
     std::string nplacing = modhead.tostring()+"  "+modbody.tostring();
 //    std::cout<<"\n-=-=-=-=-=-=-=-\n";
 //    std::cout<<modhead->tostring()<<"\n";
@@ -64,8 +68,8 @@ SingleBind emplace(Statement head,Statement body,int tracksize,ParameterContext&
         sz=remap.size();
         int ii=0;
         for (auto it=remap.begin();it!=remap.end();it++) {
-            if (it->first.first<params.dat[it->first.second].second) throw;
-            trash[ii++] = params.dat[it->first.second].first[it->first.first].bring_depth(tracksize,tracksize-it->first.second);
+            if (it->first.first>=params.dat[it->first.second-1].second) throw;
+            trash[ii++] = params.dat[it->first.second-1].first[it->first.first].bring_depth(loc+1,loc+1-it->first.second-1);
         }
         
         
@@ -82,8 +86,9 @@ SingleBind emplace(Statement head,Statement body,int tracksize,ParameterContext&
 //    return decompose(left,right,0,p);
 //}
 void Binding::insert(SingleBind c) {
-    if (partials[c.head.id].is_complete(tracks.loc()) and judgemental_eq(partials[c.head.id],c.body)) return;
+//    if (partials[c.head.id].is_complete(tracks.loc()) and judgemental_eq(partials[c.head.id],c.body)) return;
     for (int j=0;j<binds.size();j++) {
+//        throw; //this should be judgemental obsolescense, not equality.
         if (judgemental_eq(c.head,binds[j].head) and judgemental_eq(c.body,binds[j].body)) return;
     }
     binds.push_back(c);
@@ -100,7 +105,8 @@ bool Binding::decompose(Statement left,Statement right,ParameterContext& params)
 //    left.constcheck(params);
 //    right.constcheck(params);
     if (left.local==tracks.loc() or right.local==tracks.loc()) {
-        if (left.id==-1 or right.id==-1) return true;
+        if (left.id==-1 or right.id==-1) throw;
+        if (judgemental_eq(left,right)) return true;
 //        Statement ltype = left.generate_type(params);
 //        Statement rtype = right.generate_type(params);
         Strategy ltype = params.generateType(left);
@@ -111,16 +117,16 @@ bool Binding::decompose(Statement left,Statement right,ParameterContext& params)
         rtype.cleanup();
         
         if (left.local==tracks.loc() and right.local==tracks.loc()) {
-            SingleBind a = emplace(left,right,tracks.loc()+1,params);
-            SingleBind b = emplace(right,left,tracks.loc()+1,params);
+            SingleBind a = emplace(left,right,tracks.loc(),params);
+            SingleBind b = emplace(right,left,tracks.loc(),params);
             if (a.ara==-1 or b.ara==-1) return false;
             insert(a);
         } else if (right.local!=tracks.loc()) {
-            SingleBind c = emplace(left,right,tracks.loc()+1,params);
+            SingleBind c = emplace(left,right,tracks.loc(),params);
             if (c.ara==-1) return false;
             insert(c);
         } else if (left.local!=tracks.loc()) {
-            SingleBind c = emplace(right,left,tracks.loc()+1,params);
+            SingleBind c = emplace(right,left,tracks.loc(),params);
             if (c.ara==-1) return false;
             insert(c);
         }
@@ -157,25 +163,25 @@ bool Binding::decompose(Statement left,Statement right,ParameterContext& params)
 //    return res;
 //}
 
-struct CartesianCarry {
-    std::vector<Statement> partials;
-    std::vector<Strategy> types;
-    CartesianCarry(Statement* t,Strategy* g,int ara) {
-        for (int a=0;a<ara;a++) {
-            partials.push_back(t[a]);
-            types.push_back(g[a]);
-        }
-    }
-    CartesianCarry(std::vector<Statement> t,std::vector<Strategy> g) {
-//        if (t.size()!=g.size()) throw;
-        for (int a=0;a<g.size();a++) {
-            types.push_back(g[a].deepcopy());
-        }
-        for (int a=0;a<t.size();a++) {
-            partials.push_back(t[a].deepcopy());
-        }
-    }
-};
+//struct CartesianCarry {
+//    std::vector<Statement> partials;
+//    std::vector<Strategy> types;
+//    CartesianCarry(Strategy* g,int ara,int lc) {
+//        for (int a=0;a<ara;a++) {
+//            partials.push_back(Statement(-1,lc));
+//            types.push_back(g[a]);
+//        }
+//    }
+//    CartesianCarry(std::vector<Statement> t,std::vector<Strategy> g) {
+////        if (t.size()!=g.size()) throw;
+//        for (int a=0;a<g.size();a++) {
+//            types.push_back(g[a].deepcopy());
+//        }
+//        for (int a=0;a<t.size();a++) {
+//            partials.push_back(t[a].deepcopy());
+//        }
+//    }
+//};
 
 //int idcheck(Statement* a,int target,int threshold) {
 //    int max=0;
@@ -282,22 +288,20 @@ Strategy* ParameterContext::compress(int loc) {
     }
     return end;
 }
-Statement intersperse(Strategy a,Strategy b) {
-    Statement res = Statement(a.id,a.local,a.ara);
-    if (a.ara!=b.ara) throw;
+Statement intersperse(Strategy a,int l1,int l2) {
+    Statement res = Statement(a.id,l1,a.ara);
     for (int k=0;k<a.ara;k++) {
-        res.args[k] = intersperse(b.args[k],a.args[k]);
+        res.args[k] = intersperse(a.args[k],l2+1,l1+1);
     }
     return res;
 }
-Statement* ParameterContext::artifact(int local,Strategy* tra) {
+Statement* ParameterContext::artifact(int local) {
     Statement* end = new Statement[index(local)];
     int k=0;
     for (int j=local+1;j<dat.size();j++) {
         for (int h=0;h<dat[j].second;h++) {
-//            std::cout<<"interspersing: "<<dat[j].first[h].snapshot().tostring()<<" and "<<tra[k].snapshot().tostring()<<" result: "<<intersperse(dat[j].first[h],tra[k]).tostring()<<"\n";
-            
-            end[k] = intersperse(dat[j].first[h],tra[k].bring_depth(local+1,loc()-local-1));
+        
+            end[k] = intersperse(dat[j].first[h],j,loc());
             k++;
         }
     }
@@ -310,120 +314,260 @@ int ParameterContext::index(int loc) {
     }
     return k;
 }
-void godtrans(Statement& a,int loc,std::vector<Strategy>& types,ParameterContext& params) {
-    if (a.local==loc+1) {
-        if (a.ara==-1) {
-            int lloc = params.dat[a.local].first[a.id].local;
-            Strategy ptype = params.dat[a.local].first[a.id].bring_depth(lloc+1,params.loc()-lloc);
-//            int lloc = ;
-            a.ara = ptype.ara;
-            a.args = new Statement[a.ara];
-            for (int k=0;k<a.ara;k++) {
-//                for (int w=0;w<a.ara;w++) {
-                Strategy nntype = ptype.args[k].typechecksub_1disp(a.args,k,params.loc()+1,1);
-                ParameterContext nn = params.append(nntype);
-//                }
-                //[[NSTRAT = depth push k strat and sub 3->1
-                //[[NSTRAT type may be required type, if not for local 2 id adjustments
-                //[[append NSTRAT to params
-                //[[params.compress()
-                
-                //[[[4]3]2]1
-                Strategy nloc = Strategy(nn.morph(loc,ptype.type,ptype.local+2),types.size(),loc);
-                Statement nstat = Statement(types.size(),loc);
-                //add 4(transformed) givens.
-                //subbed with the threes to locals.
-                //fives refer to locals; become threes.
-                
-                
-                //FINISHED: 0->0,1->1,2->itinerary,
-                
-                //FINISHED:  do not worry about this: 3->1 (id's strat will already have been visited)
-                
-                //2 givens are secretly the pre-existing parameters.
-                
-                nloc.ara=nn.index(loc);
-                nloc.args=nn.compress(loc);//ensure params is updated with everything it needs.
-                nstat.ara=nloc.ara;
-                nstat.args=nn.artifact(loc,nloc.args);
-                
-                types.push_back(nloc);
-                a.args[k] = nstat;
-            }
-        }
+Statement godtrans(Statement a,Statement expected,int loc,std::vector<Strategy>& types,ParameterContext& params) {
+//    if (a.local==loc+1) {
+////        int lloc = params.dat[a.local].first[a.id].local;
+////        Strategy ptype = params.dat[loc+1].first[a.id].bring_depth(loc+2/*lloc+1*/,params.loc()-/*lloc*/(loc+1));
+//        res.ara = params.dat[loc+1].first[a.id].ara;
+//        res.args = new Statement[res.ara];//it's possible that this part should be abstracted out
+//        for (int k=0;k<a.ara;k++) {
+////            Strategy nntype = ptype.args[k].typechecksub_1disp(a.args,k,params.loc()+1,1);
+////            ParameterContext nn = params.append(nntype);
+////            Strategy nloc = Strategy(nn.morph(loc,ptype.type,ptype.local+2),types.size(),loc);
+////            Statement nstat = Statement(types.size(),loc);
+////            nstat.ara=nloc.ara=nn.index(loc);
+////            nloc.args=nn.compress(loc);//ensure params is updated with everything it needs.
+////            nstat.args=nn.artifact(loc);
+////            types.push_back(nloc);
+////            res.args[k] = nstat;
+//        }
+//    } else
+    if (a.local==loc) {
+        
+    
+        Strategy nloc = Strategy(expected,types.size(),loc);
+        Statement nstat = Statement(types.size(),loc);
+        nstat.ara=nloc.ara=params.index(loc);
+        nloc.args=params.compress(loc);
+        nstat.args=params.artifact(loc);
+//        std::cout<<nstat.tostring()<<"<-=--=-=-=\n";
+//        std::cout<<nloc.tostringheavy()<<"<-=--=-=-=\n";
+        
+        
+        types.push_back(nloc);
+        return nstat;
     } else {
-        Strategy calctype = params.generateType(a);
+        Statement res = Statement(a.id,a.local,a.ara);
         for (int u=0;u<a.ara;u++) {
-            ParameterContext nn = params.append(calctype.args[u]);
-            godtrans(a.args[u],loc,types,nn);
+            Strategy subcalctype = params.generateTypeSection(a,u);
+            ParameterContext nn = params.append(subcalctype);
+            res.args[u] = godtrans(a.args[u],subcalctype.type,loc,types,nn);
         }
+        return res;
     }
 }
-void generatePartial(Statement a,Statement partial,Strategy head,std::vector<Statement>& statout,CartesianCarry& opartials,int loc,bool& changed,ParameterContext& params) {
-    if (a.local==loc) {
-        if (a.id==-1) {
-            statout.push_back(partial.deepcopy());
-            return;
+
+//bool universal_property(Statement a,int dep,int nl) {
+//    for (int j=0;j<a.ara;j++) {
+//        if (a.args[j].local==nl and a.args[j].id==j and universal_property(a.args[j],dep+1,dep)) continue;
+//        return false;
+//    }
+//    return true;
+//}
+//bool endpoint_property(Statement a,int dep,int loc,int& count) {
+//    for (int j=0;j<a.ara;j++) {
+//        if (a.args[j].local==loc+1     and a.args[j].id==count and universal_property(a.args[j],dep+3,loc+2)) {count++;continue;}
+//        if (a.args[j].local==loc+2*dep and endpoint_property(a,dep+1,loc,count)) continue;
+//        return false;
+//    }
+//    return true;
+//}
+
+
+void separatePartials(Statement* a,std::vector<int> b,Strategy head,int loc,int depth,std::vector<std::vector<int>>& out) {
+    bool ide=true;
+    
+    for (int g=0;g<b.size();g++) if (a[g].local!=loc+depth+1) ide=false;
+
+    std::vector<std::pair<std::vector<int>,Strategy>> ws;
+    if (depth==0) ws.push_back(std::pair<std::vector<int>,Strategy>(b,head));
+    else if (ide) {
+        for (int k=0;k<head.ara;k++) {
+            std::vector<int> w;
+            for (int g=0;g<b.size();g++) if (a[g].id==k) w.push_back(b[g]);
+            if (w.size()) ws.push_back(std::pair<std::vector<int>,Strategy>(w,head.args[k]));
         }
-        Statement jk = opartials.partials[a.id].depth_push(loc+1,loc-params.loc());
-        Statement subbed = opartials.partials[a.id].substitute_level(a.args,a.ara,params.loc()+1,0);//this is unchecked.
-        throw;
-        generatePartial(subbed,partial,head,statout,opartials,loc,changed,params);//this screws up depth<-=--==-=-=--==--==-=--=-=-=-=-=-=-=-=-=
-        subbed.cleanup();
-        return;
-    }
-    if (partial.local==loc) {
-        if (partial.id!=-1) throw;
-        for (int u=0;u<head.ara;u++) {
-//            statout.push_back(head.args[u].snapshot().depth_push(loc+2,params.loc()-loc-1));
-            statout.push_back(Statement(u,loc+1,-1));
+    } else out.push_back(b);
+
+    for (int o=0;o<ws.size();o++) {
+    
+        std::vector<std::vector<int>> mplex1;
+        std::vector<std::vector<int>> mplex2;
+        mplex1.push_back(ws[o].first);
+        bool c=true;
+        #define MP1 (c?mplex1:mplex2)
+        #define MP2 (c?mplex2:mplex1)
+//                std::cout<<MP1.size()<<"-->\n";
+
+        for (int j=0;j<ws[o].second.ara;j++) {
+            for (int r=0;r<MP1.size();r++) {
+                Statement* mul = new Statement[MP1[r].size()];
+                for (int g=0,s=0;s<MP1[r].size();) {
+                    if (b[g]==MP1[r][s]) mul[s++]=a[g].args[j];
+                    else g++;
+                }
+                separatePartials(mul,MP1[r],ws[o].second.args[j],loc,depth+1,MP2);
+//                        std::cout<<MP2.size()<<"\n";
+                delete[] mul;
+            }
+            MP1.clear();
+//                    std::cout<<MP2.size()<<"\n";
+//                    for (int z=0;z<MP2.size();z++)
+            c=!c;
         }
-        changed=true;
         
-//        if (a->local!=loc+1) {
-        Statement neg = Statement(a.id,a.local,a.ara);
-        for (int y=0;y<a.ara;y++) {
-            neg.args[y] = Statement(-1,loc);
+        for (int b=0;b<MP1.size();b++) out.push_back(MP1[b]);
+        #undef MP1
+        #undef MP2
+    }
+    
+    
+
+
+}
+//Strategy convenient(Strategy in,int depth) {
+//    Statement res = Statement();
+//    return res;
+//}
+Statement generateFormat(Statement* a,int fibers,ParameterContext params,Strategy expected,int loc,std::vector<Strategy>& append) {
+    bool ide=true;
+    for (int g=0;g<fibers;g++) if (a[g].local!=params.loc()) ide=false;
+    if (ide or params.loc()==loc+1) {
+        Statement res = Statement(a[0].id,a[0].local,a[0].ara);
+        Statement* nn;
+        for (int j=0;j<res.ara;j++) {
+            nn = new Statement[fibers];
+            for (int h=0;h<fibers;h++) nn[h] = a[h].args[j];
+            Strategy jf = params.generateTypeSection(res,j);
+            ParameterContext nncon = params.append(jf);
+            res.args[j] = generateFormat(nn,fibers,nncon,jf,loc,append);
+            delete[] nn;
         }
-        generatePartial(a,neg,head,statout,opartials,loc,changed,params);
-        delete[] neg.args;
-//        } else throw;
+        return res;
     } else {
-        if (partial.local==loc+1) {
-            statout.push_back(partial.deepcopy());
-            return;
+//        throw;
+//        if (a.id>=dat[a.local].second) throw;
+        append.push_back(expected.bring_depth(expected.local,loc+1-expected.local));
+//        throw;
+        return intersperse(expected,loc+1,params.loc()-1);
+    }
+}
+void generatePartial(Statement* a,int fibers,int ara,Strategy* itinerary,std::vector<Statement>& statout,int loc) {
+    bool n_loc=false,d_eli=true;
+    int gi=-1,gl=-1,ga=-1;
+    for (int g=0;g<fibers;g++) {
+        if (a[g].local==loc+1) {d_eli=false;n_loc=true;}
+        else if (a[g].local!=loc) {
+            if (!n_loc) {gi=a[g].id;gl=a[g].local;ga=a[g].ara;}
+            else if (gi!=a[g].id or gl!=a[g].local) {d_eli=false;}
+            n_loc=true;
         }
-        if (a.id!=partial.id or a.local!=partial.local) return;
-        if (a.ara==0) {
-            statout.push_back(a.deepcopy());
-            return;
+    }
+    if (!n_loc) {statout.push_back(Statement(-1,loc,0));return;}
+    for (int i=0;i<ara;i++) {
+        Statement nxt = Statement(i,loc+1,itinerary[i].ara);
+        for (int q=0;q<itinerary[i].ara;q++) {
+            nxt.args[q] = Statement(-1,loc,0);
         }
-        Strategy calctype = params.generateType(a);
+        statout.push_back(nxt);
+    }
+    if (d_eli) {
         std::vector<std::vector<Statement>> cartesian;
-        for (int q=0;q<a.ara;q++) {
-            ParameterContext continued = params.append(calctype.args[q]);
+        Statement* nnr;
+        for (int q=0;q<ga;q++) {
+            nnr = new Statement[fibers];
+            for (int o=0;o<fibers;o++) {
+                if (a[o].local==loc) nnr[o]=a[o];
+                else nnr[o]=a[o].args[q];
+            }
             cartesian.push_back(std::vector<Statement>());
-            generatePartial(a.args[q],partial.args[q],head,cartesian[q],opartials,loc,changed,continued);
+            generatePartial(nnr,fibers,ara,itinerary,cartesian[q],loc);
+            delete nnr;
         }
         int cmax = 1;
-        for (int v=0;v<a.ara;v++) {
-            cmax*=cartesian[v].size();
-        }
+        for (int v=0;v<ga;v++) cmax*=cartesian[v].size();
         for (int c=0;c<cmax;c++) {
-            int ca = c;
-            Statement nn = Statement(partial.id,partial.local,a.ara);
-            for (int v=0;v<a.ara;v++) {
+            Statement nn = Statement(gi,gl,ga);
+            for (int v=0,ca=c;v<ga;v++) {
                 nn.args[v] = cartesian[v][ca%cartesian[v].size()].deepcopy();
                 ca/=cartesian[v].size();
             }
+            
             statout.push_back(nn);
         }
-        for (int v=0;v<a.ara;v++) {
+        for (int v=0;v<ga;v++) {
             for (int y=0;y<cartesian[v].size();y++) {
                 cartesian[v][y].cleanup();
             }
         }
     }
+
+
+
+//    if (a.local==loc) {
+//        if (a.id==-1) {
+//            statout.push_back(partial.deepcopy());
+//            return;
+//        }
+//        Statement jk = opartials.partials[a.id].depth_push(loc+1,loc-params.loc());
+//        Statement subbed = opartials.partials[a.id].substitute_level(a.args,a.ara,params.loc()+1,0);//this is unchecked.
+//        throw;
+//        generatePartial(subbed,partial,head,statout,opartials,loc,changed,params);//this screws up depth<-=--==-=-=--==--==-=--=-=-=-=-=-=-=-=-=
+//        subbed.cleanup();
+//        return;
+//    }
+//    if (partial.local==loc) {
+//        if (partial.id!=-1) throw;
+//        for (int u=0;u<head.ara;u++) {
+////            statout.push_back(head.args[u].snapshot().depth_push(loc+2,params.loc()-loc-1));
+//            statout.push_back(Statement(u,loc+1,-1));
+//        }
+//        changed=true;
+//        
+////        if (a->local!=loc+1) {
+//        Statement neg = Statement(a.id,a.local,a.ara);
+//        for (int y=0;y<a.ara;y++) {
+//            neg.args[y] = Statement(-1,loc);
+//        }
+//        generatePartial(a,neg,head,statout,opartials,loc,changed,params);
+//        delete[] neg.args;
+////        } else throw;
+//    } else {
+//        if (partial.local==loc+1) {
+//            statout.push_back(partial.deepcopy());
+//            return;
+//        }
+//        if (a.id!=partial.id or a.local!=partial.local) return;
+//        if (a.ara==0) {
+//            statout.push_back(a.deepcopy());
+//            return;
+//        }
+//        Strategy calctype = params.generateType(a);
+//        std::vector<std::vector<Statement>> cartesian;
+//        for (int q=0;q<a.ara;q++) {
+//            ParameterContext continued = params.append(calctype.args[q]);
+//            cartesian.push_back(std::vector<Statement>());
+//            generatePartial(a.args[q],partial.args[q],head,cartesian[q],opartials,loc,changed,continued);
+//        }
+//        int cmax = 1;
+//        for (int v=0;v<a.ara;v++) {
+//            cmax*=cartesian[v].size();
+//        }
+//        for (int c=0;c<cmax;c++) {
+//            int ca = c;
+//            Statement nn = Statement(partial.id,partial.local,a.ara);
+//            for (int v=0;v<a.ara;v++) {
+//                nn.args[v] = cartesian[v][ca%cartesian[v].size()].deepcopy();
+//                ca/=cartesian[v].size();
+//            }
+//            statout.push_back(nn);
+//        }
+//        for (int v=0;v<a.ara;v++) {
+//            for (int y=0;y<cartesian[v].size();y++) {
+//                cartesian[v][y].cleanup();
+//            }
+//        }
+//    }
 }
 //Statement partialsub(Statement p,Binding* o,int rec,bool& changed) {
 //    if ((p.local<=0 or p.id==-1) and p.ara==0) return p.deepcopy();
@@ -445,184 +589,245 @@ void generatePartial(Statement a,Statement partial,Strategy head,std::vector<Sta
 //    return res;
 //}
 bool Binding::simplify() {
-//    static int deg=0;
-//    int thisdeg=deg++;
     std::vector<SingleBind> purify;
     bool changeflag=false;
-//    std::cout<<"\n\n\n"<<tostring()<<"\n\n\n";
-//    for (int u=0;u<ara;u++) {
-//        partials[u] = partialsub(partials[u],this,tracks.loc()+2,changeflag);
-//        
-//    }
-//    int oldbinds = binds.size();
-//    std::string preserve = tostring();
+    
     for (int u=0;u<binds.size();u++) {
+    
         ParameterContext tplusi = tracks.append(binds[u].itinerary,binds[u].ara);
-//        std::vector<std::pair<Strategy*,int>> tplusi=tracks;
-//        tplusi.push_back(std::pair<Strategy*,int>(binds[u].itinerary,binds[u].ara));
-        
         std::vector<Statement> s1;
         std::vector<Statement> s2;
+        binds[u].head.substitute(this,tplusi,s1,binds[u].body.local==tracks.loc()?-1:u,changeflag,0);
+        binds[u].body.substitute(this,tplusi,s2,-1,changeflag,0);
         
-        binds[u].head.substitute(this,tplusi,s1,binds[u].body.local==tracks.loc()?-1:u,changeflag);
-        binds[u].body.substitute(this,tplusi,s2,-1,changeflag);
-//        std::cout<<"-->"<<binds[u].head->tostring()<<"<-->"<<binds[u].body->tostring()<<"<--:\n";
         for (int x=0;x<s1.size();x++) {
             for (int y=0;y<s2.size();y++) {
-//                std::cout<<"\t-->"<<s1[x].tostring()<<"<-->"<<s2[y].tostring()<<"<--:\n";
+//                std::cout<<"<--"<<s1[x].tostring()<<" - "<<s2[y].tostring()<<"\n";
                 purify.push_back(SingleBind(s1[x],s2[y],binds[u].itinerary,binds[u].ara));
             }
         }
     }
-//    std::cout<<"SIMPLIFYING:\n"<<preserve<<"\n";
-//    std::cout<<"TO:\n";
-//    for (int j=0;j<purify.size();j++) {
-//        std::cout<<purify[j].head.tostring()+"|"+purify[j].body.tostring()+"\n";
-//    }
     if (changeflag) {
-//        for (int h=0;h<thisdeg;h++) std::cout<<"\t";
-//        std::cout<<"simplifying:\n"<<tostring(thisdeg)<<"\n";
-//        std::cout<<"simplification:\n";
         binds.clear();
         for (int u=0;u<purify.size();u++) {
             ParameterContext tplusi = tracks.append(purify[u].itinerary,purify[u].ara);
-            
-//            std::vector<std::pair<Strategy*,int>> tplusi=tracks;
-//            tplusi.push_back(std::pair<Strategy*,int>(purify[u].itinerary,purify[u].ara));
+//            std::cout<<"N"
             if (!decompose(purify[u].head,purify[u].body,tplusi)) {
-//                for (int h=0;h<thisdeg;h++) std::cout<<"\t";
-//                std::cout<<"failure on: "<<purify[u].head.tostring()<<" | "<<purify[u].body.tostring()<<"\n\n";
-//                deg--;
                 return false;
             }
         }
-//        std::cout<<tostring()<<"\n";
-//        deg--;
         return simplify();
     }
-//    for (int h=0;h<thisdeg;h++) std::cout<<"\t";
-//    std::cout<<"end at:\n"<<tostring(thisdeg)<<"\n";
-//    deg--;
     return true;
 }
 //void Binding::divide(std::vector<Binding>& list) {
 //    if (!simplify()) return;
 //    divide(list,true);
 //}
+//bool universal_property(Statement a,int dep,int nl) {
+//    for (int j=0;j<a.ara;j++) {
+//        if (a.args[j].local==nl and a.args[j].id==j and universal_property(a.args[j],dep+1,dep)) continue;
+//        return false;
+//    }
+//    return true;
+//}
+//bool endpoint_property(Statement a,int dep,int loc,int& count) {
+//    for (int j=0;j<a.ara;j++) {
+//        if (a.args[j].local==loc+1     and a.args[j].id==count and universal_property(a.args[j],dep+3,loc+2)) {count++;continue;}
+//        if (a.args[j].local==loc+2*dep and endpoint_property(a,dep+1,loc,count)) continue;
+//        return false;
+//    }
+//    return true;
+//}
 void Binding::divide(std::vector<Binding>& list,int tabs) {
+//    ntabprint("DIVISION BEGIN:",tabs);
+//    if (tabs>=0) std::cout<<tostring(tabs);
     if (!simplify()) return;
-    std::cout<<tostring(tabs);
-    std::vector<CartesianCarry> cartesian1;
-    std::vector<CartesianCarry> cartesian2;
-    bool changed=false;
-    bool c1=true;
-    std::vector<Statement> buffer;
-    #define CAR1 (c1?cartesian1:cartesian2)
-    #define CAR2 (c1?cartesian2:cartesian1)
-    cartesian1.push_back(CartesianCarry(partials,localtypes,ara));
+//    ntabprint("SIMPLIFIES TO:",tabs);
+//    if (tabs>=0) std::cout<<tostring(tabs);
     
-    for (int q=0;q<binds.size();q++) {
-        ParameterContext continued = tracks.append(binds[q].itinerary,binds[q].ara);
-        for (int u=0;u<CAR1.size();u++) {
-            int bbinds = (int)CAR2.size();
-//            std::cout<<"dissembling: "<<binds[q].body->tostring()<<" under type: "<<localtypes[binds[q].head->id]->tostring()<<" , partial: "<<CAR1[u].partials[binds[q].head->id]->tostring()<<"\n";
-            if (binds[q].head.id>=ara) throw;
-            generatePartial(binds[q].body,CAR1[u].partials[binds[q].head.id],localtypes[binds[q].head.id],buffer,CAR1[u],tracks.loc(),changed,continued);
+    
+    std::vector<std::vector<SingleBind>> cartesian;
+    ParameterContext tplusempty = tracks;
+    tplusempty.dat.push_back(std::pair<Strategy*,int>(0,0));
+    for (int x=0;x<ara;x++) {
+        if (localtypes[x].ara>0) {
+            std::vector<SingleBind> mab;
+            for (int y=0;y<binds.size();y++) {
+                if (binds[y].head.id==x and binds[y].body.local!=tracks.loc()) {
+                    mab.push_back(binds[y]);
+                }
+            }
+            if (mab.size()) {
             
-//            for (int p=0;p<buffer.size();p++) {
-//                std::cout<<buffer[p].tostring()<<"\n";
-//            }
-            ParameterContext ncon = tracks.append(localtypes[binds[q].head.id]);
-            for (int p=0;p<buffer.size();p++) {
-                std::vector<Strategy> stratbuffer = CAR1[u].types;
-//                std::cout<<"godtrans for "<<buffer[p]->tostring()<<"\n";
-                godtrans(buffer[p],tracks.loc(),stratbuffer,ncon);
-//                std::cout<<buffer[p].tostring()<<" <---> "<<stratbuffer.size()<<"\n";
+                std::vector<int> in_b;
+                std::vector<std::vector<int>> out_b;
+                Statement* in_a = new Statement[mab.size()];
+                for (int o=0;o<mab.size();o++) {
+                    in_b.push_back(o);
+                    in_a[o] = mab[o].head;
+                }
+                separatePartials(in_a,in_b,localtypes[x],tracks.loc(),0,out_b);
+                delete[] in_a;
                 
-                CAR2.push_back(CartesianCarry(CAR1[u].partials,stratbuffer));
-                CAR2[bbinds+p].partials[binds[q].head.id] = buffer[p].deepcopy();
-                for (int j=CAR2[bbinds+p].partials.size();j<stratbuffer.size();j++) {
-                    CAR2[bbinds+p].partials.push_back(Statement(-1,tracks.loc()));
-                }
-            }
-            buffer.clear();
-        }
-        CAR1.clear();
-        c1 = not c1;
-        if (binds[q].body.local==tracks.loc()) {
-            for (int u=0;u<CAR1.size();u++) {
-                int bbinds = (int)CAR2.size();
-                generatePartial(binds[q].body,CAR1[u].partials[binds[q].head.id],localtypes[binds[q].body.id],buffer,CAR1[u],tracks.loc(),changed,continued);
-                ParameterContext ncon = tracks.append(localtypes[binds[q].head.id]);
-                for (int p=0;p<buffer.size();p++) {
-                    std::vector<Strategy> stratbuffer = CAR1[u].types;
-                    godtrans(buffer[p],tracks.loc(),stratbuffer,ncon);
-                    CAR2.push_back(CartesianCarry(CAR1[u].partials,stratbuffer));
-                    CAR2[bbinds+p].partials[binds[q].body.id] = buffer[p].deepcopy();
-                    for (int j=CAR2[bbinds+p].partials.size();j<stratbuffer.size();j++) {
-                        CAR2[bbinds+p].partials.push_back(Statement(-1,tracks.loc()));
+                for (int h=0;h<out_b.size();h++) {
+                
+                    Statement* mul1 = new Statement[out_b[h].size()];
+                    Statement* mul2 = new Statement[out_b[h].size()];
+                    for (int s=0;s<out_b[h].size();s++) {
+                        mul1[s]=mab[out_b[h][s]].head;
+                        mul2[s]=mab[out_b[h][s]].body;
                     }
+                    if (out_b[h].size()==0) throw;//these empty buckets need to be eliminated.
+                    
+                    //(Statement* a,int fibers,ParameterContext params,Strategy expected,int loc,bool initial,std::vector<Strategy>& append)
+                    std::vector<Strategy> newitin;
+                    std::vector<Statement> gather;
+                    Statement format = generateFormat(mul1,out_b[h].size(),tplusempty,Strategy(),tracks.loc(),newitin);
+//                    std::cout<<format.tostring()<<"<-=-=-=-=-=-\n";
+                    
+                    
+                    bool valid=true;
+                    for (int ha=0;ha<binds.size();ha++) {
+                        if (judgemental_eq(binds[ha].head,format)) valid=false;
+                    }
+                    if (!valid) continue;
+                    
+                    cartesian.push_back(std::vector<SingleBind>());
+                    
+                    Strategy* itinerary = new Strategy[newitin.size()];
+                    for (int j=0;j<newitin.size();j++) itinerary[j] = newitin[j];
+                    generatePartial(mul2,out_b[h].size(),newitin.size(),itinerary,gather,tracks.loc());
+                    for (int v=0;v<gather.size();v++) {
+//                        std::cout<<gather[v].tostring()<<"][][][][][][]\n";
+                        cartesian[cartesian.size()-1].push_back(SingleBind(format,gather[v],itinerary,newitin.size()));
+                    }
+                    delete[] mul1;
+                    delete[] mul2;
                 }
-                buffer.clear();
             }
-            CAR1.clear();
-            c1 = not c1;
         }
     }
     
-    for (int u=0;u<CAR1.size();u++) {
-        ParameterContext reverse = tracks;
-        reverse.dat.erase(reverse.dat.begin()+reverse.loc());
-        Binding soap(reverse,CAR1[u].types,CAR1[u].partials);
-        for (int j=0;j<binds.size();j++) {
-            Strategy* nn = new Strategy[binds[j].ara];
-            for (int k=0;k<binds[j].ara;k++) {
-                nn[k] = binds[j].itinerary[k].deepcopy();
-            }
-            soap.binds.push_back(SingleBind(binds[j].head.deepcopy(),binds[j].body.deepcopy(),nn,binds[j].ara));
+    if (!cartesian.size()) {
+        list.push_back(*this);
+        return;
+    }
+    int cmax = 1;
+    for (int v=0;v<cartesian.size();v++) cmax*=cartesian[v].size();
+    for (int c=0;c<cmax;c++) {
+        std::vector<Strategy> stratbuffer;
+        for (int w=0;w<ara;w++) stratbuffer.push_back(localtypes[w]);
+        std::vector<SingleBind> soapbinds = binds;
+        for (int v=0,ca=c;v<cartesian.size();v++) {
+            #define CAC cartesian[v][ca%cartesian[v].size()]
+            ParameterContext ncon = tracks.append(CAC.itinerary,CAC.ara);
+
+            //technically the expected type is ncon.generateType(CAC.head).type, but it would never be needed on the first step anyway.
+            soapbinds.push_back(SingleBind(CAC.head,godtrans(CAC.body,Statement(),tracks.loc(),stratbuffer,ncon),CAC.itinerary,CAC.ara));
+//            throw;//type must match to generated type.
+            
+            
+            ca/=cartesian[v].size();
+            #undef CAC
         }
         bool valid=true;
-        
-        for (int w=0;w<soap.binds.size();w++) {
-//            for (int z=0;z<tabs;z++) std::cout<<"\t";
-//            std::cout<<"-=-=-=-\n";
-            ParameterContext tplusi = soap.tracks.append(soap.binds[w].itinerary,soap.binds[w].ara);
-//            std::cout<<soap.partials[soap.binds[w].head.id].tostring()<<"<--=-=-"<<soap.localtypes[soap.binds[w].head.id].tostring()<<"\n";
-            Statement incpart = soap.partials[soap.binds[w].head.id].depth_push(tracks.loc()+1,1);
-//            std::cout<<incpart.tostring()<<"\n";
-            Statement compare = incpart.substitute_level(soap.binds[w].head.args,soap.binds[w].head.ara,tracks.loc()+2,0).depth_push(tracks.loc()+2,-1);
-//            std::cout<<"\tCOMPARE: "<<compare.tostring()<<"\n";
-            if (!soap.typebind(compare,Statement(-1,soap.tracks.loc()),tplusi)) {valid=false;break;}
-//            if (soap.binds[w].head.id==4) {
-//                for (int b=0;b<tabs;b++) std::cout<<"\t";
-//                std::cout<<soap.binds[w].body.tostring()<<" | "<<soap.partials[soap.binds[w].head.id].tostring()<<"\n";
-//            }
-//                if (!soap.decomposeverbal(compare,soap.binds[w].body,tplusi,tabs)) {valid=false;break;}
-//            } else {
-            if (!soap.decompose(compare,soap.binds[w].body,tplusi)) {valid=false;break;}
-//            }
-            if (binds[w].body.local==tracks.loc()) {
-                Statement incpart = soap.partials[soap.binds[w].body.id].depth_push(tracks.loc()+1,1);
-                Statement compare = incpart.substitute_level(soap.binds[w].body.args,soap.binds[w].body.ara,tracks.loc()+2,0);
-                if (!soap.typebind(compare,Statement(-1,soap.tracks.loc()),tplusi)) {valid=false;break;}
-                if (!soap.decompose(compare,soap.binds[w].head,tplusi)) {valid=false;break;}
-            }
-        }
-        
-        if (valid) {
-//            for (int y=0;y<tabs;y++) std::cout<<"\t";
-//            std::cout<<"PUSHING: \n"<<soap.tostring(tabs+1)<<"\n";
-            if (soap.binds.size()==binds.size() and not changed) {
-                list.push_back(soap);
-//                for (int y=0;y<tabs+1;y++) std::cout<<"\t";
-//                std::cout<<"ACCEPTED\n";
-            } else {
-                soap.divide(list,tabs+1);
-            }
-        }
+        Binding soap = Binding(tracks,stratbuffer,soapbinds,valid);
+        if (valid) soap.divide(list,tabs>=0?tabs+1:-1);
     }
-    #undef CAR1
-    #undef CAR2
+//    for (int v=0;v<cartesian.size();v++) {
+//        for (int y=0;y<cartesian[v].size();y++) {
+//            cartesian[v][y].cleanup();
+//        }
+//    }
+    
+    
+    
+    
+    
+    
+    
+    
+//    std::vector<CartesianCarry> cartesian1;
+//    std::vector<CartesianCarry> cartesian2;
+//    bool changed=false;
+//    bool c1=true;
+//    std::vector<Statement> buffer;
+//    #define CAR1 (c1?cartesian1:cartesian2)
+//    #define CAR2 (c1?cartesian2:cartesian1)
+//    cartesian1.push_back(CartesianCarry(localtypes,ara,tracks.loc()));
+    
+//    for (int q=0;q<binds.size();q++) {
+//        int efp=0;
+//        if (binds[q].body.local!=tracks.loc() and !endpoint_property(binds[q].head,0,tracks.loc(),efp)) {
+//            ParameterContext continued = tracks.append(binds[q].itinerary,binds[q].ara);
+//            for (int u=0;u<CAR1.size();u++) {
+//                int bbinds = (int)CAR2.size();
+//                if (binds[q].head.id>=ara) throw;
+//                generatePartial(binds[q].body,CAR1[u].partials[binds[q].head.id],localtypes[binds[q].head.id],buffer,CAR1[u],tracks.loc(),changed,continued);
+//                ParameterContext ncon = tracks.append(localtypes[binds[q].head.id]);
+//                for (int p=0;p<buffer.size();p++) {
+//                    std::vector<Strategy> stratbuffer = CAR1[u].types;
+//    //                std::cout<<"godtrans for "<<buffer[p]->tostring()<<"\n";
+//                    godtrans(buffer[p],tracks.loc(),stratbuffer,ncon);
+//    //                std::cout<<buffer[p].tostring()<<" <---> "<<stratbuffer.size()<<"\n";
+//                    
+//                    CAR2.push_back(CartesianCarry(CAR1[u].partials,stratbuffer));
+//                    CAR2[bbinds+p].partials[binds[q].head.id] = buffer[p].deepcopy();
+//                    for (int j=CAR2[bbinds+p].partials.size();j<stratbuffer.size();j++) {
+//                        CAR2[bbinds+p].partials.push_back(Statement(-1,tracks.loc()));
+//                    }
+//                }
+//                buffer.clear();
+//            }
+//            CAR1.clear();
+//            c1 = not c1;
+//        }
+//    }
+//    
+//    for (int u=0;u<CAR1.size();u++) {
+//        ParameterContext reverse = tracks;
+//        reverse.dat.erase(reverse.dat.begin()+reverse.loc());
+//        throw;//add partials to soap.
+//        Binding soap = Binding(reverse,CAR1[u].types);
+//        for (int j=0;j<binds.size();j++) {
+//            Strategy* nn = new Strategy[binds[j].ara];
+//            for (int k=0;k<binds[j].ara;k++) {
+//                nn[k] = binds[j].itinerary[k].deepcopy();
+//            }
+//            soap.binds.push_back(SingleBind(binds[j].head.deepcopy(),binds[j].body.deepcopy(),nn,binds[j].ara));
+//        }
+//        bool valid=true;
+//        
+//        //ajajfajaja
+////        for (int w=0;w<soap.binds.size();w++) {
+////            ParameterContext tplusi = soap.tracks.append(soap.binds[w].itinerary,soap.binds[w].ara);
+////            Statement incpart = soap.partials[soap.binds[w].head.id].depth_push(tracks.loc()+1,1);
+////            Statement compare = incpart.substitute_level(soap.binds[w].head.args,soap.binds[w].head.ara,tracks.loc()+2,0).depth_push(tracks.loc()+2,-1);
+////            if (!soap.typebind(compare,Statement(-1,soap.tracks.loc()),tplusi)) {valid=false;break;}
+////            if (!soap.decompose(compare,soap.binds[w].body,tplusi)) {valid=false;break;}
+////            if (binds[w].body.local==tracks.loc()) {
+////                Statement incpart = soap.partials[soap.binds[w].body.id].depth_push(tracks.loc()+1,1);
+////                Statement compare = incpart.substitute_level(soap.binds[w].body.args,soap.binds[w].body.ara,tracks.loc()+2,0);
+////                if (!soap.typebind(compare,Statement(-1,soap.tracks.loc()),tplusi)) {valid=false;break;}
+////                if (!soap.decompose(compare,soap.binds[w].head,tplusi)) {valid=false;break;}
+////            }
+////        }
+//        
+//        if (valid) {
+////            for (int y=0;y<tabs;y++) std::cout<<"\t";
+////            std::cout<<"PUSHING: \n"<<soap.tostring(tabs+1)<<"\n";
+//            if (soap.binds.size()==binds.size() and not changed) {
+//                list.push_back(soap);
+////                for (int y=0;y<tabs+1;y++) std::cout<<"\t";
+////                std::cout<<"ACCEPTED\n";
+//            } else {
+//                soap.divide(list,tabs+1);
+//            }
+//        }
+//    }
+//    #undef CAR1
+//    #undef CAR2
 }
 
 
@@ -634,7 +839,7 @@ bool Binding::typebind(Statement a,Statement type,ParameterContext& params) {
     if (a.local==0 and a.ara==0) return true;
     Strategy calctype = params.generateType(a);
     typebind(type,Statement(0,0),params);
-    if (!decompose(calctype.type,type)) return false;
+    if (!decompose(calctype.type,type,params)) return false;
     if (calctype.ara!=a.ara) throw;
     for (int u=0;u<a.ara;u++) {
         ParameterContext nn = params.append(calctype.args[u]);

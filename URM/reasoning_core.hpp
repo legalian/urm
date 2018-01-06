@@ -61,7 +61,7 @@ struct Statement {
     Statement substitute_level(Statement*,int,int,int);
     Statement substitute_level_verbal(Statement*,int,int,int,int);
     void substitute(Binding*,ParameterContext&,std::vector<Statement>&);
-    void substitute(Binding*,ParameterContext&,std::vector<Statement>&,int,bool&);
+    void substitute(Binding*,ParameterContext&,std::vector<Statement>&,int,bool&,bool*);
     std::string substitute_tostring(Binding*);
     
     Statement deepcopy();
@@ -69,7 +69,7 @@ struct Statement {
     
     
 //    bool containsloop(int,int);
-    bool is_complete(int);
+//    bool is_complete(int);
     
     Statement apply(std::vector<int>&);
     Statement applyreverse(std::vector<int>&);
@@ -137,14 +137,16 @@ struct Strategy {
     Strategy(Statement,int,int,Strategy,Strategy,Strategy,Strategy);
     
     std::string tostring();
+    std::string tostringheavy();
 };
 struct ParameterContext {
     std::vector<std::pair<Strategy*,int>> dat;
     Strategy generateType(Statement);
+    Strategy generateTypeSection(Statement,int);
     ParameterContext append(Strategy);
     ParameterContext append(Strategy*,int);
     Strategy* compress(int);
-    Statement* artifact(int,Strategy*);
+    Statement* artifact(int);
     int index(int);
     Strategy morph(int,Strategy,int);
     Statement morph(int,Statement,int);
@@ -161,7 +163,7 @@ struct Binding {
     ParameterContext tracks;
     int ara;
     Strategy* localtypes;
-    Statement* partials;
+//    Statement* partials;
     std::vector<SingleBind> binds;
     
     void insert(SingleBind);
@@ -182,9 +184,10 @@ struct Binding {
 //    Binding(MetaBank*);
 //    Binding(std::vector<std::vector<Strategy*>*>&);
     Binding(MetaBank*,Strategy*,int);
+    Binding(ParameterContext&,std::vector<Strategy>&,std::vector<SingleBind>&,bool&);
 //    Binding(int);
-    Binding(const ParameterContext&,Strategy*,int);
-    Binding(const ParameterContext&,std::vector<Strategy>&,std::vector<Statement>&);
+    Binding(ParameterContext&,Strategy*,int);
+//    Binding(const ParameterContext&,std::vector<Strategy>&);
 //    Binding(std::vector<std::vector<Strategy*>*>&,int);
     ~Binding();
 };
@@ -261,7 +264,7 @@ struct SolveInstance {
 //std::pair<Statement*,Statement*> gentleSubstitute(Binding*,Statement*,Statement*,int);
 //bool amorphousmatch(Statement,Statement,std::map<int,int>&,std::map<int,int>&);
 
-
+void ntabprint(std::string,int);
 
 
 

@@ -18,27 +18,34 @@ SingleBind::SingleBind(Statement a,Statement b,Strategy* c,int buf) : head(a),bo
 Binding::Binding(MetaBank* mb,Strategy* lt,int buf) : localtypes(lt), ara(buf) {
     tracks.dat.push_back(std::pair<Strategy*,int>(mb->strategies,mb->ara));
     tracks.dat.push_back(std::pair<Strategy*,int>(localtypes,ara));
-    partials = new Statement[ara];
-    for (int u=0;u<ara;u++) {
-        partials[u] = Statement(-1,tracks.loc());
-    }
+//    partials = new Statement[ara];
+//    for (int u=0;u<ara;u++) {
+//        partials[u] = Statement(-1,tracks.loc());
+//    }
 }
-Binding::Binding(const ParameterContext& t,Strategy* lt,int buf) : tracks(t),localtypes(lt),ara(buf) {
+Binding::Binding(ParameterContext& t,Strategy* lt,int buf) : tracks(t),localtypes(lt),ara(buf) {
     tracks.dat.push_back(std::pair<Strategy*,int>(localtypes,ara));
-    partials = new Statement[ara];
-    for (int u=0;u<ara;u++) {
-        partials[u] = Statement(-1,tracks.loc());
-    }
+//    partials = new Statement[ara];
+//    for (int u=0;u<ara;u++) {
+//        partials[u] = Statement(-1,tracks.loc());
+//    }
 }
-Binding::Binding(const ParameterContext& t,std::vector<Strategy>& lt,std::vector<Statement>& gt) : tracks(t),ara(lt.size()) {
-    if (lt.size()!=gt.size()) throw;
-    partials   = new Statement[ara];
+Binding::Binding(ParameterContext& t,std::vector<Strategy>& lt,std::vector<SingleBind>& cc,bool& valid) : tracks(t) {
+//    if (lt.size()!=gt.size()) throw;
+//    partials   = new Statement[ara];
+    ara = lt.size();
     localtypes = new Strategy[ara];
     for (int a=0;a<ara;a++) {
-        partials[a]   = gt[a];
         localtypes[a] = lt[a];
     }
-    tracks.dat.push_back(std::pair<Strategy*,int>(localtypes,ara));
+    tracks.dat[tracks.loc()] = std::pair<Strategy*,int>(localtypes,ara);
+    
+    for (int u=0;u<cc.size();u++) {
+        ParameterContext conan = tracks.append(cc[u].itinerary,cc[u].ara);
+        Strategy calctype = conan.generateType(cc[u].head);
+        if (!typebind(cc[u].body,calctype.type,conan)) valid=false;
+        binds.push_back(cc[u]);
+    }
 }
 //Binding::Binding(int buf) : localtypes(new Strategy[buf]),partials(new Statement[buf]),ara(buf) {
 //    tracks.push_back(std::pair<Strategy*,int>(localtypes,ara));
@@ -61,7 +68,7 @@ void Statement::cleanup() {
     }
     local=9001;
     id=900;
-    delete[] args;
+    if (ara) delete[] args;
 }
 void Strategy::cleanup() {
     for (int v=0;v<ara;v++) {
@@ -92,7 +99,7 @@ Statement::Statement(int idr,int loc) {
 }
 Statement::Statement(int idr,int loc,int buf) {
     local=loc;id=idr;ara=buf;
-    if (buf>0) args = new Statement[buf];
+    args = new Statement[buf];
 }
 Statement::Statement(int idr,int loc,Statement a) {
     local=loc;id=idr;ara=1;
@@ -295,21 +302,22 @@ int ParameterContext::loc() {
     return dat.size()-1;
 }
 Strategy ParameterContext::generateType(Statement a) {
+
     if (a.local==-1) return Strategy(Statement(1,0),a.id,a.local);
-    if (a.id==-1) return Strategy(a,a.id,a.local);
     if (a.local>=dat.size() or a.local<0) throw;
     if (a.id>=dat[a.local].second) throw;
     int lloc = dat[a.local].first[a.id].local;
-    std::string es = dat[a.local].first[a.id].tostring();
-    std::string ex = dat[a.local].first[a.id].bring_depth(lloc+1,loc()-lloc).tostring();
-    std::string ea = a.tostring();
+//    std::string es = dat[a.local].first[a.id].tostring();
+//    std::string ex = dat[a.local].first[a.id].bring_depth(lloc+1,loc()-lloc).tostring();
+//    std::string ea = a.tostring();
+
 //    Strategy tent = dat[a.local].first[a.id].bring_depth(lloc+1,loc()-lloc).typechecksub(a.args,a.ara,loc()+1,0);
 //    std::cout<<a.tostring()<<"\n";
     Strategy tent = dat[a.local].first[a.id].bring_depth(lloc+1,loc()-lloc).typechecksub_1disp(a.args,a.ara,loc()+1,0);//depth push is negative here. This causes crash.
 //    Statement testjusttype = tent.type.depth_push(loc()+1,);
 //    std::cout<<dat.size()<<"|"<<tent.type.tostring()<<"\n";
 //    if (tent.type.tostring().size()>10) throw;
-    std::string eee = tent.tostring();
+//    std::string eee = tent.tostring();
 
 //    tent.type.constcheck(*this);
     
@@ -320,6 +328,13 @@ Strategy ParameterContext::generateType(Statement a) {
     return tent;//it's incrementing things it thinks it contains
 //    return dat[a.local].first[a.id].typechecksub(a.args,a.ara,lloc+1,(int)dat.size(),1);
 }
+Strategy ParameterContext::generateTypeSection(Statement a,int arg) {
+    if (a.local>=dat.size() or a.local<0 or a.ara<=arg) throw;
+    if (a.id>=dat[a.local].second) throw;
+    int lloc = dat[a.local].first[a.id].local;
+    return dat[a.local].first[a.id].args[arg].bring_depth(lloc+1,loc()-lloc).typechecksub_1disp(a.args,arg,loc()+1,1);
+}
+
 bool judgemental_eq(Strategy a,Strategy b) {
     if (a.id!=b.id or a.local!=b.local) return false;
     if (a.ara!=b.ara) throw;

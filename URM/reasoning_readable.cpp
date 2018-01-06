@@ -17,9 +17,9 @@ std::string ntabs(int tabs) {
 }
 std::string Binding::tostring(int tabs) {
     std::string res="";
-    for (int it=0;it<ara;it++) {
-        res+=ntabs(tabs)+localtypes[it].tostring()+"-->"+partials[it].tostring()+"\n";
-    }
+//    for (int it=0;it<ara;it++) {
+//        res+=ntabs(tabs)+localtypes[it].tostring()+"-->"+partials[it].tostring()+"\n";
+//    }
     for (int it=0;it<binds.size();it++) {
         res+=ntabs(tabs)+binds[it].head.tostring()+"|"+binds[it].body.tostring()+"\n";
     }
@@ -53,10 +53,33 @@ std::string Strategy::tostring() {
     return res;
 }
 
+void ntabprint(std::string msg,int tabs) {
+    if (tabs>=0) {
+        for (int t=0;t<tabs;t++) std::cout<<"\t";
+        std::cout<<msg<<"\n";
+    }
+}
+std::string Strategy::tostringheavy() {
+    std::string res="";
+    if (ara) {
+        res+="[";
+        for (int u=0;u<ara;u++) {
+            res+=args[u].tostringheavy();
+            if (u!=ara-1) res+="|";
+        }
+        res+="]";
+    }
+    std::string ret = "{"+std::to_string(id)+":"+std::to_string(local)+"}";
+    if (local==-1) ret = ""+std::to_string(id)+"";
+    if (local==0 and MetaBank::meta_prime.stratnames.size()>id and id>=0) ret = MetaBank::meta_prime.stratnames[id];
+    res+=ret+":";
+    res+=type.tostring();
+    return res;
+}
+
 
 std::string Statement::tostring() const {
     std::string ret = "{"+std::to_string(id)+":"+std::to_string(local)+"}";
-    if (id==-1) ret = "{?:"+std::to_string(local)+"}";
     if (local==-1) ret = ""+std::to_string(id)+"";
     if (local==0 and MetaBank::meta_prime.stratnames.size()>id and id>=0) ret = MetaBank::meta_prime.stratnames[id];
     if (ara) {

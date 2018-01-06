@@ -17,14 +17,14 @@ Statement Statement::depth_push(int cutoff,int amt) {//anything >=stat will be i
     }
     return res;
 }
-void Statement::clip_upperbound(int stat,int stmodif,std::map<std::pair<int,int>,int>& remap,int& mappoint) {
-    if (local>stmodif and local<stat) {
+void Statement::clip_upperbound(int stat,int loc,std::map<std::pair<int,int>,int>& remap,int& mappoint) {
+    if (local>loc and local<stat) {
         if (remap.find(std::pair<int,int>(id,local))==remap.end()) {
             remap[std::pair<int,int>(id,local)] = mappoint++;
         }
     }
     for (int u=0;u<ara;u++) {
-        args[u].clip_upperbound(stat,stmodif,remap,mappoint);
+        args[u].clip_upperbound(stat,loc,remap,mappoint);
     }
 }
 
@@ -75,17 +75,17 @@ Statement Strategy::snapshot() {//this really concerns me
 //    }
 //    return res;
 //}
-Statement Statement::paste_upperbound(int stat,std::map<std::pair<int,int>,int>& remap,int general) {//anything <=stat will be replaced.
+Statement Statement::paste_upperbound(int stat,std::map<std::pair<int,int>,int>& remap,int loc) {//anything <=stat will be replaced.
     Statement res = Statement(id,local,ara);
-    if (local>general+1 and local<stat) {
+    if (local>loc and local<stat) {
         if (remap.find(std::pair<int,int>(id,local))==remap.end()) {
             return Statement();
         }
-        res.local = general;
+        res.local = loc+1;
         res.id = remap[std::pair<int,int>(id,local)];
     }
     for (int q=0;q<ara;q++) {
-        Statement possib = args[q].paste_upperbound(stat,remap,general);
+        Statement possib = args[q].paste_upperbound(stat,remap,loc);
         if (!possib.is_valid()) {
             for (int o=0;o<q;o++) {
                 res.args[0].cleanup();
@@ -109,7 +109,7 @@ std::string Statement::substitute_tostring(Binding* bind) {
 }
 void Statement::substitute(Binding* bind,ParameterContext& params,std::vector<Statement>& results) {
     bool trash;
-    substitute(bind,params,results,-1,trash);
+    substitute(bind,params,results,-1,trash,0);
 }
 //Statement gapify(Statement p,Binding* o,int rec) {
 //    throw;//Any place you can use gapify, you can just repeatedly substitute with the same parameters. This saves cycles too.
@@ -136,7 +136,7 @@ bool containsdepth(Statement a,int d) {
     }
     return false;
 }
-void Statement::substitute(Binding* bind,ParameterContext& params,std::vector<Statement>& results,int avoidex,bool& changed) {
+void Statement::substitute(Binding* bind,ParameterContext& params,std::vector<Statement>& results,int avoidex,bool& changed,bool*) {
     #define out (local==bind->tracks.loc()?buffer:results)
     if ((local<=0 or id==-1) and ara==0) {results.push_back(*this);return;}
     std::vector<Statement> buffer;
@@ -147,16 +147,15 @@ void Statement::substitute(Binding* bind,ParameterContext& params,std::vector<St
     for (int q=0;q<ara;q++) {
         ParameterContext continued = params.append(calctype.args[q]);
         cartesian.push_back(std::vector<Statement>());
-        args[q].substitute(bind,continued,cartesian[q],-1,changed);
+        args[q].substitute(bind,continued,cartesian[q],-1,changed,0);
     }
     int cmax = 1;
     for (int v=0;v<ara;v++) {
         cmax*=cartesian[v].size();
     }
     for (int c=0;c<cmax;c++) {
-        int ca = c;
         Statement nn = Statement(id,local,ara);
-        for (int v=0;v<ara;v++) {
+        for (int v=0,ca=c;v<ara;v++) {
             nn.args[v] = cartesian[v][ca%cartesian[v].size()].deepcopy();
             ca/=cartesian[v].size();
         }
@@ -169,57 +168,43 @@ void Statement::substitute(Binding* bind,ParameterContext& params,std::vector<St
     }
     bool found=false;
     for (int g=0;g<buffer.size();g++) {
-        if (bind->partials[id].is_complete(bind->tracks.loc())) {
-            changed=true;
-            Statement pushd = bind->partials[id].depth_push(bind->tracks.loc()+1,params.loc()-bind->tracks.loc());
-            
-//            Statement incpart = soap.partials[soap.binds[w].head.id].depth_push(tracks.loc()+1,1);
-////            std::cout<<incpart.tostring()<<"\n";
-//            Statement compare = incpart.substitute_level(soap.binds[w].head.args,soap.binds[w].head.ara,tracks.loc()+2,0).depth_push(tracks.loc()+2,-1);
-            
-            
-            
-            
-            
-            results.push_back(pushd.substitute_level(buffer[g].args,buffer[g].ara,params.loc()+1,0).depth_push(params.loc()+1,-1));
-            return;
-        }// else if (gapyield) {
-//            results.push_back(bind->partials[id]->substitute_level(&buffer[g]->args,bind->tracks.loc()+1,params.loc()+1,1));
-//            changed=true;
-//        }
-//        std::cout<<bind->tostring()<<"ajklsdjlkfalsflkalksljafkl;\n";
         for (int s=0;s<bind->binds.size();s++) {
-        
-            if (bind->binds[s].head.id==id and bind->binds[s].body.local!=bind->tracks.loc() and bind->binds[s].body.is_complete(bind->tracks.loc())) {
+            if (bind->binds[s].head.id==id and bind->binds[s].body.local!=bind->tracks.loc()) {
+            
+            
                 if (s==avoidex) continue; else if (s<=avoidex) {
                     Binding reverse(params,bind->binds[avoidex].itinerary,bind->binds[avoidex].ara);
                     reverse.tracks.dat[reverse.tracks.loc()+1-2] = std::pair<Strategy*,int>(bind->binds[s].itinerary,bind->binds[s].ara);
-                    if (reverse.decompose(bind->binds[s].head.depth_push(bind->tracks.loc()+1,1),buffer[g].depth_push(bind->tracks.loc()+2,1))) continue;
+                    std::vector<Binding> testing;
+                    if (reverse.decompose(bind->binds[s].head.depth_push(bind->tracks.loc()+1,1),buffer[g].depth_push(bind->tracks.loc()+2,1))) {
+                        reverse.divide(testing,-1);
+                        if (testing.size()) continue;
+                    }
+//                    throw;//might be muting things
                 }
+            
+            
+            
+            
                 Binding comparison = Binding(params,bind->binds[s].itinerary,bind->binds[s].ara);
                 if (comparison.decompose(
                 bind->binds[s].head.depth_push(bind->tracks.loc()+1,params.loc()-bind->tracks.loc()),
-                buffer[g].depth_push(params.loc()+1,1)
+                buffer[g].depth_push(params.loc()+1,1),comparison.tracks
                 )) {
                     std::vector<Binding> switcher;
-                    if (comparison.binds.size()) throw;
-                    comparison.divide(switcher,5);
-                    for (int o=0;o<switcher.size();o++) {//this all needs to go; based on invalid assumption that comparison doesn't have params behind it.
-                        Statement result = bind->binds[s].body.depth_push(bind->tracks.loc()+1,params.loc()-bind->tracks.loc());
-                        while (containsdepth(result,comparison.tracks.loc())) {
-                            std::cout<<bind->binds[s].body.tostring()<<"\n";
-                            std::cout<<result.tostring()<<"\n";
-//                            throw;//this is completely fucked up.
-                            Statement kkr = result;
-                            result = result.substitute_level_verbal(comparison.partials,comparison.ara,comparison.tracks.loc(),0,3);
-                            throw;
-                            kkr.cleanup();
+//                    std::cout<<"OOOOOPPPOOOO\n"<<comparison.tostring(7)<<"\n";
+//                    if (comparison.binds.size()) throw;
+                    comparison.divide(switcher,-1);
+                    for (int o=0;o<switcher.size();o++) {
+                        std::vector<Statement> doubleres;
+                        bind->binds[s].body.depth_push(bind->tracks.loc()+1,params.loc()-bind->tracks.loc()).substitute(&comparison,comparison.tracks,doubleres);
+                        for (int d=0;d<doubleres.size();d++) {
+                            if (containsdepth(doubleres[d],comparison.tracks.loc())) throw;
+                            results.push_back(doubleres[d].depth_push(comparison.tracks.loc(),-1));
                         }
-                        results.push_back(result.depth_push(comparison.tracks.loc(),-1));
+                        changed=true;
+                        found=true;
                     }
-                    
-                    changed=true;
-                    found=true;
                 }
             }
         }

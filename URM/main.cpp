@@ -59,8 +59,8 @@ int main(int argc, const char * argv[]) {
 #undef S_test
 #undef S_NUM
 
-//    for (int y=0;y<testcases.size();y++) {
-    int y=1;
+//    for (int y=5;y<8;y++) {
+    int y=0;
         Binding test = Binding(&MetaBank::meta_prime,loctypes,6);
         testcases[y].first.constcheck(test.tracks);
         testcases[y].second.constcheck(test.tracks);
