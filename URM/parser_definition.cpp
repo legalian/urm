@@ -73,6 +73,8 @@ ParseSpecifier& getGlobParser() {
             VARIANT(7) OBJ(-2) END
             VARIANT(8) OBJ(p_token) S("(") OBJ(p_arguments) S(")") END
             VARIANT(9) OBJ(p_token) END
+            VARIANT(10) S("<") OBJ(-1) S(">") END
+            VARIANT(11) S("<-") OBJ(-1) S(">") END
         ;
         globParser.table[p_token] = ParseStructure(p_token)
             VARIANT(0) S("[") OBJ(-2) OBJ(-1) OBJ(p_dictionary) S("|") OBJ(p_tokargs) S("]") END
@@ -114,6 +116,8 @@ ParseSpecifier& getGlobParser() {
             VARIANT(1) S("{") OBJ(-1) S("/") OBJ(-1) S("}") END
             VARIANT(3) OBJ(-2) S("(") OBJ(p_purearguments) S(")") END
             VARIANT(4) OBJ(-2) END
+            VARIANT(5) S("<") OBJ(-1) S(">") END
+            VARIANT(6) S("<-") OBJ(-1) S(">") END
         ;
         globParser.table[p_puremodifiers] = ParseStructure(p_puremodifiers)
             VARIANT(0) OBJ(p_purestrategy) S("|") OBJ(p_puremodifiers) END
@@ -197,6 +201,9 @@ Statement indexedPureStatementConvert(MetaBank* mb,ParseResult* change,std::map<
         } else {
             return Statement(varbank[change->children[0]->endpoint].first,varbank[change->children[0]->endpoint].second);
         }
+    } else {
+        if (change->var==4) return Statement(std::stoi(change->children[0]->endpoint),-1);
+        else return Statement(-1*std::stoi(change->children[0]->endpoint),-1);
     }
     throw;
 }
@@ -363,6 +370,11 @@ Construction indexedStatementConvert(MetaBank* mb,ParseResult* change,std::map<s
     } else if (change->var<8) {
         head = indexedTokenConvert(mb,change->children[0],handle,supp);
         if (change->var%2==0) indexedCoalesceStatements(mb,change->children[1],&head.children,handle,supp);
+    } else if (change->var<10) {
+        head.strucLocal = -1;
+        head.reconstruct = 6;
+        if (change->var==10) head.varID = std::stoi(change->children[0]->endpoint);
+        else head.varID = -1*std::stoi(change->children[0]->endpoint);
     }
     return head;
 }

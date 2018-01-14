@@ -11,7 +11,7 @@
 
 Statement Statement::depth_push(int cutoff,int amt) {//anything >=stat will be incremented.
     Statement res = Statement(id,local>=cutoff?local+amt:local,ara);
-    if (local==cutoff and amt<0) throw;
+    if (amt<0 and local>=cutoff and local+amt<cutoff) throw;
     for (int q=0;q<ara;q++) {
         res.args[q] = args[q].depth_push(cutoff,amt);
     }
@@ -37,44 +37,6 @@ Statement Strategy::snapshot() {//this really concerns me
     return res;
 }
 
-//std::vector<Strategy*>& poptypes, etc
-//int& remapper,bool pair
-
-//Statement* Strategy::locsnapshot(std::vector<Statement*>* prepend,bool pair,int stat,std::vector<Strategy*>& poptypes) {
-//    Statement* res = new Statement(id,local);
-//    if (pair) {
-//        res->local = 1;
-//        res->id = poptypes.size();
-//        Strategy* ret = deepcopy();
-//        if (prepend) {
-//            for (int j=0;j<prepend->size();j++) {
-//                res->args.push_back((*prepend)[j]->deepcopy());
-//            }
-//        }
-//        poptypes.push_back(ret);
-////        popprin.push_back(locsnapshot(prepend,true,1,nextid));
-//    }
-//    for (int q=0;q<args.size();q++) {
-//        res->args.push_back(args[q]->locsnapshot(prepend,!pair,stat+1,poptypes));
-//    }
-//    return res;
-//}
-//Statement* Strategy::locsnapshot(std::vector<Statement*>* prepend,bool pair,int stat,int& paint) {
-//    Statement* res = new Statement(id,stat);
-//    if (pair) {
-//        res->local = 1;
-//        res->id = paint++;
-//        if (prepend) {
-//            for (int j=0;j<prepend->size();j++) {
-//                res->args.push_back((*prepend)[j]->deepcopy());
-//            }
-//        }
-//    }
-//    for (int q=0;q<args.size();q++) {
-//        res->args.push_back(args[q]->locsnapshot(prepend,!pair,stat+1,paint));
-//    }
-//    return res;
-//}
 Statement Statement::paste_upperbound(int stat,std::map<std::pair<int,int>,int>& remap,int loc) {//anything <=stat will be replaced.
     Statement res = Statement(id,local,ara);
     if (local>loc and local<stat) {
@@ -97,123 +59,72 @@ Statement Statement::paste_upperbound(int stat,std::map<std::pair<int,int>,int>&
     }
     return res;
 }
-
-std::string Statement::substitute_tostring(Binding* bind) {
-    std::vector<Statement> din;
-    substitute(bind,bind->tracks,din);
-    std::string res = din[0].tostring();
-    for (int y=0;y<din.size();y++) {
-        din[y].cleanup();
-    }
-    return res;
-}
-void Statement::substitute(Binding* bind,ParameterContext& params,std::vector<Statement>& results) {
-    bool trash;
-    substitute(bind,params,results,-1,trash,0);
-}
-//Statement gapify(Statement p,Binding* o,int rec) {
-//    throw;//Any place you can use gapify, you can just repeatedly substitute with the same parameters. This saves cycles too.
-//    
-////    if ((p->local<=0 or p->id==-1) and p->args.size()==0) return p;
-//    Statement res = Statement(p.id,p.local,p.ara);
-//    for (int u=0;u<p.ara;u++) {
-//        res.args[u] = gapify(p.args[u],o,rec+1);
-//    }
-//    if (res.local==o->tracks.loc()) {
-////        if (o->partials[res->id]->is_complete(o->tracks.loc())) {
-//        throw;
-//        return gapify(o->partials[res.id],o,o->tracks.loc()+2)
-//            .depth_push(o->tracks.loc()+1,rec-o->tracks.loc()-1)
-//            .substitute_level(res.args,res.ara,rec,0);
-////        }
-//    }
-//    return res;
-//}
-bool containsdepth(Statement a,int d) {
-    if (a.local==d) return true;
-    for (int j=0;j<a.ara;j++) {
-        if (containsdepth(a.args[j],d)) return true;
-    }
-    return false;
-}
-void Statement::substitute(Binding* bind,ParameterContext& params,std::vector<Statement>& results,int avoidex,bool& changed,bool*) {
-    #define out (local==bind->tracks.loc()?buffer:results)
-    if ((local<=0 or id==-1) and ara==0) {results.push_back(*this);return;}
-    std::vector<Statement> buffer;
-    
+Statement Statement::substitute_single(Binding& bind,ParameterContext& params) {
+    Statement res = Statement(id,local,ara);
     Strategy calctype = params.generateType(*this);
-    std::vector<std::vector<Statement>> cartesian;
-    
-    for (int q=0;q<ara;q++) {
-        ParameterContext continued = params.append(calctype.args[q]);
-        cartesian.push_back(std::vector<Statement>());
-        args[q].substitute(bind,continued,cartesian[q],-1,changed,0);
+    for (int h=0;h<ara;h++) {
+        ParameterContext nn = params.append(calctype.args[h]);
+        res.args[h] = args[h].substitute_single(bind,nn);
     }
-    int cmax = 1;
-    for (int v=0;v<ara;v++) {
-        cmax*=cartesian[v].size();
-    }
-    for (int c=0;c<cmax;c++) {
-        Statement nn = Statement(id,local,ara);
-        for (int v=0,ca=c;v<ara;v++) {
-            nn.args[v] = cartesian[v][ca%cartesian[v].size()].deepcopy();
-            ca/=cartesian[v].size();
-        }
-        out.push_back(nn);
-    }
-    for (int v=0;v<ara;v++) {
-        for (int y=0;y<cartesian[v].size();y++) {
-            cartesian[v][y].cleanup();
-        }
-    }
-    bool found=false;
-    for (int g=0;g<buffer.size();g++) {
-        for (int s=0;s<bind->binds.size();s++) {
-            if (bind->binds[s].head.id==id and bind->binds[s].body.local!=bind->tracks.loc()) {
-            
-            
-                if (s==avoidex) continue; else if (s<=avoidex) {
-                    Binding reverse(params,bind->binds[avoidex].itinerary,bind->binds[avoidex].ara);
-                    reverse.tracks.dat[reverse.tracks.loc()+1-2] = std::pair<Strategy*,int>(bind->binds[s].itinerary,bind->binds[s].ara);
-                    std::vector<Binding> testing;
-                    if (reverse.decompose(bind->binds[s].head.depth_push(bind->tracks.loc()+1,1),buffer[g].depth_push(bind->tracks.loc()+2,1))) {
-                        reverse.divide(testing,-1);
-                        if (testing.size()) continue;
-                    }
-//                    throw;//might be muting things
-                }
-            
-            
-            
-            
-                Binding comparison = Binding(params,bind->binds[s].itinerary,bind->binds[s].ara);
-                if (comparison.decompose(
-                bind->binds[s].head.depth_push(bind->tracks.loc()+1,params.loc()-bind->tracks.loc()),
-                buffer[g].depth_push(params.loc()+1,1),comparison.tracks
-                )) {
-                    std::vector<Binding> switcher;
-//                    std::cout<<"OOOOOPPPOOOO\n"<<comparison.tostring(7)<<"\n";
-//                    if (comparison.binds.size()) throw;
-                    comparison.divide(switcher,-1);
-                    for (int o=0;o<switcher.size();o++) {
-                        std::vector<Statement> doubleres;
-                        bind->binds[s].body.depth_push(bind->tracks.loc()+1,params.loc()-bind->tracks.loc()).substitute(&comparison,comparison.tracks,doubleres);
-                        for (int d=0;d<doubleres.size();d++) {
-                            if (containsdepth(doubleres[d],comparison.tracks.loc())) throw;
-                            results.push_back(doubleres[d].depth_push(comparison.tracks.loc(),-1));
-                        }
-                        changed=true;
-                        found=true;
-                    }
+    for (int s=0;s<bind.binds.size();s++) {
+        if (bind.binds[s].head.id==id and bind.binds[s].body.local!=bind.tracks.loc()) {
+            Binding comparison = Binding(params,bind.binds[s].itinerary,bind.binds[s].ara);
+            if (comparison.decompose(
+            bind.binds[s].head.depth_push(bind.tracks.loc()+1,params.loc()-bind.tracks.loc()),
+            res.depth_push(params.loc()+1,1),comparison.tracks
+            )) {
+                std::vector<Binding> switcher;
+                comparison.divide(switcher,-1);
+                if (switcher.size()) {
+                    return bind.binds[s].body
+                    .depth_push(bind.tracks.loc()+1,params.loc()-bind.tracks.loc())
+                    .substitute_single(switcher[0],switcher[0].tracks).depth_push(switcher[0].tracks.loc(),-1);
                 }
             }
         }
     }
-    if (!found) {
-        for (int k=0;k<buffer.size();k++) {
-            results.push_back(buffer[k]);
+    return res;
+}
+Statement Statement::simp_substitute(Binding& bind,ParameterContext& params,int avoidex) {
+    Statement res = Statement(id,local,ara);
+    Strategy calctype = params.generateType(*this);
+    for (int q=0;q<ara;q++) {
+        ParameterContext continued = params.append(calctype.args[q]);
+        res.args[q] = args[q].substitute_single(bind,continued);
+    }
+    for (int s=0;s<bind.binds.size();s++) {
+        if (bind.binds[s].head.id==id and bind.binds[s].body.local!=bind.tracks.loc()) {
+            if (s==avoidex) continue; else if (s<=avoidex) {
+                Binding reverse(params,bind.binds[avoidex].itinerary,bind.binds[avoidex].ara);
+                reverse.tracks.dat[reverse.tracks.loc()+1] = std::pair<Strategy*,int>(bind.binds[s].itinerary,bind.binds[s].ara);
+                
+                std::vector<Binding> testing;
+                if (reverse.decompose(
+                    bind.binds[s].head.depth_push(bind.tracks.loc()+2,1),
+                    res.depth_push(bind.tracks.loc()+1,1),
+                    reverse.tracks)) {
+                    reverse.divide(testing,-1);
+                    if (testing.size()) continue;
+                }
+            }
+        
+            Binding comparison = Binding(params,bind.binds[s].itinerary,bind.binds[s].ara);
+            if (comparison.decompose(
+            bind.binds[s].head.depth_push(bind.tracks.loc()+1,1),
+            res.depth_push(bind.tracks.loc()+2,1),comparison.tracks//
+            )) {
+                std::vector<Binding> switcher;
+                comparison.divide(switcher,-1);
+                if (switcher.size()) {
+                    return bind.binds[s].body
+                    .depth_push(bind.tracks.loc()+1,params.loc()-bind.tracks.loc())
+                    .substitute_single(switcher[0],switcher[0].tracks)
+                    .depth_push(switcher[0].tracks.loc(),-1);
+                }
+            }
         }
     }
+    return res;
     #undef out
     #undef CAR1
     #undef CAR2
@@ -239,29 +150,21 @@ Statement substitute_level_1disp(Statement jaj,Statement* repl,int safety,int le
 }
 Statement Statement::substitute_level(Statement* repl,int safety,int level,int recur) {
     if (local==level) {
-        if (safety<=id) {
-            throw;
-        }
+        if (safety<=id) throw;
         Statement* fargs = new Statement[ara];
-        for (int s=0;s<ara;s++) {
-            fargs[s] = args[s].substitute_level(repl,safety,level,recur+1);
-        }
+        for (int s=0;s<ara;s++) fargs[s] = args[s].substitute_level(repl,safety,level,recur+1);
 //        Statement a = repl[id].depth_push(level,recur+1).substitute_level(fargs,ara,level+recur+1,0).depth_push(level+recur+1,-1);
         Statement a = substitute_level_1disp(repl[id].depth_push(level,recur),fargs,ara,level+recur,0);
-        for (int s=0;s<ara;s++) {
-            fargs[s].cleanup();
-        }
+        for (int s=0;s<ara;s++) fargs[s].cleanup();
         return a;
     } else {
         Statement ret = Statement(id,local,ara);
-        for (int w=0;w<ara;w++) {
-            ret.args[w] = args[w].substitute_level(repl,safety,level,recur+1);
-        }
+        for (int w=0;w<ara;w++) ret.args[w] = args[w].substitute_level(repl,safety,level,recur+1);
         return ret;
     }
 }
 Strategy Strategy::typechecksub_1disp(Statement* repl,int safety,int level,int recur) {
-    Strategy res = Strategy(type.substitute_level(repl,safety,level,recur).depth_push(level,-1),id,local,ara);
+    Strategy res = Strategy(type.substitute_level(repl,safety,level,recur).depth_push(level,-1),id,local-1,ara);
     for (int w=0;w<ara;w++) {
         res.args[w] = args[w].typechecksub_1disp(repl,safety,level,recur+1);
     }
@@ -298,16 +201,14 @@ Statement Statement::applyreverse(std::vector<int>& transfer) {
     }
     return res;
 }
-Statement Statement::apply(std::vector<int>& transfer) {
+Statement Statement::apply(std::vector<int>& transfer,int omm) {
     Statement res = Statement(id,local,ara);
     if (local==1) {
-        if (id>=transfer.size()) {
-            throw;
-        }
-        res.id=transfer[id];
+        if (id>=transfer.size()) res.id=id+omm-transfer.size();
+        else res.id=transfer[id];
     }
     for (int u=0;u<ara;u++) {
-        res.args[u] = args[u].apply(transfer);
+        res.args[u] = args[u].apply(transfer,omm);
     }
     return res;
 }
@@ -330,21 +231,39 @@ Strategy Strategy::applyreverse(std::vector<int>& transfer) {
     }
     return res;
 }
-Strategy Strategy::apply(std::vector<int>& transfer) {
-    Strategy res = Strategy(type.apply(transfer),id,local,ara);
+Strategy Strategy::apply(std::vector<int>& transfer,int omm) {
+    Strategy res = Strategy(type.apply(transfer,omm),id,local,ara);
     if (local==1) {
-        if (id>=transfer.size()) {
-            throw;
-        }
-        res.id=transfer[id];
+        if (id>=transfer.size()) res.id=id+omm-transfer.size();
+        else res.id=transfer[id];
     }
     for (int u=0;u<ara;u++) {
-        res.args[u] = args[u].apply(transfer);
+        res.args[u] = args[u].apply(transfer,omm);
     }
     return res;
 }
-void Statement::extract(std::vector<int>& transfer,ParameterContext& params) {
+Strategy Strategy::substitute_single(Binding& bind,ParameterContext& params) {
+    ParameterContext nn = params.append(args,ara);
+    Strategy res = Strategy(type.substitute_single(bind,nn),id,local,ara);
+    for (int u=0;u<ara;u++) res.args[u] = args[u].substitute_single(bind,nn);
+    return res;
+}
+void Statement::extract(std::vector<int>& transfer,Binding& reference) {
+    if (local==1) reference.localtypes[id].substitute_single(reference,reference.tracks).extract(transfer,reference);
+    for (int u=0;u<ara;u++) args[u].extract(transfer,reference);
+}
+void Strategy::extract(std::vector<int>& transfer,Binding& reference) {
+    for (int u=0;u<ara;u++) args[u].extract(transfer,reference);
+    type.extract(transfer,reference);
     if (local==1) {
+        for (int d=0;d<reference.binds.size();d++) {
+            if (reference.binds[d].head.id==id and reference.binds[d].body.local!=1) {
+                reference.binds[d].body.extract(transfer,reference);
+                for (int x=0;x<reference.binds[d].ara;x++) {
+                    reference.binds[d].itinerary[x].extract(transfer,reference);
+                }
+            }
+        }
         bool found = false;
         for (int k=0;k<transfer.size();k++) {
             if (transfer[k]==id) found = true;
@@ -352,14 +271,6 @@ void Statement::extract(std::vector<int>& transfer,ParameterContext& params) {
         if (!found) {
             transfer.push_back(id);
         }
-    }
-    Strategy calctype = params.generateType(*this);
-    for (int u=0;u<ara;u++) {
-        ParameterContext continued = params.append(calctype.args[u]);
-        args[u].extract(transfer,continued);
-    }
-    if (local==1) {
-        calctype.type.extract(transfer,params);
     }
 }
 

@@ -27,15 +27,7 @@ std::string Binding::tostring(int tabs) {
 }
 
 std::string Soln::tostring() {
-    std::string res="";
-    res+=head.tostring()+";\n";
-    for (int t=0;t<bin.size();t++) {
-        res+="\t"+head.substitute_tostring(&bin[t]->bind)+"\n";
-        for (int i=0;i<bin[t]->downstream.size();i++) {
-            res+="\t\t"+bin[t]->downstream[i]->head.tostring()+"\n";
-        }
-    }
-    return res;
+    return initial.localtypes[head].tostring();
 }
 
 

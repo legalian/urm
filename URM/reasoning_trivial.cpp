@@ -224,8 +224,8 @@ int MetaBank::getAxiom(std::string ax) {
 
 
 //Soln::Soln() : expanded(true),head(Statement(-1,0)) {}
-SolveInstance::SolveInstance(Statement point,Strategy* types,int arat) : mainsoln(point,types,arat) {}
-Soln::Soln(Statement point,Strategy* types,int arat) : head(point),loctypes(types),ara(arat) {}
+SolveInstance::SolveInstance(Binding& in,int aaa) {solns.push_back(new Soln(in,aaa));}
+Soln::Soln(Binding& in,int aaa) : initial(in),head(aaa) {}
 
 //Statement Soln::getsolution() {
 //    for (int y=0;y<bin.size();y++) {
@@ -294,7 +294,9 @@ ParameterContext ParameterContext::append(Strategy a) {
     return append(a.args,a.ara);
 }
 ParameterContext ParameterContext::append(Strategy* l,int buf) {
-    ParameterContext nn = *this;
+    ParameterContext nn;
+    nn.dat = dat;
+//    for (int u=0;u<buf;u++) std::cout<<l[u].local<<"|"<<loc()+2<<"\n";//if (l[u].local!=loc()+1) throw;
     nn.dat.push_back(std::pair<Strategy*,int>(l,buf));
     return nn;
 }
@@ -304,12 +306,20 @@ int ParameterContext::loc() {
 Strategy ParameterContext::generateType(Statement a) {
 
     if (a.local==-1) return Strategy(Statement(1,0),a.id,a.local);
+    if (a.id<0) throw;
     if (a.local>=dat.size() or a.local<0) throw;
     if (a.id>=dat[a.local].second) throw;
     int lloc = dat[a.local].first[a.id].local;
-//    std::string es = dat[a.local].first[a.id].tostring();
+    
+    
+//    std::string es = dat[a.local].first[a.id].tostringheavy();
 //    std::string ex = dat[a.local].first[a.id].bring_depth(lloc+1,loc()-lloc).tostring();
 //    std::string ea = a.tostring();
+//    if (a.local==3 and a.id==1) {
+//    
+//    
+//        std::cout<<"ajfka\n";
+//    }
 
 //    Strategy tent = dat[a.local].first[a.id].bring_depth(lloc+1,loc()-lloc).typechecksub(a.args,a.ara,loc()+1,0);
 //    std::cout<<a.tostring()<<"\n";
@@ -332,12 +342,20 @@ Strategy ParameterContext::generateTypeSection(Statement a,int arg) {
     if (a.local>=dat.size() or a.local<0 or a.ara<=arg) throw;
     if (a.id>=dat[a.local].second) throw;
     int lloc = dat[a.local].first[a.id].local;
-    return dat[a.local].first[a.id].args[arg].bring_depth(lloc+1,loc()-lloc).typechecksub_1disp(a.args,arg,loc()+1,1);
+    Strategy res =  dat[a.local].first[a.id].args[arg].bring_depth(lloc+1,loc()-lloc).typechecksub_1disp(a.args,arg,loc()+1,1);
+    
+//    std::string es = dat[a.local].first[a.id].tostring();
+//    std::string ex = dat[a.local].first[a.id].bring_depth(lloc+1,loc()-lloc).tostring();
+//    std::string ea = a.tostring();
+//    
+//    
+//    if (res.type.id==-1) throw;
+    return res;
 }
 
 bool judgemental_eq(Strategy a,Strategy b) {
     if (a.id!=b.id or a.local!=b.local) return false;
-    if (a.ara!=b.ara) throw;
+    if (a.ara!=b.ara) return false;
     for (int k=0;k<a.ara;k++) {
         if (!judgemental_eq(a.args[k],b.args[k])) return false;
     }

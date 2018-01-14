@@ -358,20 +358,21 @@ ParseResult* ParseVariant::match(ParseSpecifier* glob,long& offset,long end,Erro
                     result->cleanup();
                     return 0;
                 }
-                if (arguments[index].tok==-1 and glob->tokens[tentative]<glob->keysize and glob->tokenkey[glob->tokens[tentative]]=="-") {
-                    if (tentative+1>=end or glob->tokens[tentative+1]<glob->keysize){
-                        debug.failure("Interpreted negative sign for number but then next character was invalid.",tentative,end,errdepth);
-                        result->cleanup();
-                        return 0;
-                    }
-                    if (!isnumeric(glob->varnames[glob->tokens[tentative+1]-glob->keysize][0])) {
-                        debug.failure("Attempted to interpret non-numeric character for number.",tentative,end,errdepth);
-                        result->cleanup();
-                        return 0;
-                    }
-                    res = new ParseResult(glob->varnames[glob->tokens[tentative+1]-glob->keysize],order);
-                    tentative+=2;
-                } else {
+//                if (arguments[index].tok==-1 and glob->tokens[tentative]<glob->keysize and glob->tokenkey[glob->tokens[tentative]]=="-") {
+//                    
+//                    if (tentative+1>=end or glob->tokens[tentative+1]<glob->keysize){
+//                        debug.failure("Interpreted negative sign for number but then next character was invalid.",tentative,end,errdepth);
+//                        result->cleanup();
+//                        return 0;
+//                    }
+//                    if (!isnumeric(glob->varnames[glob->tokens[tentative+1]-glob->keysize][0])) {
+//                        debug.failure("Attempted to interpret non-numeric character for number.",tentative,end,errdepth);
+//                        result->cleanup();
+//                        return 0;
+//                    }
+//                    res = new ParseResult(glob->varnames[glob->tokens[tentative+1]-glob->keysize],order);
+//                    tentative+=2;
+//                } else {
                     if (glob->tokens[tentative]<glob->keysize) {
 //                        debug.failure(glob->tokenkey[glob->tokens[tentative]]+" cannot be number, string, or literal.",offset,end,errdepth);
                         result->cleanup();
@@ -389,7 +390,7 @@ ParseResult* ParseVariant::match(ParseSpecifier* glob,long& offset,long end,Erro
                     }
                     res = new ParseResult(glob->varnames[glob->tokens[tentative]-glob->keysize],order);
                     tentative++;
-                }
+//                }
             } else {
                 res = glob->table[arguments[index].tok].match(glob,tentative,end,debug,errdepth+1);
                 if (!res) {
@@ -558,7 +559,7 @@ Statement ParseSpecifier::fullconvert(const std::string& input) {
     int reassign=0;
     std::vector<int> remap;
     Statement res = a.convert(this,carry,locid,2,upset,2);
-    throw;//make sure this works
+//    throw;//make sure this works
     
 //    res.unscramble(remap,reassign,1);
     return res;

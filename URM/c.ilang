@@ -1,3 +1,320 @@
+# /* */ //
+#
+# ;
+
+
+
+Program {
+    Type STRING\()\ Block Program;
+    Type STRING\(\DeclarationList\)\ Block Program;
+}
+SilentDeclaration {
+    Type
+}
+Declaration {
+    
+}
+Block {
+    Line;
+    \{\Lines\}\;
+}
+Line {
+    \if(\Expression\)\Block;
+    \while(\Expression\)\Block;
+    \for(\Declaration\;\Expression\;\CommaExpression\)\Block;
+    \for(\Declaration\;\Expression\;)\Block;
+    \for(\Declaration\;;\CommaExpression\)\Block;
+    \for(\Declaration\;;)\Block;
+    \for(;\Expression\;\CommaExpression\)\Block;
+    \for(;\Expression\;)\Block;
+    \for(;;\CommaExpression\)\Block;
+    \for(;;)\Block;
+    Declaration\;\;#<--=-=-=-==-=--=-=-=-=
+    CommaExpression\;\;
+    \;\
+}
+Lines {
+    Line Lines;
+    Line;
+}
+Expression {
+    - \(\Expression\)\;#0
+    - Expression \,\ Expression;
+    flipped - Expression \=\ Expression;
+    Expression \+=\ Expression;
+    Expression \-=\ Expression;
+    Expression \*=\ Expression;#5
+    Expression \/=\ Expression;
+    Expression \%=\ Expression;
+    Expression \<<=\ Expression;
+    Expression \>>=\ Expression;
+    Expression \&=\ Expression;#10
+    Expression \^=\ Expression;
+    Expression \|=\ Expression;
+    - Expression \?\ Expression \:\ Expression;
+    - Expression \||\ Expression;
+    - Expression \&&\ Expression;#15
+    - Expression \|\ Expression;
+    - Expression \^\ Expression;
+    - Expression \&\ Expression;
+    - Expression \==\ Expression;
+    Expression \!=\ Expression;#20
+    - Expression \>\ Expression;
+    Expression \<\ Expression;
+    Expression \>=\ Expression;
+    Expression \<=\ Expression;
+    - Expression \<<\ Expression;#25
+    Expression \>>\ Expression;
+    - Expression \+\ Expression;
+    Expression \-\ Expression;
+    - Expression \*\ Expression;
+    Expression \/\ Expression;#30
+    Expression \%\ Expression;
+    - \++\ Expression;
+    \--\ Expression;
+    \+\ Expression;
+    \-\ Expression;#35
+    \~\ Expression;
+    \!\ Expression;
+    \(\Type\)\ Expression;
+    \*\ Expression;
+    \&\ Expression;#40
+    - Expression \++\;
+    Expression \--\;
+    Expression\()\;
+    Expression\(\CommaExpression\)\;
+    Expression\[\Expression\]\;#45
+    Expression\.\STRING;
+    Expression\->\STRING;
+    - NUMBER;
+    - STRING;
+}
+Precision {;;;;;;;;;;}
+SymmetricPromote: [a:Precision|b:Precision]Precision {
+    a~9{Precision[9]}b~9{Precision[9]}
+    a~8{Precision[8]}b~8{Precision[8]}
+    a~7{Precision[7]}b~7{Precision[7]}
+    a~6{Precision[6]}b~6{Precision[6]}
+    a~5{Precision[5]}b~5{Precision[5]}
+    a~4{Precision[4]}b~4{Precision[4]}
+    a~3{Precision[3]}b~3{Precision[3]}
+    a~2{Precision[2]}b~2{Precision[2]}
+    a~1{Precision[1]}b~1{Precision[1]}
+    a~0{Precision[0]}b~0{Precision[0]}
+}
+Truncate: [p:Precision|a:AFF]AFF {
+    p~0{}
+    p~1{}
+    p~2{}
+    p~3{}
+    p~4{}
+    p~5{}
+    p~6{}
+    p~7{}
+    p~8{}
+    p~9{}
+}
+ParameterTypes {Type ParameterTypes;;}
+Type {
+    Precision;
+    Type;
+    Type ParameterTypes;
+    Type AFF;
+    ;
+}
+
+CollapseConditional: [[STRING|HEAP]c:HEAP|s:STRING|h:HEAP|S:STRING]HEAP {s=S{F}c(S,h)}
+
+
+
+#fr lhep ExpHeapParse(c,h,e.0)
+#fr rhep ExpHeapParse(c,lhep,e.1)
+#fr lval ExpValueParse(c,h,e.0)
+#fr rval ExpValueParse(c,lhep,e.1)
+#fr laddr ExpAddrParse(c,h,e.0)
+#fr raddr ExpAddrParse(c,lhep,e.0)
+#fr ltype ExpTypeParse(gtype,e.0)
+#fr rtype ExpTypeParse(gtype,e.1)
+
+#fr altrhep ExpHeapParse(c,h,e.1)
+#fr altlhep ExpHeapParse(c,altrhep,e.0)
+#fr altrval ExpValueParse(c,h,e.1)
+#fr altlval ExpValueParse(c,altrhep,e.0)
+
+#fr symprec SymmetricPromote(ltype.0,rtype.0)
+#fr <arithargs> ltype~0{rtype~0{
+#fr </arithargs> }}
+#fr <intargs> ltype.0~0-6{rtype.0~0-6{
+#fr </intargs> }}
+
+ExpTypeParse: [
+    [STRING]gtype:Type|
+    e:Expression]Type {
+    e~0{ltype}
+    e~1{rtype}
+    e~2-12{ltype}
+    e~13{rtype}
+    e~14-15{Type[0](Precision[1]())}
+    e~16-18{<arithargs>Type[0](symprec)</arithargs>}
+    e~19-24{Type[0](Precision[1]())}
+    e~25-26{<arithargs>Type[0](symprec)</arithargs>}
+    e~27-28{
+        <arithargs>Type[0](symprec)</arithargs>
+        ltype
+    }
+    e~29-31{<arithargs>Type[0](symprec)</arithargs>}
+    e~32-36{ltype}
+    e~37{Type[0](Precision[1]())}
+    e~38
+    e~39{ltype~1{ltype.0}}
+    e~40{Type[1](ltype)}
+    e~41-42{ltype}
+    e~43-44{ltype~2{ltype.0}}
+    e~45{ltype~1{ltype.0}}
+    e~46
+    e~47
+    e~48
+    e~49{gtype(e.0)}
+}
+ExpAddrParse: [
+    [AFF|HEAP]call:HEAP|
+    [STRING]gtype:Type|
+    [STRING]gaddr:AFF|
+    h:HEAP|e:Expression]HEAP {
+
+    e~0{laddr}
+    e~1{raddr}
+    e~39{lval}
+    e~45{ADD(lval,rval)}
+    e~46
+    e~47
+    e~49{gaddr(e.0)}
+}
+
+ExpValueParse: [
+    [AFF|HEAP]call:HEAP|
+    [STRING]gtype:Type|
+    [STRING]gaddr:AFF|
+    h:HEAP|e:Expression]AFF {
+
+    e~0{lval}
+    e~1{rval}
+    e~2{
+        <arithargs>Truncate(ltype.0,ADD(altlval,altrval))</arithargs>
+        altrval
+    }
+    e~3{
+        <arithargs>Truncate(ltype.0,ADD(altlval,altrval))</arithargs>
+        ltype~1{rtype~0{rtype~0-6{ADD(altlval,altrval)}}}
+    }
+    e~4{
+        <arithargs>Truncate(ltype.0,SUBTRACT(altlval,altrval))</arithargs>
+        ltype~1{rtype~0{rtype~0-6{SUBTRACT(altlval,altrval)}}}
+    }
+    e~5{<arithargs>Truncate(ltype.0,MULTIPLY(altlval,altrval))<\arithargs>}
+    e~6{<arithargs>Truncate(ltype.0,DIVIDE(altlval,[],altrval))<\arithargs>}
+    e~7{<arithargs>Truncate(ltype.0,MODULO(altlval,[],altrval))<\arithargs>}
+    #e~8{<arithargs><intargs></intargs></arithargs>}
+    #e~9{<arithargs><intargs></intargs></arithargs>}
+    #e~10{<arithargs><intargs></intargs></arithargs>}
+    #e~11{<arithargs><intargs></intargs></arithargs>}
+    #e~12{<arithargs><intargs></intargs></arithargs>}
+    e~13{DEC(AFF,EQ(AFF,lval,<0>),ExpValueParse(c,lhep,e.2),rval)}
+    e~14{DEC(AFF,AND(EQ(AFF,lval,<0>),EQ(AFF,rval,<0>)),<0>,<1>)}
+    e~15{DEC(AFF,AND(NOT(EQ(AFF,lval,<0>)),NOT(EQ(AFF,rval,<0>))),<1>,<0>)}
+    #e~16
+    #e~17
+    #e~18
+    e~19{DEC(AFF,EQ(AFF,lval,rval),<1>,<0>)}
+    e~20{DEC(AFF,EQ(AFF,lval,rval),<0>,<1>)}
+    e~21{DEC(AFF,GT(lval,rval),<1>,<0>)}
+    e~22{DEC(AFF,GT(rval,lval),<1>,<0>)}
+    e~23{DEC(AFF,GT(rval,lval),<0>,<1>)}
+    e~24{DEC(AFF,GT(lval,rval),<0>,<1>)}
+    #e~25
+    #e~26
+    e~27{
+        <arithargs>Truncate(symprec,ADD(lval,rval))</arithargs>
+        ltype~1{rtype~0{rtype.0~0-6{ADD(lval,rval)}}}
+    }
+    e~28{
+        <arithargs>Truncate(symprec,SUBTRACT(lval,rval))</arithargs>
+        ltype~1{rtype~0{rtype.0~0-6{SUBTRACT(lval,rval)}}}
+    }
+    e~29{<arithargs>Truncate(symprec,MULTIPLY(lval,rval))</arithargs>}
+    e~30{<arithargs>Truncate(symprec,DIVIDE(lval,[],rval))</arithargs>}
+    e~31{<arithargs>Truncate(symprec,MODULO(lval,[],rval))</arithargs>}
+    e~32{ADD(lval,<1>)}
+    e~33{SUBTRACT(lval,<1>)}
+    e~34{lval}
+    e~35{MULTIPLY(lval,<-1>)}
+    #e~36
+    e~37{DEC(AFF,EQ(AFF,lval,<0>),<1>,<0>)}
+    e~38
+    e~39{GET(lval)}
+    e~40{laddr}
+    e~41{lval}
+    e~42{lval}
+    e~43{call(laddr,)}
+    e~44{}
+    e~45{GET(ADD(lval,rval))}
+    e~46{GET}
+    e~47{GET}
+    e~48
+    e~49{GET}
+}
+ExpHeapParse: [
+    [AFF|HEAP]call:HEAP|
+    [STRING]gtype:Type|
+    [STRING]gaddr:AFF|
+    h:HEAP|e:Expression]HEAP {
+
+    e~0{lhep}
+    e~1{rhep}
+    e~2-12{SET(ExpValueParse(c,h,e),altlhep)}
+    e~13{DEC(HEAP,EQ(AFF,lval,<0>),ExpHeapParse(c,lhep,e.2),rhep)}
+    e~14{DEC(HEAP,EQ(AFF,lval,<0>),rhep,lhep)}
+    e~15{DEC(HEAP,EQ(AFF,lval,<0>),lhep,rhep)}
+    e~16-31{rhep}
+    e~32{SET(ADD(lval,<1>))}
+    e~33{SET(SUBTRACT(lval,<1>))}
+    e~34-40{lhep}
+    e~41{SET(ADD(lval,<1>))}
+    e~42{SET(SUBTRACT(lval,<1>))}
+}
+#nd lhep
+#nd rhep
+#nd lval
+#nd rval
+#nd laddr
+#nd raddr
+#nd altrhep
+#nd altlhep
+#nd altrval
+#nd altlval
+MainParse: [[STRING|HEAP]c:HEAP|p:Program]HEAP {
+    p~0{}
+    p~1{}
+}
+BlockParse: [[STRING|HEAP]c:HEAP|h:HEAP|b:Block]HEAP {
+    b~0{LineParse(c,h,b.0)}
+    b~1{LinesParse(c,h,b.0)}
+}
+LinesParse: [[STRING|HEAP]c:HEAP|h:HEAP|l:Lines]HEAP {
+    l~0{LinesParse()}
+    l~1{LineParse(c,h,l.0)}
+}
+LineParse: [[STRING|HEAP]c:HEAP|h:HEAP|l:Line]HEAP {
+
+}
+
+
+
+
+
+
+
+
 
 
 
