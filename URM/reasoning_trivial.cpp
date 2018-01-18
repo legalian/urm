@@ -30,22 +30,10 @@ Binding::Binding(ParameterContext& t,Strategy* lt,int buf) : tracks(t),localtype
 //        partials[u] = Statement(-1,tracks.loc());
 //    }
 }
-Binding::Binding(ParameterContext& t,std::vector<Strategy>& lt,std::vector<SingleBind>& cc,bool& valid) : tracks(t) {
+Binding::Binding(ParameterContext& t,Strategy* lt,int ltara,std::vector<SingleBind>& cc) : tracks(t),ara(ltara),localtypes(lt) {
 //    if (lt.size()!=gt.size()) throw;
 //    partials   = new Statement[ara];
-    ara = lt.size();
-    localtypes = new Strategy[ara];
-    for (int a=0;a<ara;a++) {
-        localtypes[a] = lt[a];
-    }
     tracks.dat[tracks.loc()] = std::pair<Strategy*,int>(localtypes,ara);
-    
-    for (int u=0;u<cc.size();u++) {
-        ParameterContext conan = tracks.append(cc[u].itinerary,cc[u].ara);
-        Strategy calctype = conan.generateType(cc[u].head);
-        if (!typebind(cc[u].body,calctype.type,conan)) valid=false;
-        binds.push_back(cc[u]);
-    }
 }
 //Binding::Binding(int buf) : localtypes(new Strategy[buf]),partials(new Statement[buf]),ara(buf) {
 //    tracks.push_back(std::pair<Strategy*,int>(localtypes,ara));
@@ -99,7 +87,7 @@ Statement::Statement(int idr,int loc) {
 }
 Statement::Statement(int idr,int loc,int buf) {
     local=loc;id=idr;ara=buf;
-    args = new Statement[buf];
+    if (buf) args = new Statement[buf];
 }
 Statement::Statement(int idr,int loc,Statement a) {
     local=loc;id=idr;ara=1;
@@ -339,7 +327,7 @@ Strategy ParameterContext::generateType(Statement a) {
 //    return dat[a.local].first[a.id].typechecksub(a.args,a.ara,lloc+1,(int)dat.size(),1);
 }
 Strategy ParameterContext::generateTypeSection(Statement a,int arg) {
-    if (a.local>=dat.size() or a.local<0 or a.ara<=arg) throw;
+    if (a.local>=dat.size() or a.local<0) throw;
     if (a.id>=dat[a.local].second) throw;
     int lloc = dat[a.local].first[a.id].local;
     Strategy res =  dat[a.local].first[a.id].args[arg].bring_depth(lloc+1,loc()-lloc).typechecksub_1disp(a.args,arg,loc()+1,1);

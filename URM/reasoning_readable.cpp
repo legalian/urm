@@ -27,7 +27,7 @@ std::string Binding::tostring(int tabs) {
 }
 
 std::string Soln::tostring() {
-    return initial.localtypes[head].tostring();
+    return initial.localtypes[head].type.tostring();
 }
 
 

@@ -235,7 +235,7 @@ void Soln::expand(MetaBank* mb,SolveInstance* inst) {
             for (int i=0;i<soap.ara;i++) soap.localtypes[i] = nlocs[i];
             soap.tracks.dat[soap.tracks.loc()] = std::pair<Strategy*,int>(soap.localtypes,soap.ara);
             ParameterContext tocompare = soap.tracks.append(initial.localtypes[head].args,initial.localtypes[head].ara);
-            if (soap.crossdecomposeverbal(headsite,bodysite,tocompare,1)) {
+            if (soap.crossdecompose(headsite,bodysite,tocompare)) {
 //                int bef = binqueue.size();
                 soap.divide(binqueue,0);
 //                if (binqueue.size()!=bef) std::cout<<"\t\t"<<binqueue.size()-bef<<" results.\n";
@@ -342,15 +342,13 @@ bool Soln::recieveEnergy(MetaBank* mb,SolveInstance* si,int energy) {
     return false;
 }
 void SolveInstance::increment(MetaBank* mb) {
+    clock_t t = clock();
+    printf ("Calculating...\n");
     solns[0]->recieveEnergy(mb,this,-1);
-    for (int w=(int)solns.size()-1;w>0;w--) {
-        if (solns[w]->upstream.size()==0) {
-            delete solns[w];
-            solns.erase(solns.begin()+w);
-        }
-    }
+    t = clock() - t;
+    std::cout<<"round elapsed: "<<(((float)t)/CLOCKS_PER_SEC)<<"\n";
     
-    gephi_visualize();
+//    gephi_visualize();
 //    gephi_flushvisualizer();
 }
 

@@ -556,10 +556,10 @@ Statement ParseSpecifier::fullconvert(const std::string& input) {
         upset.push_back(table[0].type.args[d].snapshot());
     }
 //    std::cout<<a.tostringheavy()<<"\n";
-    int reassign=0;
+//    int reassign=0;
     std::vector<int> remap;
     Statement res = a.convert(this,carry,locid,2,upset,2);
-//    throw;//make sure this works
+    throw;//make sure this works
     
 //    res.unscramble(remap,reassign,1);
     return res;

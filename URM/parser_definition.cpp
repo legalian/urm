@@ -205,7 +205,7 @@ Statement indexedPureStatementConvert(MetaBank* mb,ParseResult* change,std::map<
         if (change->var==4) return Statement(std::stoi(change->children[0]->endpoint),-1);
         else return Statement(-1*std::stoi(change->children[0]->endpoint),-1);
     }
-    throw;
+//    throw;
 }
 
 

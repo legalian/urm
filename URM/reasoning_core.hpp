@@ -100,6 +100,7 @@ struct Statement {
     Statement(int,int,Statement,Statement,Statement,Statement);
 };
 bool judgemental_eq(Statement,Statement);
+bool lazy_judgemental_eq(Statement,Statement,int,int);
 bool judgemental_eq(Strategy,Strategy);
 
 struct Strategy {
@@ -189,7 +190,8 @@ struct Binding {
 //    Binding(MetaBank*);
 //    Binding(std::vector<std::vector<Strategy*>*>&);
     Binding(MetaBank*,Strategy*,int);
-    Binding(ParameterContext&,std::vector<Strategy>&,std::vector<SingleBind>&,bool&);
+//    Binding(ParameterContext&,std::vector<Strategy>&,std::vector<SingleBind>&,bool&);
+    Binding(ParameterContext&,Strategy*,int,std::vector<SingleBind>&);
 //    Binding(int);
     Binding(ParameterContext&,Strategy*,int);
 //    Binding(const ParameterContext&,std::vector<Strategy>&);
