@@ -553,7 +553,8 @@ Statement ParseSpecifier::fullconvert(const std::string& input) {
         a.children[a.tokargs+d].strucLocal=2;
         a.children[a.tokargs+d].varID=d;
         a.children[a.tokargs+d].reconstruct=0;
-        upset.push_back(table[0].type.args[d].snapshot());
+        upset.push_back(table[0].type.args[d].snapshot(99));
+        throw;//depth guessed
     }
 //    std::cout<<a.tostringheavy()<<"\n";
 //    int reassign=0;

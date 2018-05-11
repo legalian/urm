@@ -178,14 +178,6 @@ Statement indexedPureStatementConvert(MetaBank* mb,ParseResult* change,std::map<
         }
         return head;
     } else if (change->var<4) {
-    
-//        int lp1 = varbank[change->children[0]->endpoint].local+1;
-//        Statement roottype = varbank[change->children[0]->endpoint].depth_push(lp1,stat-(lp1));
-        
-//        int lp1 = varbank[change->children[0]->endpoint].local+1;
-//        Statement roottype = varbank[change->children[0]->endpoint];//.depth_push(lp1,stat-(lp1));
-        
-        
         if (change->var==2) {
             std::vector<Statement> fargs;
             indexedPureCoalesceStatements(mb,change->children[1],varbank,fargs,stat+1);
@@ -193,10 +185,6 @@ Statement indexedPureStatementConvert(MetaBank* mb,ParseResult* change,std::map<
             for (int j=0;j<fargs.size();j++) {
                 head.args[j] = fargs[j];
             }
-//            head = roottype.substitute_level(tax,fargs.size(),stat,stat,1);//reflex = stat
-//            std::cout<<change->children[0]->endpoint<<"|"<<stat<<"|"<<head.tostring()<<"\n";
-//            std::cout<<"\t"<<
-//            delete[] tax;
             return head;
         } else {
             return Statement(varbank[change->children[0]->endpoint].first,varbank[change->children[0]->endpoint].second);
@@ -248,7 +236,7 @@ Strategy indexedPureStrategyConvert(MetaBank* mb,ParseResult* change,std::map<st
         } case 4: {
             std::vector<Strategy> fargs;
             indexedPureCoalesceStrategies(mb,change->children[0],varbank,fargs,0,depth+1);
-            Strategy res = Strategy(Statement(),-1,depth,fargs.size());
+            Strategy res = Strategy(Statement(0,0),-1,depth,fargs.size());
             for (int j=0;j<fargs.size();j++) {
                 res.args[j] = fargs[j];
             }

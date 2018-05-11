@@ -78,22 +78,32 @@ int main(int argc, const char * argv[]) {
 //        }
 //        std::cout<<res;
 //    }
-
+//    int waste_time=0;
+//    for (int d=0;d<160;d++) {
+//        for (int w=0;w<9000000;w++) waste_time+=w;
+////        std::cout<<"el\n";
+//    }
+//    
+//    std::cout<<"elapse\n";
 
     std::vector<std::string> solvertestcases;
 //    solvertestcases.push_back("[EQ(AFF,<1>,<1>)]");
 //    solvertestcases.push_back("[A:U|a:A|EQ(A,a,a)]");
 //    solvertestcases.push_back("[[a:AFF]b:AFF|[c:AFF]EQ(AFF,b(c),c)]");
 //    solvertestcases.push_back("[type:U|[a:type]b:type|[c:type]EQ(type,b(c),c)]");
-    solvertestcases.push_back("[B2:U|C2:U|[A:U|B:U|C:U|x:A|y:A|z:A]EQ(A,DEC(A,B,x,DEC(A,C,y,z)),  DEC(A,B2,DEC(A,C2,x,y),z)  )]");
+    solvertestcases.push_back("["
+    "[U|U]B2:U|"
+    "[U|U]C2:U|"
+    "[A:U|B:U|C:U|x:A|y:A|z:A]EQ(A,DEC(A,B,x,DEC(A,C,y,z)),DEC(A,B2(B,C),DEC(A,C2(B,C),x,y),z))]"
+    );
     
     for (int h=0;h<solvertestcases.size();h++) {
         Strategy engulf = parse_TTML(solvertestcases[h],0);
-        SolveInstance::label="test "+std::to_string(h);
-        Statement solution = MetaBank::meta_prime.solve(engulf.args,engulf.ara,engulf.ara-1);
-        std::cout<<solvertestcases[h]<<" result:\n";
-        std::cout<<"\t"<<solution.tostring()<<"\n";
-        solution.cleanup();
+//        SolveInstance::label="test "+std::to_string(h);
+//        Statement solution = MetaBank::meta_prime.solve(engulf.args,engulf.ara,engulf.ara-1);
+//        std::cout<<solvertestcases[h]<<" result:\n";
+//        std::cout<<"\t"<<solution.tostring()<<"\n";
+//        solution.cleanup();
     }
 
     

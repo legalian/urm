@@ -26,9 +26,27 @@ std::string Binding::tostring(int tabs) {
     return res;
 }
 
-std::string Soln::tostring() {
-    return initial.localtypes[head].type.tostring();
-}
+//std::string Stitching::tostring(int tabs) {
+//    if (secretbacklink!=-1) return ntabs(tabs)+std::to_string(secretbacklink);
+//    std::string gor = govern.tostring(tabs);
+//    for (int h=0;h<stitches.size();h++) {
+//        gor+=ntabs(tabs)+"=-=-=:\n";
+//        for (int g=0;g<stitches[h].size();g++) {
+//            gor+=ntabs(tabs+1)+"--\n"+stitches[h][g].tostring(tabs+1);
+//        }
+//    }
+//    return gor;
+//}
+//std::string Restriction::tostring() {
+//    std::string gr = "-"+std::to_string(contmin)+"-"+std::to_string(contmax)+"-"+std::to_string(types.size())+"\n";
+//    for (auto it=rest.begin();it!=rest.end();it++) {
+//        gr += "\t"+std::to_string(it->first)+" | "+it->second.tostring()+"\n";
+//    }
+//    return gr;
+//}
+//std::string Soln::tostring() {
+//    return initial.localtypes[head].type.tostring();
+//}
 
 
 std::string Strategy::tostring() {
