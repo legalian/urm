@@ -15,41 +15,12 @@ std::string ntabs(int tabs) {
     for (int nu=0;nu<tabs;nu++) res+="\t";
     return res;
 }
-std::string Binding::tostring(int tabs) {
+std::string Binding::tostring(int tabs) const {
     std::string res="";
-//    for (int it=0;it<ara;it++) {
-//        res+=ntabs(tabs)+localtypes[it].tostring()+"-->"+partials[it].tostring()+"\n";
-//    }
-    for (int it=0;it<binds.size();it++) {
-        res+=ntabs(tabs)+binds[it].head.tostring()+"|"+binds[it].body.tostring()+"\n";
-    }
+    for (int it=0;it<binds.size();it++) res+=ntabs(tabs)+binds[it].head.tostring()+"|"+binds[it].body.tostring()+"\n";
     return res;
 }
-
-//std::string Stitching::tostring(int tabs) {
-//    if (secretbacklink!=-1) return ntabs(tabs)+std::to_string(secretbacklink);
-//    std::string gor = govern.tostring(tabs);
-//    for (int h=0;h<stitches.size();h++) {
-//        gor+=ntabs(tabs)+"=-=-=:\n";
-//        for (int g=0;g<stitches[h].size();g++) {
-//            gor+=ntabs(tabs+1)+"--\n"+stitches[h][g].tostring(tabs+1);
-//        }
-//    }
-//    return gor;
-//}
-//std::string Restriction::tostring() {
-//    std::string gr = "-"+std::to_string(contmin)+"-"+std::to_string(contmax)+"-"+std::to_string(types.size())+"\n";
-//    for (auto it=rest.begin();it!=rest.end();it++) {
-//        gr += "\t"+std::to_string(it->first)+" | "+it->second.tostring()+"\n";
-//    }
-//    return gr;
-//}
-//std::string Soln::tostring() {
-//    return initial.localtypes[head].type.tostring();
-//}
-
-
-std::string Strategy::tostring() {
+std::string Strategy::tostring() const {
     std::string res="";
     if (ara) {
         res+="[";
@@ -62,14 +33,7 @@ std::string Strategy::tostring() {
     res+=type.tostring();
     return res;
 }
-
-void ntabprint(std::string msg,int tabs) {
-    if (tabs>=0) {
-        for (int t=0;t<tabs;t++) std::cout<<"\t";
-        std::cout<<msg<<"\n";
-    }
-}
-std::string Strategy::tostringheavy() {
+std::string Strategy::tostringheavy() const {
     std::string res="";
     if (ara) {
         res+="[";
@@ -86,8 +50,6 @@ std::string Strategy::tostringheavy() {
     res+=type.tostring();
     return res;
 }
-
-
 std::string Statement::tostring() const {
     std::string ret = "{"+std::to_string(id)+":"+std::to_string(local)+"}";
     if (local==-1) ret = ""+std::to_string(id)+"";
@@ -102,7 +64,6 @@ std::string Statement::tostring() const {
     }
     return ret;
 }
-
 std::string ConstructArgReference::tostringheavy() {
     std::string res=".";
     for (int u=0;u<path.size();u++) {

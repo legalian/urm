@@ -1,5 +1,5 @@
 //
-//  type_completion.cpp
+//  reasoning_debug.cpp
 //  URM
 //
 //  Created by Parker on 9/2/17.
@@ -12,7 +12,7 @@
 
 
 
-void Statement::constcheck(ParameterContext params) {
+void Statement::constcheck(const ParameterContext& params) const {
     if (local<0 or id==-1) {
         if (ara!=0) throw;
         return;
@@ -24,6 +24,7 @@ void Statement::constcheck(ParameterContext params) {
         ParameterContext nn = params.append(calctype.args[u]);
         args[u].typecheck(calctype.args[u].type,nn);
     }
+    calctype.cleanup();
 }
 //void Binding::check() {
 //    if (tracks.dat[tracks.loc()].first!=localtypes) throw;
@@ -36,19 +37,20 @@ void Statement::constcheck(ParameterContext params) {
 //        if (!judgemental_eq(dena,denb)) throw;
 //    }
 //}
-void Statement::loosecheck(ParameterContext& params) {
+void Statement::loosecheck(const ParameterContext& params) const {
     Strategy prop = params.generateType(*this);
     for (int h=0;h<ara;h++) {
         ParameterContext nn = params.append(prop.args[h]);
         args[h].loosecheck(nn);
     }
+    prop.cleanup();
 }
-void Strategy::loosecheck(ParameterContext& params) {
+void Strategy::loosecheck(const ParameterContext& params) const {
     ParameterContext nn = params.append(*this);
     type.loosecheck(nn);
     for (int g=0;g<ara;g++) args[g].loosecheck(nn);
 }
-void Binding::loosecheck() {
+void Binding::loosecheck() const {
     for (int h=0;h<ara;h++) localtypes[h].loosecheck(tracks);
     for (int s=0;s<binds.size();s++) {
         ParameterContext tplusi = tracks.append(binds[s].itinerary,binds[s].ara);
@@ -66,7 +68,7 @@ void Binding::loosecheck() {
 //        sub.typecheck();
 //    }
 //}
-void Statement::typecheck(Statement& type,ParameterContext& params) {
+void Statement::typecheck(const Statement& type,const ParameterContext& params) const {
     if (local<0) {
         if (type.ara or type.local or type.id!=1) throw;
         if (ara) throw;
@@ -88,8 +90,9 @@ void Statement::typecheck(Statement& type,ParameterContext& params) {
         ParameterContext nn = params.append(calctype.args[u]);
         args[u].typecheck(calctype.args[u].type,nn);
     }
+    calctype.cleanup();
 }
-void Strategy::typecheck(ParameterContext& params) {
+void Strategy::typecheck(const ParameterContext& params) const {
     ParameterContext nn = params.append(*this);
     for (int u=0;u<ara;u++) args[u].typecheck(nn);
     Statement passin = Statement(0,0);
