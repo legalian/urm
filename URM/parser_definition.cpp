@@ -214,7 +214,7 @@ Strategy indexedPureStrategyConvert(MetaBank* mb,ParseResult* change,std::map<st
             return Strategy(indexedPureStatementConvert(mb,change->children[0],varbank,depth+2),paint,depth);
         case 1: {
             Strategy res = Strategy(indexedPureStatementConvert(mb,change->children[1],varbank,depth+2),paint,depth);
-            varbank[change->children[0]->endpoint] = std::pair<int,int>(paint,depth);
+            varbank[change->children[0]->endpoint] = {paint,depth};
             return res;
         } case 2: {
             std::vector<Strategy> fargs;
@@ -231,7 +231,7 @@ Strategy indexedPureStrategyConvert(MetaBank* mb,ParseResult* change,std::map<st
             for (int j=0;j<fargs.size();j++) {
                 res.args[j] = fargs[j];
             }
-            varbank[change->children[1]->endpoint] = std::pair<int,int>(paint,depth);
+            varbank[change->children[1]->endpoint] = {paint,depth};
             return res;
         } case 4: {
             std::vector<Strategy> fargs;
@@ -439,7 +439,7 @@ void liststrucs(MetaBank* mb,std::map<std::string,int>& handle,ParseSpecifier& p
     if (tokenized->var==0) {
         std::map<std::string,std::pair<int,int>> typevarbank;
         for (int a=0;a<mb->ara;a++) {
-            typevarbank[mb->stratnames[a]] = std::pair<int,int>(a,0);
+            typevarbank[mb->stratnames[a]] = {a,0};
         }
         std::vector<std::string> labels;
         parser.table[resid].type = indexedPureStrategyConvert(mb,tokenized->children[1],typevarbank,0,0);
@@ -560,9 +560,9 @@ Strategy parse_TTML(const std::string & parse,int tdepth,std::map<std::string,st
         indexedLabelExtraction(pop,tokenized->children[0]);
     }
     MetaBank* mb = &MetaBank::meta_prime;
-    varbank["U"] = std::pair<int,int>(0,0);
+    varbank["U"] = {0,0};
     for (int a=0;a<mb->ara;a++) {
-        varbank[mb->stratnames[a]]=std::pair<int,int>(a,0);
+        varbank[mb->stratnames[a]]= {a,0};
     }
     Strategy result = indexedPureStrategyConvert(mb,tokenized,varbank,0,tdepth);
     tokenized->cleanup();

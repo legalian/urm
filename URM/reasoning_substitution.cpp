@@ -90,7 +90,7 @@ Statement Statement::simp_substitute(const Binding& bind,const ParameterContext&
                 if (s<avoidex) {
 //                    if (bind.binds[s].universal) continue;
                     Binding reverse(params,bind.binds[avoidex].itinerary,bind.binds[avoidex].ara);
-                    reverse.tracks.dat[reverse.tracks.loc()+1] = std::pair<Strategy*,int>(bind.binds[s].itinerary,bind.binds[s].ara);
+                    reverse.tracks.dat[reverse.tracks.loc()+1] = {bind.binds[s].itinerary,bind.binds[s].ara};
                     Statement leftdec = bind.binds[s].head.depth_push(bind.tracks.loc()+2,1);
                     Statement rightdec = res.depth_push(bind.tracks.loc()+1,1);
                     std::vector<Binding> testing;
@@ -123,11 +123,12 @@ Statement Statement::simp_substitute(const Binding& bind,const ParameterContext&
     return res;
 }
 void Statement::inplace_sub(int tid,int tlocal,const Statement& templ,int tdepth) {
+    for (int a=0;a<ara;a++) args[a].inplace_sub(tid,tlocal,templ,tdepth+1);
     if (local==tlocal and id==tid) {
         Statement dupr = templ.ndisp_sub(tlocal+1,tdepth-tlocal-1,args,ara,0);
         cleanup();
         *this = dupr;
-    } else for (int a=0;a<ara;a++) args[a].inplace_sub(tid,tlocal,templ,tdepth+1);
+    }
 }
 void Strategy::inplace_sub(int tid,int tlocal,const Statement& templ) {
     type.inplace_sub(tid,tlocal,templ,local+2);
@@ -174,12 +175,12 @@ void Strategy::apply(int loc,std::vector<int>& map) {
     for (int a=0;a<ara;a++) args[a].apply(loc,map);
 }
 void Statement::idpush(int loc,int amt,int thresh) {
-    if (local==loc and id>thresh) id+=amt;
+    if (local==loc and id>=thresh) id+=amt;
     for (int a=0;a<ara;a++) args[a].idpush(loc,amt,thresh);
 }
 void Strategy::idpush(int loc,int amt,int thresh) {
     type.idpush(loc,amt,thresh);
-    if (local==loc and id>thresh) id+=amt;
+    if (local==loc and id>=thresh) id+=amt;
     for (int a=0;a<ara;a++) args[a].idpush(loc,amt,thresh);
 }
 void expandRange(int loc,int& ara,int gu,int dep,Statement*& rang,int cara,Strategy* charms) {

@@ -12,17 +12,16 @@
 Binding::~Binding() {
     for (int j=0;j<ara;j++) localtypes[j].cleanup();
     if (ara) delete[] localtypes;
-    for (int u=0;u<binds.size();u++) {
-        binds[u].head.cleanup();
-        binds[u].body.cleanup();
-        for (int j=0;j<binds[u].ara;j++) binds[u].itinerary[j].cleanup();
-        if (binds[u].ara) delete[] binds[u].itinerary;
-    }
+    for (int u=0;u<binds.size();u++) binds[u].cleanup();
+}
+void SingleBind::cleanup() {
+    head.cleanup();
+    body.cleanup();
+    for (int j=0;j<ara;j++) itinerary[j].cleanup();
+    if (ara) delete[] itinerary;
 }
 void Statement::cleanup() {
-    for (int v=0;v<ara;v++) {
-        args[v].cleanup();
-    }
+    for (int v=0;v<ara;v++) args[v].cleanup();
     local=9001;
     id=900;
     if (ara) delete[] args;
@@ -30,9 +29,7 @@ void Statement::cleanup() {
     args = 0;
 }
 void Strategy::cleanup() {
-    for (int v=0;v<ara;v++) {
-        args[v].cleanup();
-    }
+    for (int v=0;v<ara;v++) args[v].cleanup();
     type.cleanup();
     local=9001;
     id=900;
@@ -43,11 +40,13 @@ void Strategy::cleanup() {
 Statement Statement::deepcopy() const {return Statement(id,local,ara,::deepcopy(args,ara));}
 Strategy Strategy::deepcopy() const {return Strategy(type.deepcopy(),id,local,ara,::deepcopy(args,ara));}
 Statement* deepcopy(Statement* args,int ara) {
+    if (ara==0) return 0;
     Statement* nx = new Statement[ara];
     for (int a=0;a<ara;a++) nx[a]=args[a].deepcopy();
     return nx;
 }
 Strategy* deepcopy(Strategy* args,int ara) {
+    if (ara==0) return 0;
     Strategy* nx = new Strategy[ara];
     for (int a=0;a<ara;a++) nx[a]=args[a].deepcopy();
     return nx;
@@ -110,22 +109,22 @@ ParameterContext ParameterContext::append(const Strategy& a) const {return appen
 ParameterContext ParameterContext::append(Strategy* l,int buf) const {
     ParameterContext nn;
     nn.dat = dat;
-    nn.dat.push_back(std::pair<Strategy*,int>(l,buf));
+    nn.dat.push_back({l,buf});
     return nn;
 }
 
 int ParameterContext::loc() const {return dat.size()-1;}
-SingleBind::SingleBind(Statement a,Statement b,Strategy* c,int buf,bool uni,bool conc) : head(a),body(b),itinerary(c),ara(buf),universal(uni),concrete(conc) {}
+SingleBind::SingleBind(Statement a,Statement b,Strategy* c,int buf,bool uni,bool conc) : head(a),body(b),itinerary(c),ara(buf),universal(a.ara==0?true:uni),concrete(conc) {}
 SingleBind SingleBind::deepcopy() const {
     SingleBind dup = SingleBind(head.deepcopy(),body.deepcopy(),::deepcopy(itinerary,ara),ara,universal,concrete);
     return dup;
 }
 Binding::Binding(MetaBank* mb,Strategy* lt,int buf) : localtypes(lt), ara(buf) {
-    tracks.dat.push_back(std::pair<Strategy*,int>(mb->strategies,mb->ara));
-    tracks.dat.push_back(std::pair<Strategy*,int>(localtypes,ara));
+    tracks.dat.push_back({mb->strategies,mb->ara});
+    tracks.dat.push_back({localtypes,ara});
 }
 Binding::Binding(const ParameterContext& t,Strategy* lt,int buf) : tracks(t),localtypes(lt),ara(buf) {
-    tracks.dat.push_back(std::pair<Strategy*,int>(localtypes,ara));
+    tracks.dat.push_back({localtypes,ara});
 }
 Binding& Binding::operator = (const Binding& other) {
     ara = other.ara;
@@ -133,8 +132,8 @@ Binding& Binding::operator = (const Binding& other) {
     for (int u=0;u<ara;u++) localtypes[u] = other.localtypes[u].deepcopy();
     for (int j=0;j<other.binds.size();j++) binds.push_back(other.binds[j].deepcopy());
     if (other.tracks.dat.size()) {
-        for (int f=0;f<other.tracks.dat.size()-1;f++) tracks.dat.push_back(other.tracks.dat[f]);
-        tracks.dat.push_back(std::pair<Strategy*,int>(localtypes,ara));
+        for (int f=0;f<other.tracks.loc();f++) tracks.dat.push_back(other.tracks.dat[f]);
+        tracks.dat.push_back({localtypes,ara});
     }
     return *this;
 }

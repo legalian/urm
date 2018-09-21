@@ -1,52 +1,52 @@
-////
-////  reasoning_visualizer.cpp
-////  URM
-////
-////  Created by Parker on 11/7/17.
-////  Copyright © 2017 Parker. All rights reserved.
-////
 //
-//#include <stdio.h>
-//#include <iostream>
-//#include <fstream>
-//#include "reasoning_core.hpp"
+//  reasoning_visualizer.cpp
+//  URM
 //
+//  Created by Parker on 11/7/17.
+//  Copyright © 2017 Parker. All rights reserved.
+//
+
+#include <stdio.h>
+#include <iostream>
+#include <fstream>
+#include "reasoning_core.hpp"
+
 //std::string SolveInstance::label="Unassigned";
 //std::vector<std::string> SolveInstance::labels;
 //std::vector<std::string> SolveInstance::json;
-////std::vector<std::string> SolveInstance::gephi;
-//
-//
-//
-////void SolveInstance::gephi_flushvisualizer() {
-////    std::ofstream vfile;
-////    vfile.open("visualizer/Graph.tlp");
-////    for (int r=0;r<gephi.size();r++) {
-////        vfile<<gephi[r];
-////    }
-////    vfile.close();
-////}
+//std::vector<std::string> SolveInstance::gephi;
+
+
+
+//void SolveInstance::gephi_flushvisualizer() {
+//    std::ofstream vfile;
+//    vfile.open("visualizer/Graph.tlp");
+//    for (int r=0;r<gephi.size();r++) {
+//        vfile<<gephi[r];
+//    }
+//    vfile.close();
+//}
 //void SolveInstance::gephi_visualize() {
+
+
+
+
+//    <node id="0" label="Gephi" start="0"/>
+//    <node id="1" label="Network" start="5"/>
+//    <node id="2" label="Visualization" start="5"/>
+//    <node id="3" label="Graph" start="0"/>
 //
+//    <edge id="0" source="0" target="1"/>
+//    <edge id="1" source="0" target="2"/>
+//    <edge id="2" source="1" target="0"/>
+//    <edge id="3" source="2" target="1"/>
 //
-//
-//
-////    <node id="0" label="Gephi" start="0"/>
-////    <node id="1" label="Network" start="5"/>
-////    <node id="2" label="Visualization" start="5"/>
-////    <node id="3" label="Graph" start="0"/>
-////
-////    <edge id="0" source="0" target="1"/>
-////    <edge id="1" source="0" target="2"/>
-////    <edge id="2" source="1" target="0"/>
-////    <edge id="3" source="2" target="1"/>
-////
 //    std::ofstream vfile;
 //    vfile.open("visualizer/Graph.gexf");
-//    
+//
 //    vfile<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 //    "<gexf xmlns=\"http://www.gexf.net/1.2draft\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd\" version=\"1.2\"><graph mode=\"dynamic\" defaultedgetype=\"directed\" timeformat=\"date\"><nodes>";
-//    
+//
 //    for (int i=0;i<solns.size();i++) {
 //        vfile<<"<node id=\""<<i<<"\" label=\""+solns[i]->tostring()<<"\"/>";
 //    }
@@ -61,36 +61,36 @@
 //        }
 //    }
 //    vfile<<"</edges></graph></gexf>";
+
+
+//    std::string nw="(nb_nodes "+std::to_string(solns.size())+")\n(nodes 0.."+std::to_string(solns.size()-1)+")\n";
+//    int edges=0;
+//    for (int i=0;i<solns.size();i++) {
+//        for (int o=0;o<solns[i]->upstream.size();o++) {
+//            int other = -1;
+//            for (int ff=0;ff<solns.size();ff++) {
+//                if (solns[ff]==solns[i]->upstream[o].linked) {
+//                    other=ff;
+//                    break;
+//                }
+//            }
+//            if (other==-1) throw;
+//            nw+="(edge "+std::to_string(edges++)+" "+std::to_string(i)+" "+std::to_string(other)+")\n";
+//        }
+//    }
+////    (property 0 string "viewLabel"
+////      (default "" "" )
+////      (node 1 "Hello")
+////      (node 2 "Bonjour")
+////      (node 3 "Bye")
+////      (edge 2 "Aurevoir")
+////    )
 //
-//
-////    std::string nw="(nb_nodes "+std::to_string(solns.size())+")\n(nodes 0.."+std::to_string(solns.size()-1)+")\n";
-////    int edges=0;
-////    for (int i=0;i<solns.size();i++) {
-////        for (int o=0;o<solns[i]->upstream.size();o++) {
-////            int other = -1;
-////            for (int ff=0;ff<solns.size();ff++) {
-////                if (solns[ff]==solns[i]->upstream[o].linked) {
-////                    other=ff;
-////                    break;
-////                }
-////            }
-////            if (other==-1) throw;
-////            nw+="(edge "+std::to_string(edges++)+" "+std::to_string(i)+" "+std::to_string(other)+")\n";
-////        }
-////    }
-//////    (property 0 string "viewLabel"
-//////      (default "" "" )
-//////      (node 1 "Hello")
-//////      (node 2 "Bonjour")
-//////      (node 3 "Bye")
-//////      (edge 2 "Aurevoir")
-//////    )
-////
-////    nw+="(property 0 string \"viewLabel\"(default \"\" \"\" )\n";
-////    for (int i=0;i<solns.size();i++) nw+="\t(node "+std::to_string(i)+" \""+solns[i]->tostring()+"\")\n";
-////    nw+=")";
-//
-//
+//    nw+="(property 0 string \"viewLabel\"(default \"\" \"\" )\n";
+//    for (int i=0;i<solns.size();i++) nw+="\t(node "+std::to_string(i)+" \""+solns[i]->tostring()+"\")\n";
+//    nw+=")";
+
+
 //    vfile.close();
 //    
 //    

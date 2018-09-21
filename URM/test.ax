@@ -1,6 +1,8 @@
 [U
 |A:U
 |[A]a:A
+|aa:A
+
 |[A]g:U
 |[s:A|g(s)]jooj:g(a(s))
 |[s:A|g(a(s))]ojjo:g(s)

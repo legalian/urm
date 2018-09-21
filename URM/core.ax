@@ -4,6 +4,8 @@
 
 [U
 |AFF:U
+|ZERO:AFF
+|ONE:AFF
 
 |[A:U|A|A]EQ:U
 |[AFF|AFF]GT:U
@@ -30,30 +32,30 @@
 |[AFF|AFF]ADD:AFF
 |[AFF|AFF]SUBTRACT:AFF
 |[AFF|AFF]MULTIPLY:AFF
-|[a:AFF|NOT(EQ(AFF,a,<0>))|AFF]DIVIDE:AFF
-|[a:AFF|NOT(EQ(AFF,a,<0>))|AFF]MODULO:AFF
+|[a:AFF|NOT(EQ(AFF,a,ZERO))|AFF]DIVIDE:AFF
+|[a:AFF|NOT(EQ(AFF,a,ZERO))|AFF]MODULO:AFF
 
 
 
 |[a:AFF|b:AFF|c:AFF|d:AFF|GT(a,b)|NOT(GT(d,c))]ADDITIVE:GT(ADD(a,c),ADD(b,d))
-|[a:AFF|b:AFF|c:AFF|GT(a,b)|GT(c,<0>)]MULTIPLICATIVE:GT(MULTIPLY(a,c),MULTIPLY(b,c))
-|[a:AFF|b:AFF|c:AFF|GT(a,b)|GT(<0>,c)]FLIPPEDMULTIPLICATIVE:GT(MULTIPLY(b,c),MULTIPLY(a,c))
+|[a:AFF|b:AFF|c:AFF|GT(a,b)|GT(c,ZERO)]MULTIPLICATIVE:GT(MULTIPLY(a,c),MULTIPLY(b,c))
+|[a:AFF|b:AFF|c:AFF|GT(a,b)|GT(ZERO,c)]FLIPPEDMULTIPLICATIVE:GT(MULTIPLY(b,c),MULTIPLY(a,c))
 
 
-//|[a:AFF|b:AFF|c:AFF]ADD_ASSOCIATIVE:EQ(AFF,ADD(ADD(a,b),c),ADD(a,ADD(b,c)))
-//|[a:AFF|b:AFF|c:AFF]MULTIPLY_ASSOCIATIVE:EQ(AFF,MULTIPLY(MULTIPLY(a,b),c),MULTIPLY(a,MULTIPLY(b,c)))
-//|[a:AFF|b:AFF]ADD_COMMUTATIVE:EQ(AFF,ADD(a,b),ADD(b,a))
-//|[a:AFF|b:AFF]MULTIPLY_COMMUTATIVE:EQ(AFF,MULTIPLY(a,b),MULTIPLY(b,a))
+|[a:AFF|b:AFF|c:AFF]ADD_ASSOCIATIVE:EQ(AFF,ADD(ADD(a,b),c),ADD(a,ADD(b,c)))
+|[a:AFF|b:AFF|c:AFF]MULTIPLY_ASSOCIATIVE:EQ(AFF,MULTIPLY(MULTIPLY(a,b),c),MULTIPLY(a,MULTIPLY(b,c)))
+|[a:AFF|b:AFF]ADD_COMMUTATIVE:EQ(AFF,ADD(a,b),ADD(b,a))
+|[a:AFF|b:AFF]MULTIPLY_COMMUTATIVE:EQ(AFF,MULTIPLY(a,b),MULTIPLY(b,a))
 
-|[a:AFF]ADD_IDENTITY:EQ(AFF,ADD(a,<0>),a)
-|[a:AFF]MULTIPLY_IDENTITY:EQ(AFF,MULTIPLY(a,<1>),a)
-|[a:AFF]ADD_IDENTITY_ANNIHALATE:EQ(AFF,SUBTRACT(a,a),<0>)
-|[a:AFF|g:NOT(EQ(AFF,a,<0>))]MULTIPLY_IDENTITY_ANNIHALATE:EQ(AFF,DIVIDE(a,g,a),<1>)
+|[a:AFF]ADD_IDENTITY:EQ(AFF,ADD(a,ZERO),a)
+|[a:AFF]MULTIPLY_IDENTITY:EQ(AFF,MULTIPLY(a,ONE),a)
+|[a:AFF]ADD_IDENTITY_ANNIHALATE:EQ(AFF,SUBTRACT(a,a),ZERO)
+|[a:AFF|g:NOT(EQ(AFF,a,ZERO))]MULTIPLY_IDENTITY_ANNIHALATE:EQ(AFF,DIVIDE(a,g,a),ONE)
 
 |[a:AFF|b:AFF|c:AFF]DISTRIBUTIVE:EQ(AFF,MULTIPLY(a,ADD(b,c)),ADD(MULTIPLY(a,b),MULTIPLY(a,c)))
 
-|[a:AFF|b:AFF]SUBTRACT_REWRITE:EQ(AFF,SUBTRACT(a,b),ADD(a,MULTIPLY(<-1>,b)))
-|[a:AFF|b:AFF|g:NOT(EQ(AFF,a,<0>))]DIVIDE_REWRITE:EQ(AFF,DIVIDE(a,g,b),MULTIPLY(b,DIVIDE(a,g,<1>)))
+|[a:AFF|b:AFF]SUBTRACT_REWRITE:EQ(AFF,SUBTRACT(a,b),ADD(a,MULTIPLY(SUBTRACT(ZERO,ONE),b)))
+|[a:AFF|b:AFF|g:NOT(EQ(AFF,a,ZERO))]DIVIDE_REWRITE:EQ(AFF,DIVIDE(a,g,b),MULTIPLY(b,DIVIDE(a,g,ONE)))
 
 |[A:U|a:A]IDENTITY:EQ(A,a,a)
 |[A:U|B:U|A|EQ(U,A,B)]EQUIVALENCE:B
@@ -78,10 +80,10 @@
 |[T:U|K:U|[K]a:T|[NOT(K)]b:T|k:NOT(K)]DEC_NEGATIVE:EQ(T,DEC(T,K,a({0/3}),b({0/3})),b(k))
 
 
-|[A:U|[A]B:U|[a1:A|[a2:A]B(a2)]f:B(a1)|a3:A]TERMINATION:U
+#|[A:U|[A]B:U|[a1:A|[a2:A]B(a2)]f:B(a1)|a3:A]TERMINATION:U
 
 
-|[A:U|[A]B:U|[a1:A]f:B(a1)|a3:A]UNRECURSIVE:TERMINATION(A,B({0/2}),f({0/2}),a3)
+#|[A:U|[A]B:U|[a1:A]f:B(a1)|a3:A]UNRECURSIVE:TERMINATION(A,B({0/2}),f({0/2}),a3)
 
 
 
@@ -92,23 +94,14 @@
     
     
 
-|[A:U|[A]h:A|[A]B:U|[a1:A|B(h(a1))]f:B(a1)|a3:A|TERMINATION(A,B({0/3}),f({0/3},{1/3}(h({0/3}))),h(a3))]RECURSION:TERMINATION(A,B({0/2}),f({0/2},{1/2}(h({0/2}))),a3)
+#|[A:U|[A]h:A|[A]B:U|[a1:A|B(h(a1))]f:B(a1)|a3:A|TERMINATION(A,B({0/3}),f({0/3},{1/3}(h({0/3}))),h(a3))]RECURSION:TERMINATION(A,B({0/2}),f({0/2},{1/2}(h({0/2}))),a3)
 
 
 
 
-|[A:U|[A]B:U|[a1:A|[a2:A]B(a2)]f:B(a1)|a3:A|TERMINATION(A,B({0/3}),f({0/3},{1/3}({0/4})),a3)]INDUCTION:B(a3)
+#|[A:U|[A]B:U|[a1:A|[a2:A]B(a2)]f:B(a1)|a3:A|TERMINATION(A,B({0/3}),f({0/3},{1/3}({0/4})),a3)]INDUCTION:B(a3)
 
 
-
-
-
-
-#|[A:U|B:U|[A]P:U|[A]f:A|[AFF]h:A|EQ(A,h(<0>),t)|[x:AFF]EQ(A,f(h(a)),h(ADD(x,1)))|y:AFF|P(h(y))|[A]c:B]SERIES:TERMINATION(A,B,DEC(B,P({0/3}),c({0/3}),{1/3}(f({0/3}))),t)
-
-
-
-|[trash:NOT(EQ(AFF,<1>,<0>))|A:U|[A]B:U|[A]f:A|[a1:A|B(f(a1))]F:B(a1)|t:A|[AFF]h:A|EQ(A,h(<0>),t)|[x:AFF]EQ(A,f(h(x)),h(ADD(x,<1>)))|y:AFF|NOT(GT(<0>,y))|EQ(AFF,MODULO(<1>,trash,y),<0>)|j:B(h(y))|[vv:B(f(h(y)))]EQ(B(h(y)),F(h(y),vv),j)]SERIES:TERMINATION(A,B({0/2}),F({0/2},{1/2}(f({0/2}))),t)
 
 
 
@@ -117,13 +110,22 @@
 
 
 
-|HEAP:U
-|[HEAP|AFF]ALLOCATED:U
+#|[trash:NOT(EQ(AFF,<1>,<0>))|A:U|[A]B:U|[A]f:A|[a1:A|B(f(a1))]F:B(a1)|t:A|[AFF]h:A|EQ(A,h(<0>),t)|[x:AFF]EQ(A,f(h(x)),h(ADD(x,<1>)))|y:AFF|NOT(GT(<0>,y))|EQ(AFF,MODULO(<1>,trash,y),<0>)|j:B(h(y))|[vv:B(f(h(y)))]EQ(B(h(y)),F(h(y),vv),j)]SERIES:TERMINATION(A,B({0/2}),F({0/2},{1/2}(f({0/2}))),t)
 
-|[HEAP|AFF]RESERVE:HEAP
-|[h:HEAP|a:AFF|b:AFF|[c:AFF|GT(ADD(a,b),c)|NOT(GT(a,c))]ALLOCATED(h,c)]DELETE:HEAP
-|[h:HEAP|a:AFF|ALLOCATED(h,a)|U]SET:HEAP
-|[h:HEAP|a:AFF|ALLOCATED(h,a)]GET:U
+
+
+
+#|[A:U|B:U|[A]P:U|[A]f:A|[AFF]h:A|EQ(A,h(<0>),t)|[x:AFF]EQ(A,f(h(a)),h(ADD(x,1)))|y:AFF|P(h(y))|[A]c:B]SERIES:TERMINATION(A,B,DEC(B,P({0/3}),c({0/3}),{1/3}(f({0/3}))),t)
+
+
+
+#|HEAP:U
+#|[HEAP|AFF]ALLOCATED:U
+
+#|[HEAP|AFF]RESERVE:HEAP
+#|[h:HEAP|a:AFF|b:AFF|[c:AFF|GT(ADD(a,b),c)|NOT(GT(a,c))]ALLOCATED(h,c)]DELETE:HEAP
+#|[h:HEAP|a:AFF|ALLOCATED(h,a)|U]SET:HEAP
+#|[h:HEAP|a:AFF|ALLOCATED(h,a)]GET:U
 
 
 

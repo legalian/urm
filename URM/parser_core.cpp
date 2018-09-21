@@ -37,7 +37,7 @@ int ParseSpecifier::registerToken(std::string name) {
     return keysize++;
 }
 void ParseSpecifier::registerComment(std::string begin,std::string end) {
-    comments.push_back(std::pair<std::string,std::string>(begin,end));
+    comments.push_back({begin,end});
 }
 void ParseSpecifier::registerLiteral(std::string begin,std::string end) {
     std::vector<int> collector;
@@ -47,7 +47,7 @@ void ParseSpecifier::registerLiteral(std::string begin,std::string end) {
     tokenize(&collector,end);
     if (collector.size()==0) throw;
     int second=collector[0];
-    literals.push_back(std::pair<int,int>(first,second));
+    literals.push_back({first,second});
 }
 ParseResult* ParseSpecifier::parse(int n,const std::string& target) {
     tokens.clear();

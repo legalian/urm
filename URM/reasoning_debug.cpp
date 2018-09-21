@@ -50,14 +50,22 @@ void Strategy::loosecheck(const ParameterContext& params) const {
     type.loosecheck(nn);
     for (int g=0;g<ara;g++) args[g].loosecheck(nn);
 }
-void Binding::loosecheck() const {
-    for (int h=0;h<ara;h++) localtypes[h].loosecheck(tracks);
-    for (int s=0;s<binds.size();s++) {
-        ParameterContext tplusi = tracks.append(binds[s].itinerary,binds[s].ara);
-        binds[s].head.loosecheck(tplusi);
-        binds[s].body.loosecheck(tplusi);
-    }
-}
+//void Binding::loosecheck() const {
+//    for (int h=0;h<ara;h++) localtypes[h].loosecheck(tracks);
+//    for (int s=0;s<binds.size();s++) {
+//        ParameterContext tplusi = tracks.append(binds[s].itinerary,binds[s].ara);
+//        binds[s].head.loosecheck(tplusi);
+//        binds[s].body.loosecheck(tplusi);
+//    }
+//}
+//void Binding::constcheck() const {
+//    for (int h=0;h<ara;h++) localtypes[h].loosecheck(tracks);
+//    for (int s=0;s<binds.size();s++) {
+//        ParameterContext tplusi = tracks.append(binds[s].itinerary,binds[s].ara);
+//        binds[s].head.loosecheck(tplusi);
+//        binds[s].body.loosecheck(tplusi);
+//    }
+//}
 //void ParameterContext::typecheck() {
 //    for (int g=0;g<dat[loc()].second;g++) {
 //        dat[loc()].first[g].typecheck(*this);
