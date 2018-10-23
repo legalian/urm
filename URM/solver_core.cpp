@@ -13,6 +13,21 @@
 #include <streambuf>
 #include <fstream>
 
+
+void Statement::obsoletesolvepoints(std::map<int,bool>& points) {
+    if (local==1 and points.count(id)) points[id]=false;
+    for (int u=0;u<ara;u++) args[u].obsoletesolvepoints(points);
+}
+void Strategy::obsoletesolvepoints(std::map<int,bool>& points) {
+    type.obsoletesolvepoints(points);
+    for (int u=0;u<ara;u++) args[u].obsoletesolvepoints(points);
+}
+void Statement::getsolvepoints(std::map<int,bool>& points) {
+    if (local==1) points[id]=true;
+    for (int r=0;r<ara;r++) args[r].getsolvepoints(points);
+}
+
+
 void applyshort(Binding& bin,int id,Statement& templ) {
     for (int a=0;a<bin.ara;a++) bin.localtypes[a].inplace_sub(id,1,templ);
     for (int b=0;b<bin.binds.size();b++) {
@@ -51,6 +66,23 @@ void multiaffray(Strategy* bank,int ara,const Binding& l,int tar,std::vector<Bin
         if (affrayBinding(dup,tar,bank[g])) dup.divide(out,-1);
     }
 }
+void autoaffray(Strategy* bank,int ara,const Binding& l,int head,std::vector<Binding>& out) {
+    std::map<int,bool> solvepoints;
+    for (int h=0;h<head;h++) {
+        throw;//this is flawed
+        ParameterContext insub = l.tracks.append(l.localtypes[h].args,l.localtypes[h].ara);
+        l.localtypes[h].snapshot(l.tracks.loc()+1).substitute_single(l,insub).getsolvepoints(solvepoints);
+        l.localtypes[h].obsoletesolvepoints(solvepoints);
+    }
+    for (auto g = solvepoints.begin();g!=solvepoints.end();g++) l.localtypes[g->first].obsoletesolvepoints(solvepoints);
+    for (auto g = solvepoints.begin();g!=solvepoints.end();g++) if (g->second) {
+        multiaffray(bank,ara,l,g->first,out);
+    }
+}
+//begin
+
+
+
 //void multiaffrayset(Strategy* bank,int ara,Binding& l,std::vector<int>& tar,std::vector<Binding>& out) {
 //    unsigned long long cmax=1;
 //    for (int c=0;c<tar.size();c++) cmax*=ara;
@@ -65,68 +97,72 @@ void multiaffray(Strategy* bank,int ara,const Binding& l,int tar,std::vector<Bin
 //        if (valid) dup.divide(out,-1);
 //    }
 //}
+//end
+
+
+
 void multiaffray(MetaBank* mb,const Binding& l,int tar,std::vector<Binding>& out) {
     multiaffray(mb->strategies,mb->ara,l,tar,out);
     multiaffray(l.localtypes[tar].args,l.localtypes[tar].ara,l,tar,out);
 }
 
-void affrayBinding(MetaBank* mb,const Stitching& l,int tar,const Strategy& bind,std::vector<Stitching>& out) {
-    Binding bl = Binding(mb,deepcopy(l.localtypes,l.ara),l.ara);
-    std::vector<Binding> buf;
-    if (affrayBinding(bl,tar,bind)) bl.divide(buf,-1);
-    for (int v=0;v<buf.size();v++) boilBinding(mb,out,buf[v],l.caut,l.hook);
-}
-void affrayBinding(MetaBank* mb,const Stitching& l,int tar,const Stitching& s,std::vector<Stitching>& out) {
-    Binding bl = Binding(mb,deepcopy(l.localtypes,l.ara),l.ara);
-    Binding sl = Binding(mb,deepcopy(s.localtypes,s.ara),s.ara);
-    Binding sgua = Binding(bl,sl,0,l.localtypes[tar].ara,l.localtypes[tar].args);
-    std::vector<int> ncaut;
-    for (int i=0;i<l.caut.size();i++) ncaut.push_back(l.caut[i]);
-    for (int i=0;i<s.caut.size();i++) ncaut.push_back(s.caut[i]+l.ara);
-    
-    
-    std::vector<Binding> buf;
-//    ParameterContext cont = sgua.tracks.append(l.localtypes[tar]);
-//    Statement female = l.localtypes[tar].snapshot(2);
-    Statement male   = s.hook.deepcopy();
-    male.idpush(1,l.ara,0);
-    male.expandLocs(1,0,3,l.localtypes[tar].ara,l.localtypes[tar].args);
-    if (sgua.bindonuniversal(tar,male)) {
-        unsigned long long cmax = 1;
-        for (int c=0;c<s.caut.size();c++) cmax*=(l.localtypes[tar].ara+1);
-        for (unsigned long long c=0;c<cmax;c++) {
-            Binding bn = sgua;
-            unsigned long long ca=c;
-            bool wrks = true;
-            for (int a=0;a<s.caut.size();a++) {
-                if (ca%(l.localtypes[tar].ara+1)) {
-                    if (affrayBinding(bn,s.caut[a]+l.ara,bn.localtypes[s.caut[a]+l.ara].args[bn.localtypes[s.caut[a]+l.ara].ara-ca%(l.localtypes[tar].ara+1)])){
-                        wrks=false;
-                        break;
-                    }
-                }
-                ca/=(l.localtypes[tar].ara+1);
-            }
-            if (wrks) bn.divide(buf,-1);
-        }
-    }
-    male.cleanup();
-    std::cout<<buf.size()<<"\n";
-    for (int v=0;v<buf.size();v++) {
-        boilBinding(mb,out,buf[v],ncaut,l.hook);
-    }
-}
+//void affrayBinding(MetaBank* mb,const Stitching& l,int tar,const Strategy& bind,std::vector<Stitching>& out) {
+//    Binding bl = Binding(mb,deepcopy(l.localtypes,l.ara),l.ara);
+//    std::vector<Binding> buf;
+//    if (affrayBinding(bl,tar,bind)) bl.divide(buf,-1);
+//    for (int v=0;v<buf.size();v++) boilBinding(mb,out,buf[v],l.caut,l.hook);
+//}
+//void affrayBinding(MetaBank* mb,const Stitching& l,int tar,const Stitching& s,std::vector<Stitching>& out) {
+//    Binding bl = Binding(mb,deepcopy(l.localtypes,l.ara),l.ara);
+//    Binding sl = Binding(mb,deepcopy(s.localtypes,s.ara),s.ara);
+//    Binding sgua = Binding(bl,sl,0,l.localtypes[tar].ara,l.localtypes[tar].args);
+//    std::vector<int> ncaut;
+//    for (int i=0;i<l.caut.size();i++) ncaut.push_back(l.caut[i]);
+//    for (int i=0;i<s.caut.size();i++) ncaut.push_back(s.caut[i]+l.ara);
+//
+//
+//    std::vector<Binding> buf;
+////    ParameterContext cont = sgua.tracks.append(l.localtypes[tar]);
+////    Statement female = l.localtypes[tar].snapshot(2);
+//    Statement male   = s.hook.deepcopy();
+//    male.idpush(1,l.ara,0);
+//    male.expandLocs(1,0,3,l.localtypes[tar].ara,l.localtypes[tar].args);
+//    if (sgua.bindonuniversal(tar,male)) {
+//        unsigned long long cmax = 1;
+//        for (int c=0;c<s.caut.size();c++) cmax*=(l.localtypes[tar].ara+1);
+//        for (unsigned long long c=0;c<cmax;c++) {
+//            Binding bn = sgua;
+//            unsigned long long ca=c;
+//            bool wrks = true;
+//            for (int a=0;a<s.caut.size();a++) {
+//                if (ca%(l.localtypes[tar].ara+1)) {
+//                    if (affrayBinding(bn,s.caut[a]+l.ara,bn.localtypes[s.caut[a]+l.ara].args[bn.localtypes[s.caut[a]+l.ara].ara-ca%(l.localtypes[tar].ara+1)])){
+//                        wrks=false;
+//                        break;
+//                    }
+//                }
+//                ca/=(l.localtypes[tar].ara+1);
+//            }
+//            if (wrks) bn.divide(buf,-1);
+//        }
+//    }
+//    male.cleanup();
+//    std::cout<<buf.size()<<"\n";
+//    for (int v=0;v<buf.size();v++) {
+//        boilBinding(mb,out,buf[v],ncaut,l.hook);
+//    }
+//}
 
 
-void multiaffray(MetaBank* mb,int in,std::vector<Stitching>& bank,std::vector<Stitching>& out) {
-    while (bank[in].open.size()>0) {
-        std::cout<<in<<"__"<<bank[in].open.size()<<"\n";
-        for (int g=0,guard=bank.size();g<guard;g++) affrayBinding(mb,bank[in],bank[in].open[0],bank[g],out);
-        for (int g=0;g<bank[in].localtypes[bank[in].open[0]].ara;g++) affrayBinding(mb,bank[in],bank[in].open[0],bank[in].localtypes[bank[in].open[0]].args[g],out);
-        bank[in].caut.push_back(bank[in].open[0]);
-        bank[in].open.erase(bank[in].open.begin());
-    }
-}
+//void multiaffray(MetaBank* mb,int in,std::vector<Stitching>& bank,std::vector<Stitching>& out) {
+//    while (bank[in].open.size()>0) {
+//        std::cout<<in<<"__"<<bank[in].open.size()<<"\n";
+//        for (int g=0,guard=bank.size();g<guard;g++) affrayBinding(mb,bank[in],bank[in].open[0],bank[g],out);
+//        for (int g=0;g<bank[in].localtypes[bank[in].open[0]].ara;g++) affrayBinding(mb,bank[in],bank[in].open[0],bank[in].localtypes[bank[in].open[0]].args[g],out);
+//        bank[in].caut.push_back(bank[in].open[0]);
+//        bank[in].open.erase(bank[in].open.begin());
+//    }
+//}
 
 
 
@@ -196,100 +232,102 @@ void affrayOBS(Binding& bin,Strategy* bank,int ara,int avx,int tar,std::vector<B
 //    }
 //}
 
-bool Stitching::primatch(MetaBank* mb,const Strategy& target) {
-    Binding bl = Binding(mb,deepcopy(localtypes,ara),ara);
-    int d=bl.ara;
-    bl.pad(target.ara);
-    for (int j=0;j<target.ara;j++) {
-        bl.localtypes[d+j]=target.args[j];
-        bl.localtypes[d+j].idpush(1,d,0);
-    }
-    Statement idpushed = target.type.deepcopy();
-    idpushed.idpush(1,d,0);
-    if (bl.decompose(quicktype,idpushed,bl.tracks)) {
-    
-        for (int v=0;v<caut.size();v++) {
-            bool allvalid=false;
-            Statement feedthu = localtypes[caut[v]].type.substitute_single(bl,bl.tracks);
-            for (int g=0;g<target.ara;g++) {
-                Statement feedarn = bl.localtypes[d+g].type.substitute_single(bl,bl.tracks);
-                
-                if (lazy_judgemental_eq(feedthu,feedarn,1)) allvalid=true;
-            }
-            if (!allvalid) return false;
-        }
-    } else return false;
-    
-    return true;
-    throw;//memory neutrality
-}
+//bool Stitching::primatch(MetaBank* mb,const Strategy& target) {
+//    Binding bl = Binding(mb,deepcopy(localtypes,ara),ara);
+//    int d=bl.ara;
+//    bl.pad(target.ara);
+//    for (int j=0;j<target.ara;j++) {
+//        bl.localtypes[d+j]=target.args[j];
+//        bl.localtypes[d+j].idpush(1,d,0);
+//    }
+//    Statement idpushed = target.type.deepcopy();
+//    idpushed.idpush(1,d,0);
+//    if (bl.decompose(quicktype,idpushed,bl.tracks)) {
+//
+//        for (int v=0;v<caut.size();v++) {
+//            bool allvalid=false;
+//            Statement feedthu = localtypes[caut[v]].type.substitute_single(bl,bl.tracks);
+//            for (int g=0;g<target.ara;g++) {
+//                Statement feedarn = bl.localtypes[d+g].type.substitute_single(bl,bl.tracks);
+//
+//                if (lazy_judgemental_eq(feedthu,feedarn,1)) allvalid=true;
+//            }
+//            if (!allvalid) return false;
+//        }
+//    } else return false;
+//
+//    return true;
+//    throw;//memory neutrality
+//}
 
-void privateaffraybinding(MetaBank* mb,const Stitching& l,int tar,const Stitching& s,std::vector<Stitching>& out) {
-    Binding bl = Binding(mb,deepcopy(l.localtypes,l.ara),l.ara);
-    Binding sl = Binding(mb,deepcopy(s.localtypes,s.ara),s.ara);
-    Binding sgua = Binding(bl,sl,0,l.localtypes[tar].ara,l.localtypes[tar].args);
-    std::vector<int> ncaut;
-    
-    std::vector<Binding> buf;
-//    ParameterContext cont = sgua.tracks.append(l.localtypes[tar]);
-//    Statement female = l.localtypes[tar].snapshot(2);
-    Statement male   = s.hook.deepcopy();
-    male.idpush(1,l.ara,0);
-    male.expandLocs(1,0,3,l.localtypes[tar].ara,l.localtypes[tar].args);
-    if (sgua.bindonuniversal(tar,male)) {
-        unsigned long long cmax = 1;
-        for (int c=0;c<s.caut.size();c++) cmax*=l.localtypes[tar].ara;
-        for (unsigned long long c=0;c<cmax;c++) {
-            Binding bn = sgua;
-            unsigned long long ca=c;
-            bool wrks = true;
-            for (int a=0;a<s.caut.size();a++) {
-                if (affrayBinding(bn,s.caut[a]+l.ara,bn.localtypes[s.caut[a]+l.ara].args[bn.localtypes[s.caut[a]+l.ara].ara-ca%l.localtypes[tar].ara])){
-                    wrks=false;
-                    break;
-                }
-                ca/=l.localtypes[tar].ara;
-            }
-            if (wrks) bn.divide(buf,-1);
-        }
-    }
-    male.cleanup();
-    for (int v=0;v<buf.size();v++) boilBinding(mb,out,buf[v],ncaut,l.hook);
-}
+//void privateaffraybinding(MetaBank* mb,const Stitching& l,int tar,const Stitching& s,std::vector<Stitching>& out) {
+//    Binding bl = Binding(mb,deepcopy(l.localtypes,l.ara),l.ara);
+//    Binding sl = Binding(mb,deepcopy(s.localtypes,s.ara),s.ara);
+//    Binding sgua = Binding(bl,sl,0,l.localtypes[tar].ara,l.localtypes[tar].args);
+//    std::vector<int> ncaut;
+//
+//    std::vector<Binding> buf;
+////    ParameterContext cont = sgua.tracks.append(l.localtypes[tar]);
+////    Statement female = l.localtypes[tar].snapshot(2);
+//    Statement male   = s.hook.deepcopy();
+//    male.idpush(1,l.ara,0);
+//    male.expandLocs(1,0,3,l.localtypes[tar].ara,l.localtypes[tar].args);
+//    if (sgua.bindonuniversal(tar,male)) {
+//        unsigned long long cmax = 1;
+//        for (int c=0;c<s.caut.size();c++) cmax*=l.localtypes[tar].ara;
+//        for (unsigned long long c=0;c<cmax;c++) {
+//            Binding bn = sgua;
+//            unsigned long long ca=c;
+//            bool wrks = true;
+//            for (int a=0;a<s.caut.size();a++) {
+//                if (affrayBinding(bn,s.caut[a]+l.ara,bn.localtypes[s.caut[a]+l.ara].args[bn.localtypes[s.caut[a]+l.ara].ara-ca%l.localtypes[tar].ara])){
+//                    wrks=false;
+//                    break;
+//                }
+//                ca/=l.localtypes[tar].ara;
+//            }
+//            if (wrks) bn.divide(buf,-1);
+//        }
+//    }
+//    male.cleanup();
+//    for (int v=0;v<buf.size();v++) boilBinding(mb,out,buf[v],ncaut,l.hook);
+//}
 
-bool obsoletes(MetaBank* mb,const Stitching& a,const Stitching& b) {
-    if (!lazy_judgemental_eq(a.quicktype,b.quicktype,1)) return false;
-    std::vector<Binding> obsconfigurations;
-    Strategy* nmb = new Strategy[mb->ara+1];
-    for (int j=0;j<mb->ara;j++) nmb[j]=mb->strategies[j];
-    nmb[mb->ara] = Strategy(a.quicktype.deepcopy(),mb->ara,0,a.ara,deepcopy(a.localtypes,a.ara));
-    ParameterContext comb;
-    comb.dat.push_back({nmb,mb->ara+1});
-    Strategy throwaway = Strategy(b.quicktype,0,0,b.ara,b.localtypes);
-    Strategy* hoo = new Strategy;
-    hoo[0] = throwaway.bring_depth(1,1);
-    Binding l = Binding(comb,hoo,1);
-    
-    affrayOBS(l,nmb+mb->ara,1,0,0,obsconfigurations);
-    return obsconfigurations.size();
-}
+//bool obsoletes(MetaBank* mb,const Stitching& a,const Stitching& b) {
+//    if (!lazy_judgemental_eq(a.quicktype,b.quicktype,1)) return false;
+//    std::vector<Binding> obsconfigurations;
+//    Strategy* nmb = new Strategy[mb->ara+1];
+//    for (int j=0;j<mb->ara;j++) nmb[j]=mb->strategies[j];
+//    nmb[mb->ara] = Strategy(a.quicktype.deepcopy(),mb->ara,0,a.ara,deepcopy(a.localtypes,a.ara));
+//    ParameterContext comb;
+//    comb.dat.push_back({nmb,mb->ara+1});
+//    Strategy throwaway = Strategy(b.quicktype,0,0,b.ara,b.localtypes);
+//    Strategy* hoo = new Strategy;
+//    hoo[0] = throwaway.bring_depth(1,1);
+//    Binding l = Binding(comb,hoo,1);
+//
+//    affrayOBS(l,nmb+mb->ara,1,0,0,obsconfigurations);
+//    return obsconfigurations.size();
+//}
 
 
-void MetaBank::offlineLearningStep() {
-    int guard = stitchbank.size();
-    for (int i=0;i<guard;i++) multiaffray(this,i,stitchbank,stitchbank);
-    cullobsolete(stitchbank);
-}
-Statement MetaBank::solveHare(const Strategy& target) {
+//void MetaBank::offlineLearningStep() {
+//    int guard = stitchbank.size();
+//    for (int i=0;i<guard;i++) multiaffray(this,i,stitchbank,stitchbank);
+//    cullobsolete(stitchbank);
+//}
+Statement MetaBank::solveHare(const std::vector<Strategy>& targets) {
     std::vector<Binding> buf1;
     std::vector<Binding> buf2;
-    buf1.push_back(Binding(this,target.args,target.ara));
+    Strategy* nue = new Strategy[targets.size()];
+    for (int i=0;i<targets.size();i++) nue[i]=targets[i];
+    buf1.push_back(Binding(this,nue,targets.size()));
     #define B1 (flip?buf1:buf2)
     #define B2 (flip?buf2:buf1)
     bool flip=true;
     for (int safetries=0;safetries<5;safetries++) {
         for (int i=0;i<B1.size();i++) {
-            multiaffray(this,B1[i], <#int tar#>, B2)
+            autoaffray(strategies,ara,B1[i],targets.size(),B2);
         }
         B1.clear();
         flip = !flip;
@@ -298,49 +336,49 @@ Statement MetaBank::solveHare(const Strategy& target) {
     #undef B2
     throw;//failed to achieve goal in given number of iterations.
 }
-Statement MetaBank::solveTortoise(const Strategy& target) {
-    std::vector<Stitching> privatebank;
-    privatebank.push_back(Stitching(this,target));
-    int retcheck=0;
-    
-    for (int safetries=0;safetries<5;safetries++) {
-        for (int i=0,guard=stitchbank.size();i<guard;i++) {
-            for (int n=0;n<privatebank.size() and stitchbank[i].open.size();n++) {
-                for (int m=0;m<privatebank[n].open.size();m++) {
-                    if (stitchbank[i].primatch(this,privatebank[n].localtypes[privatebank[n].open[m]])) {multiaffray(this,i,stitchbank,stitchbank);break;}
-                }
-            }
-            if (stitchbank[i].open.size()==0) {
-                for (int n=0,g2=privatebank.size();n<g2;n++) {
-                    for (int m=0;m<privatebank[n].open.size();m++) {
-                        if (stitchbank[i].primatch(this,privatebank[n].localtypes[privatebank[n].open[m]])) privateaffraybinding(this,privatebank[n],privatebank[n].open[m],stitchbank[i],privatebank);
-                    }
-                }
-            }
-        }
-        
-        cullobsolete(stitchbank);
-        cullobsolete(privatebank);
-        for (;retcheck<privatebank.size();retcheck++) {
-        
-            if (privatebank[retcheck].open.size()==0) {
-                return privatebank[retcheck].hook;
-            }
-        }
-    }
-    throw;//failed to achieve goal in given number of iterations.
-}
-void MetaBank::cullobsolete(std::vector<Stitching>& bank) {
-    for (int a=0;a<bank.size()-1;a++) {
-        for (int b=0;b<bank.size();) {
-            if (b==a) b++;
-            if (obsoletes(this,bank[a],bank[b])) {
-                bank.erase(bank.begin()+b);
-                if (b<a) a--;
-            } else b++;
-        }
-    }
-}
+//Statement MetaBank::solveTortoise(const Strategy& target) {
+//    std::vector<Stitching> privatebank;
+//    privatebank.push_back(Stitching(this,target));
+//    int retcheck=0;
+//
+//    for (int safetries=0;safetries<5;safetries++) {
+//        for (int i=0,guard=stitchbank.size();i<guard;i++) {
+//            for (int n=0;n<privatebank.size() and stitchbank[i].open.size();n++) {
+//                for (int m=0;m<privatebank[n].open.size();m++) {
+//                    if (stitchbank[i].primatch(this,privatebank[n].localtypes[privatebank[n].open[m]])) {multiaffray(this,i,stitchbank,stitchbank);break;}
+//                }
+//            }
+//            if (stitchbank[i].open.size()==0) {
+//                for (int n=0,g2=privatebank.size();n<g2;n++) {
+//                    for (int m=0;m<privatebank[n].open.size();m++) {
+//                        if (stitchbank[i].primatch(this,privatebank[n].localtypes[privatebank[n].open[m]])) privateaffraybinding(this,privatebank[n],privatebank[n].open[m],stitchbank[i],privatebank);
+//                    }
+//                }
+//            }
+//        }
+//
+//        cullobsolete(stitchbank);
+//        cullobsolete(privatebank);
+//        for (;retcheck<privatebank.size();retcheck++) {
+//
+//            if (privatebank[retcheck].open.size()==0) {
+//                return privatebank[retcheck].hook;
+//            }
+//        }
+//    }
+//    throw;//failed to achieve goal in given number of iterations.
+//}
+//void MetaBank::cullobsolete(std::vector<Stitching>& bank) {
+//    for (int a=0;a<bank.size()-1;a++) {
+//        for (int b=0;b<bank.size();) {
+//            if (b==a) b++;
+//            if (obsoletes(this,bank[a],bank[b])) {
+//                bank.erase(bank.begin()+b);
+//                if (b<a) a--;
+//            } else b++;
+//        }
+//    }
+//}
 
 void Binding::gapinplace(int com,int amt) {
     for (int d=0;d<ara;d++) localtypes[d].idpush(tracks.loc(),amt,com);
@@ -399,222 +437,222 @@ void decpull(Strategy& ob,std::vector<int>& refd) {
     for (int a=0;a<ob.ara;a++) decpull(ob.args[a],refd);
 }
 
-Stitching::Stitching(MetaBank* mb,const Strategy& muse) : localtypes(deepcopy(muse.args,muse.ara)),ara(muse.ara),hook(muse.snapshot(1)),quicktype(muse.type.deepcopy()) {calcopen(mb);}
-
-Stitching::Stitching(MetaBank* mb,Strategy* gs,int a,const std::vector<int>& ca,const Statement& h) : localtypes(gs),ara(a),caut(ca),hook(h) {
-    ParameterContext cl;
-    cl.dat.push_back({mb->strategies,mb->ara});
-    cl.dat.push_back({gs,a});
-    if (hook.id==-1) quicktype=Statement(-1,0);
-    else {
-        Strategy ga = cl.generateType(hook);
-        quicktype = ga.type.deepcopy();
-        ga.cleanup();
-    }
-    calcopen(mb);
-}
-
-void Stitching::calcopen(MetaBank* mb) {
-    
+//Stitching::Stitching(MetaBank* mb,const Strategy& muse) : localtypes(deepcopy(muse.args,muse.ara)),ara(muse.ara),hook(muse.snapshot(1)),quicktype(muse.type.deepcopy()) {calcopen(mb);}
+//
+//Stitching::Stitching(MetaBank* mb,Strategy* gs,int a,const std::vector<int>& ca,const Statement& h) : localtypes(gs),ara(a),caut(ca),hook(h) {
+//    ParameterContext cl;
+//    cl.dat.push_back({mb->strategies,mb->ara});
+//    cl.dat.push_back({gs,a});
+//    if (hook.id==-1) quicktype=Statement(-1,0);
+//    else {
+//        Strategy ga = cl.generateType(hook);
+//        quicktype = ga.type.deepcopy();
+//        ga.cleanup();
+//    }
+//    calcopen(mb);
+//}
+//
+//void Stitching::calcopen(MetaBank* mb) {
+//
+////    ParameterContext checker;
+////    checker.dat.push_back(std::pair<Strategy*,int>(mb->strategies,mb->ara));
+////    checker.dat.push_back(std::pair<Strategy*,int>(localtypes,ara));
+////    for (int l=0;l<ara;l++) localtypes[l].loosecheck(checker);
+//
+//
+//
+//    for (int a=0;a<ara;a++) {
+//        bool found=false;
+//        for (int g=0;g<caut.size();g++) if (caut[g]==a) found=true;
+//        if (!found) open.push_back(a);
+//    }
+//    std::vector<int> instlinks;
+//    decpull(quicktype,instlinks);
+//    for (int a=0;a<open.size();a++) decpull(localtypes[open[a]],instlinks);
+//    for (int y=0;y<instlinks.size();y++) {
+//        for (int a=0;a<open.size();) {
+//            if (open[a]==instlinks[y]) open.erase(open.begin()+a);
+//            else a++;
+//        }
+//    }
+//    std::vector<int>* links = new std::vector<int>[ara];
+//    bool* ref = new bool[ara];
+//    for (int a=0;a<ara;a++) {decpull(localtypes[a],links[a]);ref[a]=false;}
+//    for (int z=0;z<ara;z++) for (int y=0;y<links[z].size();y++) ref[links[z][y]]=true;
+//    bool hit=true;
+//    while (hit) {
+//        for (int z=0;z<ara;z++) {
+//            for (int y=0;y<links[z].size();) {
+//                bool found=false;
+//                for (int x=0;x<open.size();x++) if (links[z][y]==open[x]) {found=true;break;}
+//                if (!found) links[z].erase(links[z].begin()+y);
+//                else y++;
+//            }
+//        }
+//        hit=false;
+//        for (int a=0;a<open.size();a++) if (ref[open[a]] and links[open[a]].size()==0) {open.erase(open.begin()+a);hit=true;}
+//    }
+//    delete[] links;
+//    delete[] ref;
+////    std::cout<<"-=-=-=-=-=-=-==-=\n[";
+////    for (int v=0;v<ara;v++)std::cout<<localtypes[v].tostring()<<"|";std::cout<<"]"<<quicktype.tostring()<<"\n";
+////    for (int h=0;h<open.size();h++) std::cout<<open[h]<<",";std::cout<<"\n";
+//
+//
 //    ParameterContext checker;
-//    checker.dat.push_back(std::pair<Strategy*,int>(mb->strategies,mb->ara));
-//    checker.dat.push_back(std::pair<Strategy*,int>(localtypes,ara));
+//    checker.dat.push_back({mb->strategies,mb->ara});
+//    checker.dat.push_back({localtypes,ara});
 //    for (int l=0;l<ara;l++) localtypes[l].loosecheck(checker);
-    
-    
-    
-    for (int a=0;a<ara;a++) {
-        bool found=false;
-        for (int g=0;g<caut.size();g++) if (caut[g]==a) found=true;
-        if (!found) open.push_back(a);
-    }
-    std::vector<int> instlinks;
-    decpull(quicktype,instlinks);
-    for (int a=0;a<open.size();a++) decpull(localtypes[open[a]],instlinks);
-    for (int y=0;y<instlinks.size();y++) {
-        for (int a=0;a<open.size();) {
-            if (open[a]==instlinks[y]) open.erase(open.begin()+a);
-            else a++;
-        }
-    }
-    std::vector<int>* links = new std::vector<int>[ara];
-    bool* ref = new bool[ara];
-    for (int a=0;a<ara;a++) {decpull(localtypes[a],links[a]);ref[a]=false;}
-    for (int z=0;z<ara;z++) for (int y=0;y<links[z].size();y++) ref[links[z][y]]=true;
-    bool hit=true;
-    while (hit) {
-        for (int z=0;z<ara;z++) {
-            for (int y=0;y<links[z].size();) {
-                bool found=false;
-                for (int x=0;x<open.size();x++) if (links[z][y]==open[x]) {found=true;break;}
-                if (!found) links[z].erase(links[z].begin()+y);
-                else y++;
-            }
-        }
-        hit=false;
-        for (int a=0;a<open.size();a++) if (ref[open[a]] and links[open[a]].size()==0) {open.erase(open.begin()+a);hit=true;}
-    }
-    delete[] links;
-    delete[] ref;
-//    std::cout<<"-=-=-=-=-=-=-==-=\n[";
-//    for (int v=0;v<ara;v++)std::cout<<localtypes[v].tostring()<<"|";std::cout<<"]"<<quicktype.tostring()<<"\n";
-//    for (int h=0;h<open.size();h++) std::cout<<open[h]<<",";std::cout<<"\n";
-    
-    
-    ParameterContext checker;
-    checker.dat.push_back({mb->strategies,mb->ara});
-    checker.dat.push_back({localtypes,ara});
-    for (int l=0;l<ara;l++) localtypes[l].loosecheck(checker);
-    if (hook.id>=0) hook.loosecheck(checker);
-    for (int j=0;j<caut.size();j++)if (caut[j]>=ara)throw;
-}
+//    if (hook.id>=0) hook.loosecheck(checker);
+//    for (int j=0;j<caut.size();j++)if (caut[j]>=ara)throw;
+//}
 
 void generatePartialA(Statement**,int,int,Strategy*,Statement*,std::vector<Statement>&,std::vector<Statement*>*,int);
 
 
-void boilBinding(MetaBank* mb,std::vector<Stitching>& out,Binding& bin,const std::vector<int>& caut,const Statement& khook) {
-    Statement hook = khook.deepcopy();
-    while (bin.binds.size()) {
-        if (bin.binds[0].body.local==1) {
-            std::vector<Binding> buffer;
-            std::vector<StitchMPlexr> car;
-            car.push_back(StitchMPlexr(bin));
-            car[0].center.binds[0].cleanup();
-            car[0].center.binds.erase(car[0].center.binds.begin());
-            for (int a=0;a<bin.binds[0].head.ara;a++) {
-                Statement circref = bin.binds[0].body.deepcopy();
-                std::vector<Statement> gather;
-                Statement* hack = bin.binds[0].head.args+a;
-                generatePartialA(&hack,1,circref.ara,bin.localtypes[bin.binds[0].body.id].args,circref.args,gather,0,1);
-                circref.cleanup();
-                for (int i=0;i<gather.size();i++) {
-                    for (int f=0,limit=car.size();f<limit;f++) {
-                        car.push_back(car[f]);
-                        Statement bod = car[car.size()-1].center.integrate(gather[i],bin.localtypes[bin.binds[0].head.id].args[a].type,bin.localtypes[bin.binds[0].body.id].args,circref.ara);
-                        car[car.size()-1].headargs.push_back({a,bod});
-                        
-                        ParameterContext conan = car[car.size()-1].center.tracks.append(bin.localtypes[bin.binds[0].body.id]);//conan is missing a step.
-                        Statement incurer = bin.localtypes[bin.binds[0].head.id].args[a].snapshot(2);
-                        Strategy calctype = conan.generateType(incurer);
-                        if (!car[car.size()-1].center.typebind(bod,calctype.type,conan)) {car.erase(car.begin()+car.size()-1);}
-                        calctype.cleanup();
-                        incurer.cleanup();
-                    }
-                }
-                circref.cleanup();
-            }
-            for (int b=0;b<bin.binds[0].body.ara;b++) {
-                Statement circref = bin.binds[0].head.deepcopy();
-                std::vector<Statement> gather;
-                Statement* hack = bin.binds[0].body.args+b;
-                generatePartialA(&hack,1,circref.ara,bin.localtypes[bin.binds[0].head.id].args,circref.args,gather,0,1);
-                for (int i=0;i<gather.size();i++) if (gather[i].local!=2) {
-                    for (int f=0,limit=car.size();f<limit;f++) {
-                        car.push_back(car[f]);
-                        Statement bod = car[car.size()-1].center.integrate(gather[i],bin.localtypes[bin.binds[0].body.id].args[b].type,bin.localtypes[bin.binds[0].head.id].args,circref.ara);
-                        car[car.size()-1].bodyargs.push_back({b,bod});
-                        
-                        ParameterContext conan = car[car.size()-1].center.tracks.append(bin.localtypes[bin.binds[0].head.id]);
-                        Statement incurer = bin.localtypes[bin.binds[0].body.id].args[b].snapshot(2);
-                        Strategy calctype = conan.generateType(incurer);
-                        if (!car[car.size()-1].center.typebind(bod,calctype.type,conan)) {car.erase(car.begin()+car.size()-1);}
-                        calctype.cleanup();
-                        incurer.cleanup();
-                    }
-                }
-                circref.cleanup();
-            }
-//            Strategy hdup = bin.localtypes[bin.binds[0].head.id].bring_depth(2,1);
-//            Strategy bdup = bin.localtypes[bin.binds[0].body.id].bring_depth(2,1);
-            for (int g=0;g<car.size();g++) {
-                Strategy res = Strategy(Statement(0,0),bin.ara,1,car[g].headargs.size()+car[g].bodyargs.size());
-                for (int a=0;a<car[g].headargs.size();a++) {
-                    res.args[a] = bin.localtypes[bin.binds[0].head.id].args[car[g].headargs[a].first].deepcopy();
-//                    expandRange(1,res.args[a].ara,res.args[a].args,bdup.ara,bdup.args);
-                }
-                for (int b=0;b<car[g].bodyargs.size();b++) {
-                    res.args[car[g].headargs.size()+b] = bin.localtypes[bin.binds[0].body.id].args[car[g].bodyargs[b].first].deepcopy();
-                    res.args[car[g].headargs.size()+b].idpush(2,car[g].headargs.size(),0);
-//                    expandRange(1,res.args[car[g].headargs.size()+b].ara,res.args[car[g].headargs.size()+b].args,hdup.ara,hdup.args);
-                }
-                car[g].center.pad(2);
-                car[g].center.localtypes[res.id] = res;
-                car[g].center.localtypes[res.id+1] = res.deepcopy();
-                car[g].center.localtypes[res.id+1].id++;
-                car[g].center.localtypes[res.id+1].type = res.snapshot(2);
-                Statement vhead = Statement(res.id+1,1,car[g].headargs.size()+car[g].bodyargs.size());
-                Statement vbody = Statement(res.id+1,1,car[g].headargs.size()+car[g].bodyargs.size());
-                for (int a=0;a<car[g].headargs.size();a++) {
-                    vhead.args[a] = bin.localtypes[bin.binds[0].head.id].args[car[g].headargs[a].first].snapshot(3);
-                    vbody.args[a] = car[g].headargs[a].second;
-                }
-                for (int b=0;b<car[g].bodyargs.size();b++) {
-                    vhead.args[car[g].headargs.size()+b] = car[g].bodyargs[b].second;
-                    vbody.args[car[g].headargs.size()+b] = bin.localtypes[bin.binds[0].body.id].args[car[g].bodyargs[b].first].snapshot(3);
-                }
-                applyshort(car[g].center,bin.binds[0].head.id,vhead);
-                applyshort(car[g].center,bin.binds[0].body.id,vbody);
-                hook.inplace_sub(bin.binds[0].head.id,1,vhead,2);
-                hook.inplace_sub(bin.binds[0].body.id,1,vbody,2);
-                vhead.id--;
-                vbody.id--;
-                ParameterContext tplush = car[g].center.tracks.append(car[g].center.localtypes[bin.binds[0].head.id]);
-                ParameterContext tplusb = car[g].center.tracks.append(car[g].center.localtypes[bin.binds[0].body.id]);
-                Statement htarget = car[g].center.localtypes[bin.binds[0].head.id].snapshot(2);
-                Statement btarget = car[g].center.localtypes[bin.binds[0].body.id].snapshot(2);
-                Strategy htype = tplush.generateType(htarget);
-                Strategy btype = tplusb.generateType(btarget);
-                std::vector<Binding> dis;
-                if (car[g].center.decompose(htype.type,vhead,tplush) and car[g].center.decompose(btype.type,vbody,tplusb)) car[g].center.divide(dis,-1);
-                std::vector<int> ncaut;//symbound to caut means it is also caut.
-                for (int n=0;n<caut.size();n++) {
-                    if (caut[n]==bin.binds[0].head.id or caut[n]==bin.binds[0].body.id) ncaut.push_back(res.id+1);
-                    else ncaut.push_back(caut[n]);
-                }
-                for (int i=0;i<dis.size();i++) boilBinding(mb,out,dis[i],caut,hook);
-                res.cleanup();
-                vhead.cleanup();
-                vbody.cleanup();
-                htarget.cleanup();
-                btarget.cleanup();
-                htype.cleanup();
-                btype.cleanup();
-            }
-            hook.cleanup();
-            return;
-        } else {
-            if (!bin.binds[0].universal) throw;
-            int hid = bin.binds[0].head.id;
-            Statement bode = bin.binds[0].body.deepcopy();
-            bin.binds[0].cleanup();
-            bin.binds.erase(bin.binds.begin());
-            applyshort(bin,hid,bode);
-            hook.inplace_sub(hid,1,bode,2);
-        }
-    }
-    std::vector<int> rmap;
-    capture(hook,bin.localtypes,rmap);
-    Strategy* dgr = new Strategy[rmap.size()];
-    for (int g=0;g<rmap.size();g++) {
-        dgr[g] = bin.localtypes[rmap[g]].deepcopy();
-        dgr[g].apply(1,rmap);
-    }
-    std::vector<int> ncaut;
-    for (int n=0;n<caut.size();n++) {
-        for (int m=0;m<rmap.size();m++) {
-            if (rmap[m]==caut[n]) ncaut.push_back(m);
-        }
-    }
-    hook.apply(1,rmap);
-    bool valid=true;
-    for (int v=0;v<rmap.size();v++) if (uprefs(dgr[v].type,v)) {valid=false;break;}
-    if (valid) out.push_back(Stitching(mb,dgr,rmap.size(),ncaut,hook));
-    else {
-        hook.cleanup();
-        for (int h=0;h<rmap.size();h++) dgr[h].cleanup();
-        delete[] dgr;
-    }
-}
+//void boilBinding(MetaBank* mb,std::vector<Stitching>& out,Binding& bin,const std::vector<int>& caut,const Statement& khook) {
+//    Statement hook = khook.deepcopy();
+//    while (bin.binds.size()) {
+//        if (bin.binds[0].body.local==1) {
+//            std::vector<Binding> buffer;
+//            std::vector<StitchMPlexr> car;
+//            car.push_back(StitchMPlexr(bin));
+//            car[0].center.binds[0].cleanup();
+//            car[0].center.binds.erase(car[0].center.binds.begin());
+//            for (int a=0;a<bin.binds[0].head.ara;a++) {
+//                Statement circref = bin.binds[0].body.deepcopy();
+//                std::vector<Statement> gather;
+//                Statement* hack = bin.binds[0].head.args+a;
+//                generatePartialA(&hack,1,circref.ara,bin.localtypes[bin.binds[0].body.id].args,circref.args,gather,0,1);
+//                circref.cleanup();
+//                for (int i=0;i<gather.size();i++) {
+//                    for (int f=0,limit=car.size();f<limit;f++) {
+//                        car.push_back(car[f]);
+//                        Statement bod = car[car.size()-1].center.integrate(gather[i],bin.localtypes[bin.binds[0].head.id].args[a].type,bin.localtypes[bin.binds[0].body.id].args,circref.ara);
+//                        car[car.size()-1].headargs.push_back({a,bod});
+//
+//                        ParameterContext conan = car[car.size()-1].center.tracks.append(bin.localtypes[bin.binds[0].body.id]);//conan is missing a step.
+//                        Statement incurer = bin.localtypes[bin.binds[0].head.id].args[a].snapshot(2);
+//                        Strategy calctype = conan.generateType(incurer);
+//                        if (!car[car.size()-1].center.typebind(bod,calctype.type,conan)) {car.erase(car.begin()+car.size()-1);}
+//                        calctype.cleanup();
+//                        incurer.cleanup();
+//                    }
+//                }
+//                circref.cleanup();
+//            }
+//            for (int b=0;b<bin.binds[0].body.ara;b++) {
+//                Statement circref = bin.binds[0].head.deepcopy();
+//                std::vector<Statement> gather;
+//                Statement* hack = bin.binds[0].body.args+b;
+//                generatePartialA(&hack,1,circref.ara,bin.localtypes[bin.binds[0].head.id].args,circref.args,gather,0,1);
+//                for (int i=0;i<gather.size();i++) if (gather[i].local!=2) {
+//                    for (int f=0,limit=car.size();f<limit;f++) {
+//                        car.push_back(car[f]);
+//                        Statement bod = car[car.size()-1].center.integrate(gather[i],bin.localtypes[bin.binds[0].body.id].args[b].type,bin.localtypes[bin.binds[0].head.id].args,circref.ara);
+//                        car[car.size()-1].bodyargs.push_back({b,bod});
+//
+//                        ParameterContext conan = car[car.size()-1].center.tracks.append(bin.localtypes[bin.binds[0].head.id]);
+//                        Statement incurer = bin.localtypes[bin.binds[0].body.id].args[b].snapshot(2);
+//                        Strategy calctype = conan.generateType(incurer);
+//                        if (!car[car.size()-1].center.typebind(bod,calctype.type,conan)) {car.erase(car.begin()+car.size()-1);}
+//                        calctype.cleanup();
+//                        incurer.cleanup();
+//                    }
+//                }
+//                circref.cleanup();
+//            }
+////            Strategy hdup = bin.localtypes[bin.binds[0].head.id].bring_depth(2,1);
+////            Strategy bdup = bin.localtypes[bin.binds[0].body.id].bring_depth(2,1);
+//            for (int g=0;g<car.size();g++) {
+//                Strategy res = Strategy(Statement(0,0),bin.ara,1,car[g].headargs.size()+car[g].bodyargs.size());
+//                for (int a=0;a<car[g].headargs.size();a++) {
+//                    res.args[a] = bin.localtypes[bin.binds[0].head.id].args[car[g].headargs[a].first].deepcopy();
+////                    expandRange(1,res.args[a].ara,res.args[a].args,bdup.ara,bdup.args);
+//                }
+//                for (int b=0;b<car[g].bodyargs.size();b++) {
+//                    res.args[car[g].headargs.size()+b] = bin.localtypes[bin.binds[0].body.id].args[car[g].bodyargs[b].first].deepcopy();
+//                    res.args[car[g].headargs.size()+b].idpush(2,car[g].headargs.size(),0);
+////                    expandRange(1,res.args[car[g].headargs.size()+b].ara,res.args[car[g].headargs.size()+b].args,hdup.ara,hdup.args);
+//                }
+//                car[g].center.pad(2);
+//                car[g].center.localtypes[res.id] = res;
+//                car[g].center.localtypes[res.id+1] = res.deepcopy();
+//                car[g].center.localtypes[res.id+1].id++;
+//                car[g].center.localtypes[res.id+1].type = res.snapshot(2);
+//                Statement vhead = Statement(res.id+1,1,car[g].headargs.size()+car[g].bodyargs.size());
+//                Statement vbody = Statement(res.id+1,1,car[g].headargs.size()+car[g].bodyargs.size());
+//                for (int a=0;a<car[g].headargs.size();a++) {
+//                    vhead.args[a] = bin.localtypes[bin.binds[0].head.id].args[car[g].headargs[a].first].snapshot(3);
+//                    vbody.args[a] = car[g].headargs[a].second;
+//                }
+//                for (int b=0;b<car[g].bodyargs.size();b++) {
+//                    vhead.args[car[g].headargs.size()+b] = car[g].bodyargs[b].second;
+//                    vbody.args[car[g].headargs.size()+b] = bin.localtypes[bin.binds[0].body.id].args[car[g].bodyargs[b].first].snapshot(3);
+//                }
+//                applyshort(car[g].center,bin.binds[0].head.id,vhead);
+//                applyshort(car[g].center,bin.binds[0].body.id,vbody);
+//                hook.inplace_sub(bin.binds[0].head.id,1,vhead,2);
+//                hook.inplace_sub(bin.binds[0].body.id,1,vbody,2);
+//                vhead.id--;
+//                vbody.id--;
+//                ParameterContext tplush = car[g].center.tracks.append(car[g].center.localtypes[bin.binds[0].head.id]);
+//                ParameterContext tplusb = car[g].center.tracks.append(car[g].center.localtypes[bin.binds[0].body.id]);
+//                Statement htarget = car[g].center.localtypes[bin.binds[0].head.id].snapshot(2);
+//                Statement btarget = car[g].center.localtypes[bin.binds[0].body.id].snapshot(2);
+//                Strategy htype = tplush.generateType(htarget);
+//                Strategy btype = tplusb.generateType(btarget);
+//                std::vector<Binding> dis;
+//                if (car[g].center.decompose(htype.type,vhead,tplush) and car[g].center.decompose(btype.type,vbody,tplusb)) car[g].center.divide(dis,-1);
+//                std::vector<int> ncaut;//symbound to caut means it is also caut.
+//                for (int n=0;n<caut.size();n++) {
+//                    if (caut[n]==bin.binds[0].head.id or caut[n]==bin.binds[0].body.id) ncaut.push_back(res.id+1);
+//                    else ncaut.push_back(caut[n]);
+//                }
+//                for (int i=0;i<dis.size();i++) boilBinding(mb,out,dis[i],caut,hook);
+//                res.cleanup();
+//                vhead.cleanup();
+//                vbody.cleanup();
+//                htarget.cleanup();
+//                btarget.cleanup();
+//                htype.cleanup();
+//                btype.cleanup();
+//            }
+//            hook.cleanup();
+//            return;
+//        } else {
+//            if (!bin.binds[0].universal) throw;
+//            int hid = bin.binds[0].head.id;
+//            Statement bode = bin.binds[0].body.deepcopy();
+//            bin.binds[0].cleanup();
+//            bin.binds.erase(bin.binds.begin());
+//            applyshort(bin,hid,bode);
+//            hook.inplace_sub(hid,1,bode,2);
+//        }
+//    }
+//    std::vector<int> rmap;
+//    capture(hook,bin.localtypes,rmap);
+//    Strategy* dgr = new Strategy[rmap.size()];
+//    for (int g=0;g<rmap.size();g++) {
+//        dgr[g] = bin.localtypes[rmap[g]].deepcopy();
+//        dgr[g].apply(1,rmap);
+//    }
+//    std::vector<int> ncaut;
+//    for (int n=0;n<caut.size();n++) {
+//        for (int m=0;m<rmap.size();m++) {
+//            if (rmap[m]==caut[n]) ncaut.push_back(m);
+//        }
+//    }
+//    hook.apply(1,rmap);
+//    bool valid=true;
+//    for (int v=0;v<rmap.size();v++) if (uprefs(dgr[v].type,v)) {valid=false;break;}
+//    if (valid) out.push_back(Stitching(mb,dgr,rmap.size(),ncaut,hook));
+//    else {
+//        hook.cleanup();
+//        for (int h=0;h<rmap.size();h++) dgr[h].cleanup();
+//        delete[] dgr;
+//    }
+//}
 
 MetaBank::MetaBank(const std::string& filename) {
     std::ifstream file(filename);

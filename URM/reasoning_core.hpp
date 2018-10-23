@@ -19,7 +19,7 @@ struct MetaBank;
 struct Statement;
 struct Strategy;
 struct Binding;
-struct Stitching;
+//struct Stitching;
 
 struct ParseResult;
 struct ParameterContext;
@@ -47,6 +47,11 @@ struct Statement {//checked
     void typecheck(const Statement&,const ParameterContext&) const;
     void loosecheck(const ParameterContext&) const;
     void constcheck(const ParameterContext&) const;
+    
+    
+    void obsoletesolvepoints(std::map<int,bool>&);
+    void getsolvepoints(std::map<int,bool>&);
+    
 
     std::string tostring() const;
 
@@ -86,6 +91,8 @@ struct Strategy {//checked
     
     void typecheck(const ParameterContext&) const;
     void loosecheck(const ParameterContext&) const;
+    
+    void obsoletesolvepoints(std::map<int,bool>&);
     
     std::string tostring() const;
 //    std::string tostringheavy() const;
@@ -164,36 +171,36 @@ struct Binding {
     ~Binding();
 };
 
-struct Stitching {
-    int ara;
-    Strategy* localtypes;
-    std::vector<int> open;
-    std::vector<int> caut;
-    
-    Statement quicktype;
-    Statement hook;
-    
-    bool primatch(MetaBank*,const Strategy&);
-    
-    void calcopen(MetaBank*);
-    Stitching(MetaBank*,const Strategy&);
-    Stitching(MetaBank*,Strategy*,int,const std::vector<int>&,const Statement&);
-};
+//struct Stitching {
+//    int ara;
+//    Strategy* localtypes;
+//    std::vector<int> open;
+//    std::vector<int> caut;
+//
+//    Statement quicktype;
+//    Statement hook;
+//
+//    bool primatch(MetaBank*,const Strategy&);
+//
+//    void calcopen(MetaBank*);
+//    Stitching(MetaBank*,const Strategy&);
+//    Stitching(MetaBank*,Strategy*,int,const std::vector<int>&,const Statement&);
+//};
 
-void boilBinding(MetaBank*,std::vector<Stitching>&,Binding&,const std::vector<int>&,const Statement&);
+//void boilBinding(MetaBank*,std::vector<Stitching>&,Binding&,const std::vector<int>&,const Statement&);
 
 struct MetaBank {
     static MetaBank meta_prime;
     int ara;
     Strategy* strategies;
     std::vector<std::string> stratnames;
-    std::vector<Stitching> stitchbank;
-    std::vector<int> easytypes;
+//    std::vector<Stitching> stitchbank;
+//    std::vector<int> easytypes;
     
-    Statement solveTortoise(const Strategy&);
-    Statement solveHare(const Strategy&);
-    void offlineLearningStep();
-    void cullobsolete(std::vector<Stitching>&);
+//    Statement solveTortoise(const Strategy&);
+    Statement solveHare(const std::vector<Strategy>& targets);
+//    void offlineLearningStep();
+//    void cullobsolete(std::vector<Stitching>&);
     
     int getAxiom(std::string) const;
     MetaBank(const std::string&);
@@ -210,9 +217,9 @@ void expandRange(int,int&,Strategy*&,int,Strategy*);
 bool affrayBinding(Binding&,int,const Strategy&);
 void multiaffray(MetaBank*,const Binding&,int,std::vector<Binding>&);
 
-void affrayBinding(MetaBank*,const Stitching&,int,const Strategy&,std::vector<Stitching>&);
-void affrayBinding(MetaBank*,const Stitching&,int,const Stitching&,std::vector<Stitching>&);
-void multiaffray(MetaBank*,int,std::vector<Stitching>&,std::vector<Stitching>&);
+//void affrayBinding(MetaBank*,const Stitching&,int,const Strategy&,std::vector<Stitching>&);
+//void affrayBinding(MetaBank*,const Stitching&,int,const Stitching&,std::vector<Stitching>&);
+//void multiaffray(MetaBank*,int,std::vector<Stitching>&,std::vector<Stitching>&);
 
 //void multiaffray(MetaBank*,Stitching&,std::vector<Stitching>&,const Strategy&);
 
