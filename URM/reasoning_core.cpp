@@ -113,10 +113,18 @@ bool Binding::bindonuniversal(int tar,const Statement& templ) {
     Strategy btype = cont.generateType(templ);
 //    std::cout<<"COMPARING: "<<localtypes[tar].type.tostring()<<" | "<<btype.type.tostring()<<"\n";
 //    for (int m=0;m<ara;m++) std::cout<<localtypes[m].ara<<",";std::cout<<"\n";
+//    std::cout<<"WAKA\n";
+//    std::cout<<tostring(0);
+//    std::cout<<localtypes[tar].type.tostring()<<" , "<<btype.type.tostring()<<"\n";
+//    std::cout<<"NAKA\n";
     bool wrk = decompose(localtypes[tar].type,btype.type,cont);
+//    std::cout<<tostring(0);
+//    std::cout<<"BLAKAAKA\n";
     btype.cleanup();
     if (!wrk) {plain.cleanup();return false;}
     binds.push_back(SingleBind(plain,templ.deepcopy(),deepcopy(localtypes[tar].args,localtypes[tar].ara),localtypes[tar].ara,true,!templ.contains(tracks.loc())));
+//    std::cout<<tostring(0);
+//    std::cout<<"\n\n";
     return true;
 }
 bool Binding::decompose(const Statement& left,const Statement& right,const ParameterContext& params) {
@@ -397,9 +405,14 @@ bool Binding::simplify() {
         ParameterContext tplusi = tracks.append(binds[u].itinerary,binds[u].ara);
         if (binds[u].universal and binds[u].concrete) continue;
         if (binds[u].universal) {
+            std::cout<<binds[u].body.tostring()<<"\n";
             Statement nbod = binds[u].body.substitute_single(*this,tplusi);
-            binds[u].body.cleanup();
-            binds[u].body=nbod;
+            if (!judgemental_eq(nbod,binds[u].body)) {
+                binds[u].body.cleanup();
+                binds[u].body=nbod.deepcopy();
+                u=0;
+            }
+            nbod.cleanup();
         } else if (binds[u].concrete) {
             Statement nhead = binds[u].head.simp_substitute(*this,tplusi,u);
             if (nhead.local!=tracks.loc()) {
@@ -532,10 +545,11 @@ void Binding::divide(std::vector<Binding>& list,int tabs) {
             if (!soap.typebind(nx.body,calctype.type,conan)) {valid=false;break;}
             ca/=cartesian[v].size();
         }
+        
         if (valid) soap.divide(list,tabs>=0?tabs+1:-1);
     }
     for (int v=0;v<cartesian.size();v++){
-        for (int w=0;w<cartesian.size();w++) cartesian[v][w].cleanup();
+        for (int w=0;w<cartesian[v].size();w++) cartesian[v][w].cleanup();
     }
 }
 

@@ -36,9 +36,11 @@ Statement Statement::substitute_single(const Binding& bind,const ParameterContex
     if (local==bind.tracks.loc()) {
         for (int s=0;s<bind.binds.size();s++) {
             if (bind.binds[s].head.id==id and bind.binds[s].body.local!=bind.tracks.loc()) {
+                
+                throw;//introduce new vars into the itinerary? wtf
                 if (res.ara==0) {
                     res.cleanup();
-                    return bind.binds[s].body.depth_push(bind.tracks.loc()+1,params.loc()-bind.tracks.loc());
+                    return bind.binds[s].body.depth_push(bind.tracks.loc()+1,params.loc()-1-bind.tracks.loc());
                 }
                 if (bind.binds[s].universal) {
                     Statement dres = bind.binds[s].body.ndisp_sub(bind.tracks.loc()+1,params.loc()-bind.tracks.loc(),res.args,res.ara,0);

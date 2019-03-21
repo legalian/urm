@@ -49,7 +49,6 @@ struct StitchMPlexr {
 
 
 bool affrayBinding(Binding& l,int tar,const Strategy& bind) {
-//    l.loosecheck();
     Statement oform = Statement(bind.id,bind.local,bind.ara);
     for (int g=0;g<bind.ara;g++) oform.args[g] = Statement(-1,l.tracks.loc());
     Statement sform = l.integrate(oform,Statement(),l.localtypes[tar].args,l.localtypes[tar].ara);
@@ -63,21 +62,24 @@ bool affrayBinding(Binding& l,int tar,const Strategy& bind) {
 void multiaffray(Strategy* bank,int ara,const Binding& l,int tar,std::vector<Binding>& out) {
     for (int g=0;g<ara;g++) {
         Binding dup = l;
-        if (affrayBinding(dup,tar,bank[g])) dup.divide(out,-1);
+        if (affrayBinding(dup,tar,bank[g])) {
+            std::cout<<dup.tostring(1)<<"\n";
+            dup.divide(out,-1);
+        }
     }
 }
 void autoaffray(Strategy* bank,int ara,const Binding& l,int head,std::vector<Binding>& out) {
     std::map<int,bool> solvepoints;
     for (int h=0;h<head;h++) {
-        throw;//this is flawed
+//        throw;//this is flawed
         ParameterContext insub = l.tracks.append(l.localtypes[h].args,l.localtypes[h].ara);
-        l.localtypes[h].snapshot(l.tracks.loc()+1).substitute_single(l,insub).getsolvepoints(solvepoints);
-        l.localtypes[h].obsoletesolvepoints(solvepoints);
+        Statement part = l.localtypes[h].snapshot(l.tracks.loc()+1).substitute_single(l,insub);
+        std::cout<<part.tostring()<<"\n";
+        part.getsolvepoints(solvepoints);
+//        l.localtypes[h].obsoletesolvepoints(solvepoints);
     }
-    for (auto g = solvepoints.begin();g!=solvepoints.end();g++) l.localtypes[g->first].obsoletesolvepoints(solvepoints);
-    for (auto g = solvepoints.begin();g!=solvepoints.end();g++) if (g->second) {
-        multiaffray(bank,ara,l,g->first,out);
-    }
+
+    for (auto g = solvepoints.begin();g!=solvepoints.end();g++) if (g->second) multiaffray(bank,ara,l,g->first,out);
 }
 //begin
 
@@ -320,7 +322,7 @@ Statement MetaBank::solveHare(const std::vector<Strategy>& targets) {
     std::vector<Binding> buf1;
     std::vector<Binding> buf2;
     Strategy* nue = new Strategy[targets.size()];
-    for (int i=0;i<targets.size();i++) nue[i]=targets[i];
+    for (int i=0;i<targets.size();i++) {nue[i]=targets[i];std::cout<<nue[i].tostring()<<"<<\n";}
     buf1.push_back(Binding(this,nue,targets.size()));
     #define B1 (flip?buf1:buf2)
     #define B2 (flip?buf2:buf1)
@@ -658,12 +660,14 @@ MetaBank::MetaBank(const std::string& filename) {
     std::ifstream file(filename);
     std::string strn((std::istreambuf_iterator<char>(file)),std::istreambuf_iterator<char>());
     
-    Strategy context = parse_TTML(strn,-1,&stratnames);
+    std::vector<Strategy> context = parse_TTML(strn,0,&stratnames);
     stratnames[0]="U";
-    strategies = context.args;
-    ara = context.ara;
-    ParameterContext empty;
-    context.typecheck(empty);
+    ara = context.size();
+    strategies = new Strategy[ara];
+    for (int i=0;i<ara;i++) strategies[i]=context[i];
+    
+    ParameterContext nn = ParameterContext().append(strategies,ara);
+    for (int u=0;u<ara;u++) strategies[u].typecheck(nn);
     
     
 //    Strategy* simstrats = new Strategy[2];

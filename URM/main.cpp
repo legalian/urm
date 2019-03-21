@@ -14,7 +14,7 @@
 #include "reasoning_core.hpp"
 #include "parser_core.hpp"
 
-int test(int a,int b) {return 6;}
+//int test(int a,int b) {return 6;}
 int main(int argc, const char * argv[]) {
 //    std::cout<<"\n\nbegin:\n";
     
@@ -89,10 +89,10 @@ int main(int argc, const char * argv[]) {
     std::vector<std::string> solvertestcases;
 //    solvertestcases.push_back("[A]");
 //    solvertestcases.push_back("[[g(a(a(a(a(aa)))))]g(aa)]");
-    solvertestcases.push_back("[EQ(AFF,ONE,ONE)]");
-    solvertestcases.push_back("[A:U|a:A|EQ(A,a,a)]");
-    solvertestcases.push_back("[[a:AFF]b:AFF|[c:AFF]EQ(AFF,b(c),c)]");
-    solvertestcases.push_back("[type:U|[a:type]b:type|[c:type]EQ(type,b(c),c)]");
+    solvertestcases.push_back("{EQ(AFF,ONE,ONE)}");
+    solvertestcases.push_back("{A:U|a:A|EQ(A,a,a)}");
+    solvertestcases.push_back("{[a:AFF]b:AFF|[c:AFF]EQ(AFF,b(c),c)}");
+    solvertestcases.push_back("{type:U|[a:type]b:type|[c:type]EQ(type,b(c),c)}");
 //    solvertestcases.push_back("["
 //    "[U|U]B2:U|"
 //    "[U|U]C2:U|"
@@ -100,8 +100,10 @@ int main(int argc, const char * argv[]) {
 //    );
     
     for (int h=0;h<solvertestcases.size();h++) {
-        Strategy engulf = parse_TTML(solvertestcases[h],0);
-        engulf.id=-1;
+        std::vector<Strategy> engulf = parse_TTML(solvertestcases[h],1);
+        for (int i=0;i<engulf.size();i++) {
+            std::cout<<engulf[i].tostring()<<"\n";
+        }
         Statement solution = MetaBank::meta_prime.solveHare(engulf);
         std::cout<<solvertestcases[h]<<" result:\n";
         std::cout<<"\t"<<solution.tostring()<<"\n";
