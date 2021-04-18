@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "ParameterContext::append(Strategy*, int):reasoning_trivial.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Binding::simplify():reasoning_core_matcher.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "this-&gt;tostring()">
+            </PersistentString>
+            <PersistentString
+               value = "tostring(0)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "Statement::substitute_level(std::__1::vector&lt;Statement*, std::__1::allocator&lt;Statement*&gt; &gt;*, int, int, int):reasoning_substitution.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Binding::decompose(Statement*, Statement*, int, int):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "idtrans(Statement*, int, std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;&amp;, Strategy*, Strategy*, int):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Binding::typebind(Statement, Statement, ParameterContext&amp;):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "generatePartial(Statement*, Statement*, Strategy*, std::__1::vector&lt;Statement*, std::__1::allocator&lt;Statement*&gt; &gt;&amp;, CartesianCarry&amp;, int, bool&amp;, std::__1::vector&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*, std::__1::allocator&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*&gt; &gt;&amp;):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "partialsub(Statement*, Binding*, int):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "generatePartialB(Statement**, int, int, Strategy*, Statement*, ParameterContext&amp;, Statement, std::__1::vector&lt;Statement, std::__1::allocator&lt;Statement&gt; &gt;&amp;, std::__1::vector&lt;Binding, std::__1::allocator&lt;Binding&gt; &gt;*, Binding&amp;, int):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Statement::constcheck(ParameterContext):reasoning_debug.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "ParameterContext::generateType(Statement):reasoning_trivial.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "generatePartial(Statement, Statement, Strategy, std::__1::vector&lt;Statement, std::__1::allocator&lt;Statement&gt; &gt;&amp;, CartesianCarry&amp;, int, bool&amp;, std::__1::vector&lt;std::__1::pair&lt;Strategy*, int&gt;, std::__1::allocator&lt;std::__1::pair&lt;Strategy*, int&gt; &gt; &gt;&amp;):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Strategy::typecheck(ParameterContext):reasoning_debug.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "checkPartialDescent(Statement*, Statement*, Statement*, Binding&amp;, std::__1::vector&lt;Statement*, std::__1::allocator&lt;Statement*&gt; &gt;&amp;, std::__1::vector&lt;Binding, std::__1::allocator&lt;Binding&gt; &gt;&amp;, bool&amp;, std::__1::vector&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*, std::__1::allocator&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*&gt; &gt;&amp;):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "godtrans(Statement*, int, std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;&amp;, Strategy*, int):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "lazy_mutate_circuit(Statement&amp;, Statement&amp;, int):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "generateFormat(Statement**, int, ParameterContext&amp;, Statement, int, int&amp;, Strategy*, Statement*):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Statement::depth_push(int, int):reasoning_substitution.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Binding::decompose(Statement*, Statement*, std::__1::vector&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*, std::__1::allocator&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*&gt; &gt;&amp;):reasoning_core_matcher.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "right-&gt;tostring()">
+            </PersistentString>
+            <PersistentString
+               value = "left-&gt;tostring()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "generateLocal(ParameterContext&amp;, Statement, int, int, Strategy*):reasoning_core_matcher.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "expected.tostring()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "Binding::loosecheck():reasoning_debug.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Statement::substitute(Binding*, std::__1::vector&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*, std::__1::allocator&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*&gt; &gt;&amp;, std::__1::vector&lt;Statement*, std::__1::allocator&lt;Statement*&gt; &gt;&amp;, int, bool&amp;, bool):reasoning_substitution.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Strategy::tostring():reasoning_readable.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Statement::substitute(Binding*, std::__1::vector&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*, std::__1::allocator&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*&gt; &gt;&amp;, std::__1::vector&lt;Statement*, std::__1::allocator&lt;Statement*&gt; &gt;&amp;, int, bool&amp;):reasoning_substitution.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Statement::substitute(Binding*, ParameterContext&amp;, std::__1::vector&lt;Statement, std::__1::allocator&lt;Statement&gt; &gt;&amp;, int, bool&amp;):reasoning_substitution.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "std::to_string(s)+&quot;   &quot;+std::to_string(avoidex)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "Statement::generate_type(std::__1::vector&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*, std::__1::allocator&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*&gt; &gt;&amp;):reasoning_debug.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Statement::constcheck(std::__1::vector&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*, std::__1::allocator&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*&gt; &gt;):reasoning_debug.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Entry::endpoints(MetaBank*, Statement):reasoning_core_solver.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "bind.tostring()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "Statement::typecheck(Strategy*, std::__1::vector&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*, std::__1::allocator&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*&gt; &gt;&amp;):reasoning_debug.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Binding::Binding(std::__1::vector&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*, std::__1::allocator&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*&gt; &gt;&amp;, int):reasoning_trivial.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Binding::insert(SingleBind):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "reduce(Strategy*, int, int, Strategy*):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Strategy::typechecksub(std::__1::vector&lt;Statement*, std::__1::allocator&lt;Statement*&gt; &gt;*, int, int, int):reasoning_substitution.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "generatePartial(Statement, Statement, Strategy, std::__1::vector&lt;Statement, std::__1::allocator&lt;Statement&gt; &gt;&amp;, CartesianCarry&amp;, int, bool&amp;, ParameterContext&amp;):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Binding::ensureValidity(Statement*, Statement*, int, int):reasoning_core_matcher.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "head-&gt;tostringheavy()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "Binding::divide(std::__1::vector&lt;Binding, std::__1::allocator&lt;Binding&gt; &gt;&amp;, int):reasoning_core_matcher.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "mul2[0]-&gt;tostring()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "Entry::endpoints(MetaBank*, Statement*):reasoning_core_solver.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Binding::compare(Statement*, Statement*, Statement*, Statement*, int):reasoning_core_matcher.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "head1-&gt;tostringheavy()">
+            </PersistentString>
+            <PersistentString
+               value = "head2-&gt;tostringheavy()">
+            </PersistentString>
+            <PersistentString
+               value = "body1-&gt;tostringheavy()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "idtrans(Statement, int, std::__1::vector&lt;Strategy, std::__1::allocator&lt;Strategy&gt; &gt;, Strategy, int, int):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Binding::decomposeverbal(Statement*, Statement*, std::__1::vector&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*, std::__1::allocator&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*&gt; &gt;&amp;, int):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Statement::substitute_level(Statement*, int, int, int):reasoning_substitution.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "main:main.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "Statement::typecheck(Strategy*, std::__1::vector&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*, std::__1::allocator&lt;std::__1::vector&lt;Strategy*, std::__1::allocator&lt;Strategy*&gt; &gt;*&gt; &gt;):reasoning_debug.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "MetaBank::MetaBank():reasoning_core_solver.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Binding::decompose(Statement, Statement, ParameterContext&amp;):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "separatePartials(Statement**, std::__1::vector&lt;int, std::__1::allocator&lt;int&gt; &gt;&amp;, int, int, std::__1::vector&lt;std::__1::vector&lt;int, std::__1::allocator&lt;int&gt; &gt;, std::__1::allocator&lt;std::__1::vector&lt;int, std::__1::allocator&lt;int&gt; &gt; &gt; &gt;&amp;):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Statement::typecheck(Strategy, std::__1::vector&lt;std::__1::pair&lt;Strategy*, int&gt;, std::__1::allocator&lt;std::__1::pair&lt;Strategy*, int&gt; &gt; &gt;):reasoning_debug.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "type.tostring()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "GLOBAL">
+         <PersistentStrings>
+            <PersistentString
+               value = "this-&gt;tostring()">
+            </PersistentString>
+            <PersistentString
+               value = "a.tostring()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "indexedPureStatementConvert(MetaBank*, ParseResult*, std::__1::map&lt;std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt;, Statement, std::__1::less&lt;std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt; &gt;, std::__1::allocator&lt;std::__1::pair&lt;std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt; const, Statement&gt; &gt; &gt;&amp;, int):parser_definition.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Binding::divide(std::__1::vector&lt;Binding, std::__1::allocator&lt;Binding&gt; &gt;&amp;):reasoning_core_matcher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Soln::expand(MetaBank*, SolveInstance*):reasoning_core_solver.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Statement::typecheck(Strategy, ParameterContext&amp;):reasoning_debug.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "calctype.tostring()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "emplace(Statement, Statement, int, ParameterContext&amp;):reasoning_core_matcher.cpp">
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

@@ -7,17 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5B07A7FC1F17F67E0017C095 /* reasoning_core_solver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B07A7FA1F17F67D0017C095 /* reasoning_core_solver.cpp */; };
+		5B07A7FC1F17F67E0017C095 /* solver_core.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B07A7FA1F17F67D0017C095 /* solver_core.cpp */; };
 		5B080B3C1F48F68F00F1318E /* parser_core.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B080B3A1F48F68F00F1318E /* parser_core.cpp */; };
 		5B080B401F5B8FA600F1318E /* reasoning_debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B080B3F1F5B8FA600F1318E /* reasoning_debug.cpp */; };
 		5B080B421F6AD43200F1318E /* reasoning_readable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B080B411F6AD43200F1318E /* reasoning_readable.cpp */; };
-		5B080B441F6C39B800F1318E /* reasoning_trivial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B080B431F6C39B800F1318E /* reasoning_trivial.cpp */; };
 		5B080B461F7164F200F1318E /* reasoning_substitution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B080B451F7164F200F1318E /* reasoning_substitution.cpp */; };
-		5B080B4A1F79698500F1318E /* reasoning_observable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B080B491F79698500F1318E /* reasoning_observable.cpp */; };
-		5B080B5F1F81666200F1318E /* reasoning_core_matcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B080B5E1F81666200F1318E /* reasoning_core_matcher.cpp */; };
+		5B080B5F1F81666200F1318E /* reasoning_core.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B080B5E1F81666200F1318E /* reasoning_core.cpp */; };
 		5B092EBE1EFC966E00002603 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B092EBD1EFC966E00002603 /* main.cpp */; };
+		5B4439D020A5F54B000892F2 /* reasoning_aux.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B4439CF20A5F54B000892F2 /* reasoning_aux.cpp */; };
 		5BD607BB1F9C46E000C0F0C0 /* parser_definition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BD607BA1F9C46E000C0F0C0 /* parser_definition.cpp */; };
-		5BD607BD1F9D687B00C0F0C0 /* reasoning_interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BD607BC1F9D687B00C0F0C0 /* reasoning_interface.cpp */; };
+		5BE5108A1FB25F7700F43FB4 /* reasoning_visualizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BE510891FB25F7700F43FB4 /* reasoning_visualizer.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,22 +32,25 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		5B07A7FA1F17F67D0017C095 /* reasoning_core_solver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = reasoning_core_solver.cpp; sourceTree = "<group>"; };
+		5B05058F201C16DD005CBD5F /* solver_core.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = solver_core.hpp; sourceTree = "<group>"; };
+		5B050590202A2501005CBD5F /* core.ax */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = core.ax; sourceTree = "<group>"; };
+		5B050592202A5A2A005CBD5F /* test.ax */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test.ax; sourceTree = "<group>"; };
+		5B07A7FA1F17F67D0017C095 /* solver_core.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = solver_core.cpp; sourceTree = "<group>"; };
 		5B07A7FB1F17F67E0017C095 /* reasoning_core.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = reasoning_core.hpp; sourceTree = "<group>"; };
 		5B080B3A1F48F68F00F1318E /* parser_core.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = parser_core.cpp; sourceTree = "<group>"; };
 		5B080B3B1F48F68F00F1318E /* parser_core.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = parser_core.hpp; sourceTree = "<group>"; };
 		5B080B3F1F5B8FA600F1318E /* reasoning_debug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = reasoning_debug.cpp; sourceTree = "<group>"; };
 		5B080B411F6AD43200F1318E /* reasoning_readable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = reasoning_readable.cpp; sourceTree = "<group>"; };
-		5B080B431F6C39B800F1318E /* reasoning_trivial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = reasoning_trivial.cpp; sourceTree = "<group>"; };
 		5B080B451F7164F200F1318E /* reasoning_substitution.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = reasoning_substitution.cpp; sourceTree = "<group>"; };
-		5B080B491F79698500F1318E /* reasoning_observable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = reasoning_observable.cpp; sourceTree = "<group>"; };
-		5B080B5E1F81666200F1318E /* reasoning_core_matcher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = reasoning_core_matcher.cpp; sourceTree = "<group>"; };
+		5B080B5E1F81666200F1318E /* reasoning_core.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = reasoning_core.cpp; sourceTree = "<group>"; };
 		5B080B641F8FCA1800F1318E /* ttfl.ilang */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ttfl.ilang; sourceTree = "<group>"; };
 		5B080B651F95079D00F1318E /* c.ilang */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = c.ilang; sourceTree = "<group>"; };
 		5B092EBA1EFC966E00002603 /* URM */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = URM; sourceTree = BUILT_PRODUCTS_DIR; };
 		5B092EBD1EFC966E00002603 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		5B14CC9D1FC237F000889495 /* input.ttfl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input.ttfl; sourceTree = "<group>"; };
+		5B4439CF20A5F54B000892F2 /* reasoning_aux.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = reasoning_aux.cpp; sourceTree = "<group>"; };
 		5BD607BA1F9C46E000C0F0C0 /* parser_definition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = parser_definition.cpp; sourceTree = "<group>"; };
-		5BD607BC1F9D687B00C0F0C0 /* reasoning_interface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = reasoning_interface.cpp; sourceTree = "<group>"; };
+		5BE510891FB25F7700F43FB4 /* reasoning_visualizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = reasoning_visualizer.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,18 +85,21 @@
 			children = (
 				5B092EBD1EFC966E00002603 /* main.cpp */,
 				5B07A7FB1F17F67E0017C095 /* reasoning_core.hpp */,
-				5B07A7FA1F17F67D0017C095 /* reasoning_core_solver.cpp */,
-				5B080B5E1F81666200F1318E /* reasoning_core_matcher.cpp */,
+				5B080B5E1F81666200F1318E /* reasoning_core.cpp */,
+				5B4439CF20A5F54B000892F2 /* reasoning_aux.cpp */,
 				5B080B411F6AD43200F1318E /* reasoning_readable.cpp */,
-				5B080B491F79698500F1318E /* reasoning_observable.cpp */,
+				5BE510891FB25F7700F43FB4 /* reasoning_visualizer.cpp */,
 				5B080B451F7164F200F1318E /* reasoning_substitution.cpp */,
-				5B080B431F6C39B800F1318E /* reasoning_trivial.cpp */,
 				5B080B3F1F5B8FA600F1318E /* reasoning_debug.cpp */,
-				5BD607BC1F9D687B00C0F0C0 /* reasoning_interface.cpp */,
+				5B05058F201C16DD005CBD5F /* solver_core.hpp */,
+				5B07A7FA1F17F67D0017C095 /* solver_core.cpp */,
 				5B080B3B1F48F68F00F1318E /* parser_core.hpp */,
 				5B080B3A1F48F68F00F1318E /* parser_core.cpp */,
 				5BD607BA1F9C46E000C0F0C0 /* parser_definition.cpp */,
+				5B050590202A2501005CBD5F /* core.ax */,
+				5B050592202A5A2A005CBD5F /* test.ax */,
 				5B080B641F8FCA1800F1318E /* ttfl.ilang */,
+				5B14CC9D1FC237F000889495 /* input.ttfl */,
 				5B080B651F95079D00F1318E /* c.ilang */,
 			);
 			path = URM;
@@ -126,7 +131,7 @@
 		5B092EB21EFC966E00002603 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0720;
+				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = Parker;
 				TargetAttributes = {
 					5B092EB91EFC966E00002603 = {
@@ -156,17 +161,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5BD607BD1F9D687B00C0F0C0 /* reasoning_interface.cpp in Sources */,
 				5B092EBE1EFC966E00002603 /* main.cpp in Sources */,
-				5B080B4A1F79698500F1318E /* reasoning_observable.cpp in Sources */,
 				5BD607BB1F9C46E000C0F0C0 /* parser_definition.cpp in Sources */,
 				5B080B3C1F48F68F00F1318E /* parser_core.cpp in Sources */,
 				5B080B421F6AD43200F1318E /* reasoning_readable.cpp in Sources */,
-				5B07A7FC1F17F67E0017C095 /* reasoning_core_solver.cpp in Sources */,
-				5B080B441F6C39B800F1318E /* reasoning_trivial.cpp in Sources */,
-				5B080B5F1F81666200F1318E /* reasoning_core_matcher.cpp in Sources */,
+				5B07A7FC1F17F67E0017C095 /* solver_core.cpp in Sources */,
+				5BE5108A1FB25F7700F43FB4 /* reasoning_visualizer.cpp in Sources */,
+				5B080B5F1F81666200F1318E /* reasoning_core.cpp in Sources */,
 				5B080B461F7164F200F1318E /* reasoning_substitution.cpp in Sources */,
 				5B080B401F5B8FA600F1318E /* reasoning_debug.cpp in Sources */,
+				5B4439D020A5F54B000892F2 /* reasoning_aux.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,13 +185,23 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -224,13 +238,23 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -255,6 +279,7 @@
 		5B092EC21EFC966E00002603 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -262,6 +287,7 @@
 		5B092EC31EFC966E00002603 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

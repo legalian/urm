@@ -14,215 +14,213 @@
 #include <vector>
 #include <string>
 #include <map>
-//#include <pair>
-
-#define safe_play on
 
 struct MetaBank;
 struct Statement;
+struct Strategy;
 struct Binding;
+//struct Stitching;
 
 struct ParseResult;
+struct ParameterContext;
 
-struct Soln;
-struct SolnLink;
-struct Entry;
-struct SolveInstance;
+struct Statement {//checked
+    Statement* args=0;
+    int local=99999;
+    int id=99999;
+    int ara=0;
 
-
-//Statement* parseTTFL(MetaBank*,const std::string&);
-//Statement* convertTTML(MetaBank*,ParseResult*,int);
-//Statement* convertTTFL(MetaBank*,ParseResult*);
-
-struct Statement {
-    static Statement* universe;
-    static Statement* gap;
-    int local;
-    int id;
-//    int specifier=0;
-    Statement* type=0;
-    std::vector<Statement*> args;
-    Statement(int,int);
-
-//    Statement* localswitch(int);
-//    void erase_deltasub();
-    int maxloc();
-//    Statement* mapl(int,int);
-    void clip_upperbound(int,bool,std::map<std::pair<int,int>,int>&,int&);
-    Statement* paste_upperbound_prim(int,std::map<std::pair<int,int>,int>&,std::vector<Statement*>*,bool);
-    Statement* paste_upperbound_sec(int,std::map<std::pair<int,int>,int>&,int);
-    
-    void obsolete(std::map<int,bool>&);
-    void getsolvepoints(std::map<int,Statement*>&,std::map<int,bool>&,bool,bool);
-    
-    
-    Statement* substitute(Binding*,int,int);
-    Statement* lam_substitute(Binding*,int,int,int,bool&);
-    Statement* deepcopy();
+    Statement ndisp_sub(int,int,Statement*,int,int) const;
+    Statement substitute_single(const Binding&,const ParameterContext&) const;
+    Statement simp_substitute(const Binding&,const ParameterContext&,int) const;
+    Statement depth_push(int,int) const;
+    Statement deepcopy() const;
     void cleanup();
+    void idpush(int,int,int);
+    void apply(int,std::vector<int>&);
+    void inplace_sub(int,int,const Statement&,int);
+    void expandLocs(int,int,int,int,Strategy*);
+    
+    bool contains(int,int) const;
+    bool contains(int) const;
+    
+    void typecheck(const Statement&,const ParameterContext&) const;
+    void loosecheck(const ParameterContext&) const;
+    void constcheck(const ParameterContext&) const;
     
     
-    bool is(int,int,Statement*);
-    bool containsloop(int,int);
-    bool is_complete();
+    void obsoletesolvepoints(std::map<int,bool>&);
+    void getsolvepoints(std::map<int,bool>&);
     
-    Statement* scramble(std::map<int,int>&,int&,int);
-    void unscramble(std::map<int,int>&,int&,int);
-    
-    Statement* depth_push(int,int);
-    
-    bool observable(MetaBank* mb);
-    double observe_affine(MetaBank* mb);
-    bool observe_boolean(MetaBank* mb);
-    
-    void local_list(std::vector<Statement*>* list);
-    
-//    void 
-//    Statement* construction_substitute(std::vector<Statement*>*,int,int,int);
-    
-    
-//    Statement* construction_substitute(std::vector<Statement*>*,int,int,int);
-//    Statement* typeconstruction_sub(std::vector<Statement*>*,int,int,int);
-    
-#ifdef safe_play
-//    int deltasub=0;
-//    int debugdepth;
-//    void enforcedepth(int);
-    Statement* safe_substitute_level(std::vector<Statement*>*,int,int,int,std::string&);//deltasub may be obsolete. hopefully it is. test this later.
-    Statement* typechecksub(std::vector<Statement*>*,int,int,int);
-    void typecheck(Statement*);
-    void globtypecheck();
-    void typecheck(Statement*,std::map<int,std::vector<Statement*>*>,int,bool);
-    void headlesstypecheck(std::map<int,std::vector<Statement*>*>,int);
-#endif
-    std::string tostringstrategy();
-    std::string tostringheavy();
-    std::string tostringdoubleheavy();
-    std::string tostringrecursivedoubleheavy();
-    
-//    std::string tostringheavy(std::vector<std::vector<std::string>>*);
-    
-    Statement(Statement*,int,int);
-    Statement(Statement*,int,int,Statement*);
-    Statement(Statement*,int,int,Statement*,Statement*);
-    Statement(Statement*,int,int,Statement*,Statement*,Statement*);
-    Statement(Statement*,int,int,Statement*,Statement*,Statement*,Statement*);
+
+    std::string tostring() const;
+
+    Statement();
+    Statement(int,int);
+    Statement(int,int,int);
+    Statement(int,int,int,Statement*);
+    Statement(int,int,Statement);
+    Statement(int,int,Statement,Statement);
+    Statement(int,int,Statement,Statement,Statement);
+    Statement(int,int,Statement,Statement,Statement,Statement);
 };
+bool judgemental_eq(const Statement&,const Statement&);
+bool judgemental_eq(const Strategy&,const Strategy&);
+bool lazy_judgemental_eq(const Statement&,const Statement&,int);
+
+
+struct Strategy {//checked
+    Strategy* args=0;
+    int local=963369;
+    int id=963369;
+    int ara=0;
+    Statement type;
+    
+    Strategy deepcopy() const;
+    Strategy ndisp_sub(int,int,Statement*,int,int) const;
+    Strategy substitute_single(const Binding&,const ParameterContext&) const;
+    Strategy bring_depth(int,int) const;
+    
+    Statement snapshot(int) const;
+    
+    void cleanup();
+    void inplace_sub(int,int,const Statement&);
+    void apply(int,std::vector<int>&);
+    void idpush(int,int,int);
+    void expandLocs(int,int,int,Strategy*);
+    
+    void typecheck(const ParameterContext&) const;
+    void loosecheck(const ParameterContext&) const;
+    
+    void obsoletesolvepoints(std::map<int,bool>&);
+    
+    std::string tostring() const;
+//    std::string tostringheavy() const;
+    
+    Strategy();
+    Strategy(Statement,int,int);
+    Strategy(Statement,int,int,int);
+    Strategy(Statement,int,int,int,Strategy*);
+    Strategy(Statement,int,int,Strategy);
+    Strategy(Statement,int,int,Strategy,Strategy);
+    Strategy(Statement,int,int,Strategy,Strategy,Strategy);
+    Strategy(Statement,int,int,Strategy,Strategy,Strategy,Strategy);
+};
+struct ParameterContext {//checked
+    std::vector<std::pair<Strategy*,int>> dat;
+    ParameterContext append(const Strategy&) const;
+    ParameterContext append(Strategy*,int) const;
+    Strategy generateType(const Statement&) const;
+//    Strategy generateTypeSection(const Statement&,int) const;
+    Statement partialgenerateLocal(int,int) const;
+    Statement generateLocal(const Statement&,int);
+    Strategy morph(int,const Strategy&,int) const;
+    Statement morph(int,const Statement&,int) const;
+    Strategy* compress(int) const;
+    Statement* artifact(int) const;
+    int index(int) const;
+    int loc() const;
+};
+struct SingleBind {
+    Statement head;
+    Statement body;
+    Strategy* itinerary;
+    int ara;
+    bool universal;
+    bool concrete;
+    void cleanup();
+    SingleBind deepcopy() const;
+    std::string tostring() const;
+    SingleBind(Statement,Statement,Strategy*,int,bool,bool);
+};
+
+
+
 struct Binding {
-    int sdepth;
-    std::map<int,std::pair<Statement*,Statement*>> partials;
-    std::vector<std::pair<Statement*,Statement*>> binds;
-//    std::vector<std::pair<Statement*,Statement*>> symmetric;//A;
-//    std::vector<std::pair<Statement*,Statement*>> symmetricB;
-//     split();
-//    bool insert(Statement*,Statement*,int);
-    bool substitute();
-    bool decompose(Statement*,Statement*,int);
-//    bool ensureValidity(Statement*,Statement*,int);
-//    bool compare(Statement*,Statement*,Statement*,Statement*);
+    int ara=0;
+    Strategy* localtypes=0;
+    std::vector<SingleBind> binds;
+    ParameterContext tracks;
     
-    void divide(std::vector<Binding>&,MetaBank*);
-//    bool functionalAnalysis(std::vector<Binding>&,Statement*,Statement*,int,int,int,Statement*,Statement*,Statement*,MetaBank*);
-//    Statement* typecomplete(Statement* body,int stmodif,int& curid,MetaBank* typechain);
+    Statement integrate(const Statement&,const Statement&,Strategy*,int);
     
-    std::vector<Statement*> solvepoints(Statement*);
+    bool decompose(const Statement&,const Statement&,const ParameterContext&);
+    bool crossdecompose(const Statement&,const Statement&,const ParameterContext&);
+    bool bindonuniversal(int,const Statement&);
+//    bool bindonuniversal(int,const Statement&,const Statement&);
+    bool typebind(const Statement&,const Statement&,const ParameterContext&);
+    bool simplify();
     
-    std::string tostringheavy();
-    Binding(int);
-//    Binding(Binding const &);
-//    Binding& operator=(Binding const &);
+    bool trivbound(int) const;
+    
+    void divide(std::vector<Binding>&,int);
+    void gapinplace(int,int);
+    void boostinplace(int,Strategy*);
+    void pad(int);
+    void insert(SingleBind);
+    
+//    void loosecheck() const;
+    
+    std::string tostring(int) const;
+
+    Binding(const Binding&,const Binding&,int,int,Strategy*);
+    Binding(MetaBank*,Strategy*,int);
+    Binding(const ParameterContext&,Strategy*,int);
+    Binding(const Binding&);
+    Binding& operator = (const Binding&);
     ~Binding();
-//    int locids=0;
 };
-//struct BindingObject {
-//    std::vector<Binding> bindings;
-//    BindingObject(Binding);
-//    std::string tostringheavy();
+
+//struct Stitching {
+//    int ara;
+//    Strategy* localtypes;
+//    std::vector<int> open;
+//    std::vector<int> caut;
+//
+//    Statement quicktype;
+//    Statement hook;
+//
+//    bool primatch(MetaBank*,const Strategy&);
+//
+//    void calcopen(MetaBank*);
+//    Stitching(MetaBank*,const Strategy&);
+//    Stitching(MetaBank*,Strategy*,int,const std::vector<int>&,const Statement&);
 //};
-//struct RecursivePattern {
-//    Binding transformation;
-//    MatchStructure* next;
-//    RecursivePattern(Binding&,MatchStructure*);
-//};
-//struct MatchStructure {
-//    Statement* type;
-//    std::vector<Statement*> patterns;
-//    std::vector<RecursivePattern> recursive;
-//    void complete(std::vector<MatchStructure>&);
-//    void match(std::vector<Binding>&,Statement*,Binding*);
-//};
+
+//void boilBinding(MetaBank*,std::vector<Stitching>&,Binding&,const std::vector<int>&,const Statement&);
 
 struct MetaBank {
     static MetaBank meta_prime;
-    MetaBank();
-    std::vector<Statement*> strategies;
+    int ara;
+    Strategy* strategies;
     std::vector<std::string> stratnames;
-//    std::vector<MatchStructure> typefamilies;
-//    Statement* solve(std::string);
-    Statement* solve(Statement*);
-    int getAxiom(std::string);
+//    std::vector<Stitching> stitchbank;
+//    std::vector<int> easytypes;
+    
+//    Statement solveTortoise(const Strategy&);
+    Statement solveHare(const std::vector<Strategy>& targets);
+//    void offlineLearningStep();
+//    void cullobsolete(std::vector<Stitching>&);
+    
+    int getAxiom(std::string) const;
+    MetaBank(const std::string&);
 };
 
+void ntabprint(std::string,int);
 
-struct SolveInstance {
-    static std::vector<std::string> json;
-    static std::vector<std::string> labels;
-    std::vector<Soln*> solns;
-    static std::string label;
-    Soln* makeorcreate(Statement*);
-    void increment(MetaBank*);
-    void visualize();
-    static void flushvisualizer();
-    void heavyvisualize();
-//    void remove(Soln*);
-};
-struct SolnLink {
-    std::map<int,int> mapr;
-    Soln* linked;
-    Entry* container;
-    SolnLink(Statement*,Statement*,Soln*,Entry*);
-    Entry* transform(Entry*);
-};
-struct Entry {
-    Binding bind;
-//    std::vector<SolnLink> links;
-    Entry(Binding,int);
-    std::vector<Soln*> downstream;
-//    bool asymmetricObsoletes(Entry* other,std::vector<Statement*>*);
-    std::vector<Statement*> endpoints(MetaBank*,Statement*);
-//    bool solved=false;
-    int ids;
-};
+Statement* deepcopy(Statement*,int);
+Strategy* deepcopy(Strategy*,int);
 
-struct Soln {
-    std::vector<Entry*> bin;
-    std::vector<Entry*> binqueue;
-    std::vector<SolnLink> upstream;
-    Statement* head;
-    bool expanded=false;
-    int ids=0;
-//    int ids=0;
-    std::string tostringheavy();
+void expandRange(int,int&,int,int,Statement*&,int,Strategy*);
+void expandRange(int,int&,Strategy*&,int,Strategy*);
 
-    Soln();
-    Soln(Statement*);
-    void remove(MetaBank*,SolveInstance*,int);
-    void expand(MetaBank*,SolveInstance*);
-    bool recieveEnergy(MetaBank*,SolveInstance*,int);
-    Statement* getsolution();
-};
+bool affrayBinding(Binding&,int,const Strategy&);
+void multiaffray(MetaBank*,const Binding&,int,std::vector<Binding>&);
 
-Statement* invokeSolver(Statement*);
-Statement* invokeSolver(std::string);
-Statement* invokeSolver(std::map<std::string,Statement*>,std::string);
+//void affrayBinding(MetaBank*,const Stitching&,int,const Strategy&,std::vector<Stitching>&);
+//void affrayBinding(MetaBank*,const Stitching&,int,const Stitching&,std::vector<Stitching>&);
+//void multiaffray(MetaBank*,int,std::vector<Stitching>&,std::vector<Stitching>&);
 
-
-//std::pair<Statement*,Statement*> gentleSubstitute(Binding*,Statement*,Statement*,int);
-bool amorphousmatch(Statement*,Statement*,std::map<int,int>&,std::map<int,int>&);
-
-
-
-
-
+//void multiaffray(MetaBank*,Stitching&,std::vector<Stitching>&,const Strategy&);
 
 #endif /* reasoning_core_hpp */

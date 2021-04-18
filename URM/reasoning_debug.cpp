@@ -1,5 +1,5 @@
 //
-//  type_completion.cpp
+//  reasoning_debug.cpp
 //  URM
 //
 //  Created by Parker on 9/2/17.
@@ -9,208 +9,102 @@
 #include <stdio.h>
 #include "reasoning_core.hpp"
 
-#ifdef safe_play
-//void Statement::e rase_deltasub() {
-//    deltasub=0;
-//    if (type!=universe) type->erase_deltasub();
-//    for (int w=0;w<args.size();w++) {
-//        args[w]->erase_deltasub();
-//    }
-//}
-Statement* Statement::safe_substitute_level(std::vector<Statement*>* repl,int level,int reflex,int recur,std::string& traceback) {
-    if (args.size()==0 and local<=0) {
-        return this;
-    }
-//    follow+=deltasub;
-    if (local==level) {
-        if (repl->size()<=id) {
-            traceback=tostringdoubleheavy()+"\n";
-            return 0;
-        }
-        std::vector<Statement*> fargs;
-        for (int s=0;s<args.size();s++) {
-            Statement* subbed = args[s]->safe_substitute_level(repl,level,reflex, recur+1,traceback);
-            if (subbed==0) return 0;
-            fargs.push_back(subbed);
-        }
-        Statement* a = (*repl)[id]->depth_push(reflex,recur-1)->safe_substitute_level(&fargs,reflex+recur-1,level+recur+1,0,traceback);
-        
-        
-        
-        if (a==0) {
-            traceback=tostringdoubleheavy()+" --> "+(*repl)[id]->tostringdoubleheavy()+"\n"+traceback;
-            return 0;
-        }
-        
-        
-        for (int s=0;s<args.size();s++) {
-            fargs[s]->cleanup();
-        }
-        return a;
-    } else {
-        Statement* ret = new Statement(id,local);
-        ret->type = type->safe_substitute_level(repl,level,reflex,recur+1,traceback);
-        if (ret->type==0) {
-            delete ret;
-            return 0;
-        }
-        for (int w=0;w<args.size();w++) {
-            Statement* subbed = args[w]->safe_substitute_level(repl,level,reflex,recur+1,traceback);
-            if (subbed==0) {
-                ret->cleanup();
-                return 0;
-            }
-            ret->args.push_back(subbed);
-        }
-//        ret->specifier = specifier;
-//        ret->deltasub=deltasub;
-        return ret;
-    }
-}
-Statement* Statement::typechecksub(std::vector<Statement*>* repl,int level,int reflex,int recur) {
-//    std::cout<<"TYPESUBBING: "<<tostringdoubleheavy()<<"\n";
-    
-    if (args.size()==0 and local<=0) {
-        return this;
-    }
-    Statement* res = new Statement(id,local);
-    std::string traceback="";
-    res->type = type->safe_substitute_level(repl,level,reflex,recur,traceback);
-    if (res->type==0) {
-        traceback=type->tostringdoubleheavy()+"\n"+traceback;
-        std::cout<<"\nTraceback:\n"<<traceback<<"\n";
-        throw;
-    }
-    
-    for (int w=0;w<args.size();w++) {
-        res->args.push_back(args[w]->typechecksub(repl,level,reflex,recur+1));
-    }
-    return res;
-}
-bool assert_eq(Statement* a,Statement* b) {//a is actual type, b is expected.
-    if (not (a->local==b->local and a->id==b->id and a->args.size()==b->args.size())) return false;
-    for (int u=0;u<a->args.size();u++) {
-        if (!assert_eq(a->args[u],b->args[u])) return false;
-    }
-    if (a->type!=Statement::universe or b->type!=Statement::universe) {
-        if (!assert_eq(a->type,b->type)) return false;
-    }
-    return true;
-}
-void Statement::typecheck(Statement* type) {
-    std::map<int,std::vector<Statement*>*> varbank;
-    varbank[0]=&MetaBank::meta_prime.strategies;
-    typecheck(type,varbank,2,true);
-}
-void Statement::globtypecheck() {
-    std::map<int,std::vector<Statement*>*> varbank;
-    varbank[0]=&args;
-    std::cout<<"Accepted axioms:\n";
-    for (int u=0;u<args.size();u++) {
-        std::cout<<"\t"<<args[u]->tostringdoubleheavy()<<"\n";
-        args[u]->headlesstypecheck(varbank, 1);
-    }
-}
-void Statement::typecheck(Statement* typ,std::map<int,std::vector<Statement*>*> params,int stat,bool haslocals) {
-    static int degreeOfSuccess=0;
-    degreeOfSuccess++;
-    params[stat]=&typ->args;
-    
-    Statement* subtype;
-    if (haslocals and local==1) {
-        if (args.size()) throw;
-        subtype = typ;
-    } else {
-        if (params.find(local)==params.end()) throw;
-        if (params[local]->size()<=id) throw;
-//        std::cout<<"COMPARE: "<<typ->local+1<<" AND "<<(*params[local])[id]->local+1<<"\n";
-        subtype = typ->typechecksub(&args, typ->local+1,stat+1,1);
-//        if (typ->local+1!=(*params[local])[id]->local+1) {
-//            std::cout<<"-=-=-=-=-="<<stat<<"\n";
-//            std::cout<<typ->tostringdoubleheavy()<<"\n";
-//            for (int u=0;u<args.size();u++) {
-//                std::cout<<"\t"<<args[u]->tostringdoubleheavy()<<"\n";
-//            }
-//            std::cout<<subtype->tostringdoubleheavy()<<"\n";
-//        }
-    }
 
-    if (local==-1 or local==-2) return;
-    if (local==1 and haslocals) {
-        if (!assert_eq(type,subtype->type)) {
-            std::cout<<tostringheavy()<<" failed; mismatch: "<<type->tostringheavy()<<" and "<<subtype->type->tostringheavy()<<"\n";throw;
-        }
+
+
+void Statement::constcheck(const ParameterContext& params) const {
+    if (local<0 or id==-1) {
+        if (ara!=0) throw;
         return;
     }
-    if (params.find(local)==params.end()) throw;
-    if (params[local]->size()<=id) throw;
-    int lp1 = (*params[local])[id]->local+1;
-    Statement* root = (*params[local])[id]->depth_push(lp1,stat-lp1);
-    Statement* thistyp = root->typechecksub(&args, stat ,stat+1,1);
-    root->cleanup();
-    if (!assert_eq(type,subtype->type)) {
-        std::cout<<"\nthistyp is: "<<thistyp->type->tostringdoubleheavy()<<"\n";
-        std::cout<<"\n"<<tostringheavy()<<" failed; mismatch:\n\t"<<type->tostringheavy()<<"\nand:\n\t"<<subtype->type->tostringheavy()<<"\n";throw;
+    if (local==0 and ara==0) return;
+    Strategy calctype = params.generateType(*this);
+    if (calctype.ara!=ara) throw;
+    for (int u=0;u<ara;u++) {
+        ParameterContext nn = params.append(calctype.args[u]);
+        args[u].typecheck(calctype.args[u].type,nn);
     }
-    if (!assert_eq(type,thistyp->type)) {
-        std::cout<<"\n"<<tostringheavy()<<" failed; mismatch:\n\t"<<type->tostringheavy()<<"\nand:\n\t"<<thistyp->type->tostringheavy()<<"\n";throw;
-    }
-    if (thistyp->args.size()!=args.size()) throw;
-    for (int s=0;s<thistyp->args.size();s++) {
-        args[s]->typecheck(thistyp->args[s],params,stat+1,haslocals);
-    }
-    if (this!=Statement::universe) {
-        type->typecheck(Statement::universe,params,stat+1,haslocals);
-    }
-    subtype->cleanup();
+    calctype.cleanup();
 }
-void Statement::headlesstypecheck(std::map<int,std::vector<Statement*>*> params,int stat) {
-    params[stat]=&args;
-    type->typecheck(Statement::universe,params,stat+1,false);
-    for (int s=0;s<args.size();s++) {
-        args[s]->headlesstypecheck(params,stat+1);
-    }
-}
-#endif
-
-
-//Statement* MetaBank::followpath(std::string parse,std::string target) {
-//    std::vector<int> path;
-//    int accum = 0;
-//    for (int q=0;q<target.size();q++) {
-//        if (target[q]==',') {
-//            path.push_back(accum);
-//            accum=0;
-//        } else {
-//            accum = accum*10+(target[q]-'0');
-//        }
-//    }
-//    path.push_back(accum);
-//    return followpath(Soln(parseTTML(this,parse,0),Binding()),path);
-//}
+//void Binding::check() {
+//    if (tracks.dat[tracks.loc()].first!=localtypes) throw;
+//    if (tracks.dat[tracks.loc()].second!=ara) throw;
 //
-//Statement* MetaBank::followpath(Soln target,std::vector<int> path) {
-//    std::vector<Soln> activereg;
-//    std::vector<Soln> passivereg;
-//    activereg.push_back(target);
-//    for (int v=0;v<path.size();v++) {
-//        std::cout<<"New round:"<<stratnames[path[v]]<<"\n";
-//        for (int q=0;q<activereg.size();q++) {
-//            activereg[q].specificsolve(strategies[path[v]],&passivereg,this);
-//        } 
-//        activereg=passivereg;
-//        passivereg.clear();
+//    for (int c=0;c<binds.size();c++) {
+//        ParameterContext tplusi = tracks.append(binds[c].itinerary,binds[c].ara);
+//        Statement dena = tplusi.generateType(binds[c].head).type.substitute_single(*this,tplusi);
+//        Statement denb = tplusi.generateType(binds[c].body).type.substitute_single(*this,tplusi);
+//        if (!judgemental_eq(dena,denb)) throw;
 //    }
-//    for (int q=0;q<activereg.size();q++) {
-//        std::cout<<"Possibility:\n";
-//        std::cout<<activereg[q].binds.tostringheavy();
-//        return activereg[q].getsolution();
-//        if (activereg[q].iscomplete()) {
-//            std::cout<<"Solution found.\n";
-//            return activereg[q].getsolution();
-//        }
-//    }
-//    throw;
 //}
+void Statement::loosecheck(const ParameterContext& params) const {
+    Strategy prop = params.generateType(*this);
+    for (int h=0;h<ara;h++) {
+        ParameterContext nn = params.append(prop.args[h]);
+        args[h].loosecheck(nn);
+    }
+    prop.cleanup();
+}
+void Strategy::loosecheck(const ParameterContext& params) const {
+    ParameterContext nn = params.append(*this);
+    type.loosecheck(nn);
+    for (int g=0;g<ara;g++) args[g].loosecheck(nn);
+}
+//void Binding::loosecheck() const {
+//    for (int h=0;h<ara;h++) localtypes[h].loosecheck(tracks);
+//    for (int s=0;s<binds.size();s++) {
+//        ParameterContext tplusi = tracks.append(binds[s].itinerary,binds[s].ara);
+//        binds[s].head.loosecheck(tplusi);
+//        binds[s].body.loosecheck(tplusi);
+//    }
+//}
+//void Binding::constcheck() const {
+//    for (int h=0;h<ara;h++) localtypes[h].loosecheck(tracks);
+//    for (int s=0;s<binds.size();s++) {
+//        ParameterContext tplusi = tracks.append(binds[s].itinerary,binds[s].ara);
+//        binds[s].head.loosecheck(tplusi);
+//        binds[s].body.loosecheck(tplusi);
+//    }
+//}
+//void ParameterContext::typecheck() {
+//    for (int g=0;g<dat[loc()].second;g++) {
+//        dat[loc()].first[g].typecheck(*this);
+//    }
+//    if (loc()>0) {
+//        ParameterContext sub = *this;
+//        sub.dat.erase(sub.dat.begin()+loc());
+//        sub.typecheck();
+//    }
+//}
+void Statement::typecheck(const Statement& type,const ParameterContext& params) const {
+    if (local<0) {
+        if (type.ara or type.local or type.id!=1) throw;
+        if (ara) throw;
+        return;
+    }
+    if (local==0 and id==0) {
+        if (type.id or type.local or type.ara) throw;
+        if (ara) throw;
+        return;
+    }
+    Strategy calctype = params.generateType(*this);
+    if (!judgemental_eq(calctype.type,type)) {
+        std::cout<<tostring()<<": ";
+        std::cout<<calctype.type.tostring()<<" =/= "<<type.tostring()<<"\n";
+        throw;
+    }
+    if (calctype.ara!=ara) throw;
+    for (int u=0;u<ara;u++) {
+        ParameterContext nn = params.append(calctype.args[u]);
+        args[u].typecheck(calctype.args[u].type,nn);
+    }
+    calctype.cleanup();
+}
+void Strategy::typecheck(const ParameterContext& params) const {
+    ParameterContext nn = params.append(*this);
+    for (int u=0;u<ara;u++) args[u].typecheck(nn);
+    Statement passin = Statement(0,0);
+    if (type.id!=0 or type.local!=0) type.typecheck(passin,nn);
+}
 
 
